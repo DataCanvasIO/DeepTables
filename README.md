@@ -7,8 +7,10 @@
 [![PyPI Version](https://img.shields.io/pypi/v/deeptables.svg)](https://pypi.org/project/deeptables)
 
 
-
-[![Documentation Status](https://readthedocs.org/projects/dt-docs-testing/badge/?version=latest)](https://dt-docs-testing.readthedocs.io/)
+[![Documentation Status](https://readthedocs.org/projects/deeptables/badge/?version=latest)](https://deeptables.readthedocs.io/)
+[![Build Status](https://travis-ci.org/DataCanvasIO/deeptables.svg?branch=master)](https://travis-ci.org/DataCanvasIO/deeptables)
+[![Coverage Status](https://coveralls.io/repos/github/DataCanvasIO/deeptables/badge.svg?branch=master)](https://coveralls.io/github/DataCanvasIO/deeptables?branch=master)
+[![License](https://img.shields.io/github/license/DataCanvasIO/deeptables.svg)](https://github.com/DataCanvasIO/deeptables/blob/master/LICENSE)
 
 ## DeepTables: Deep-learning Toolkit for Tabular data
 DeepTables(DT) is a easy-to-use toolkit that enables deep learning to unleash great power on tabular data.
@@ -51,9 +53,8 @@ df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
 y = df_train.pop('y')
 y_test = df_test.pop('y')
 
-config = deeptable.ModelConfig(nets=deepnets.DeepFM)
-
 #training
+config = deeptable.ModelConfig(nets=deepnets.DeepFM)
 dt = deeptable.DeepTable(config=config)
 model, history = dt.fit(df_train, y, epochs=10)
 
@@ -63,5 +64,4 @@ print(result)
 
 #scoring
 preds = dt.predict(df_test)
-
 ```
