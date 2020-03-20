@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 
 
-class Test_hyperopt_search:
+class hyperopt_search:
     def test_opt_catboost(self):
         df_train = dsutils.load_adult().head(1000)
         y = df_train.pop(14).values
