@@ -9,7 +9,7 @@ requirements = [
     'scipy>=1.3.1',
     'pandas>=0.25.3',
     'scikit-learn==0.22.1',
-    'tensorflow==2.0.0',
+    'tensorflow==2.0.1',
     'numpy>=1.17.4',
     'catboost==0.20.2',
     'lightgbm==2.3.0',
