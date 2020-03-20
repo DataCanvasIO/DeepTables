@@ -1,0 +1,8 @@
+.. code-block:: python
+
+    from deeptables.models.deeptable import DeepTable, ModelConfig
+    from deeptables.models.deepnets import DeepFM
+
+    dt = DeepTable(ModelConfig(nets=DeepFM))
+    dt.fit(X, y)
+    preds = dt.predict(X_test)
