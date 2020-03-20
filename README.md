@@ -30,6 +30,14 @@ DT has been designed with these key goals in mind:
 * Provide good performance out of the box.
 * Flexible architecture and easy expansion by user.
 
+## Tutorials
+Please refer to the official docs at [https://deeptables.readthedocs.io/en/latest/](https://deeptables.readthedocs.io/en/latest/).
+* [Quick Start](https://deeptables.readthedocs.io/en/latest/quick_start.html)
+* [Examples](https://deeptables.readthedocs.io/en/latest/examples.html)
+* [ModelConfig](https://deeptables.readthedocs.io/en/latest/model_config.html)
+* [Models](https://deeptables.readthedocs.io/en/latest/models.html)
+* [Layers](https://deeptables.readthedocs.io/en/latest/layers.html)
+
 ## Installation
 ```shell script
 pip install deeptables
