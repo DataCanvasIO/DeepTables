@@ -7,6 +7,7 @@ import os
 import numpy as np
 import time
 import pandas as pd
+import pickle
 from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
@@ -522,9 +523,6 @@ class DeepTable:
         print(f'apply cost:{time.time() - start}')
         return output
 
-    def save_model(self):
-        raise NotImplementedError()
-
     def concat_emb_dense(self, flatten_emb_layer, dense_layer):
         x = None
         if flatten_emb_layer is not None and dense_layer is not None:
@@ -651,6 +649,43 @@ class DeepTable:
             callbacks.append(es)
             print(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, patience:{es.patience}, mode:{mode}')
         return callbacks
+
+    def save(self, filepath):
+        if filepath[-1] != '/':
+            filepath = filepath + '/'
+
+        if not os.path.exists(filepath):
+            os.mkdirs(filepath)
+
+        for mi in self.__modelset.get_modelinfos():
+            if isinstance(mi.model, str):
+                dm = self.load_deepmodel(mi.model)
+                mi.model = dm
+            if not isinstance(mi.model, DeepModel):
+                raise ValueError(f'Currently does not support saving non-DeepModel models.')
+            modelfile = f'{filepath}{mi.name}.h5'
+            mi.model.save(modelfile)
+            mi.model = modelfile
+
+        with open(f'{filepath}dt.pkl', 'wb') as output:
+            pickle.dump(self, output, protocol=2)
+
+    @staticmethod
+    def load(filepath):
+        if filepath[-1] != '/':
+            filepath = filepath + '/'
+        with open(f'{filepath}dt.pkl', 'rb') as input:
+            dt = pickle.load(input)
+            dt.restore_modelset(filepath)
+            return dt
+
+    def restore_modelset(self, filepath):
+        for mi in self.__modelset.get_modelinfos():
+            if isinstance(mi.model, str):
+                modelfile = mi.model
+                modelfile = os.path.split(modelfile)[-1]
+                dm = self.load_deepmodel(f'{filepath}{modelfile}')
+                mi.model = dm
 
     def load_deepmodel(self, filepath):
         if os.path.exists(filepath):

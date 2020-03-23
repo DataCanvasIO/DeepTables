@@ -6,6 +6,8 @@ __author__ = 'yangjian'
 import random
 import numpy as np
 import pandas as pd
+import os
+import tempfile
 
 from sklearn import manifold
 from sklearn.metrics import roc_auc_score, mean_squared_error, f1_score
@@ -220,6 +222,15 @@ class Test_DeepTable:
             dt.fit(df, y)
         assert "Columns with duplicate names in X:" in str(excinfo.value)
         assert excinfo.type == ValueError
+
+    def test_save_load(self):
+        filepath = tempfile.mkdtemp()
+        self.dt.save(filepath)
+        assert os.path.exists(f'{filepath}/dt.pkl')
+        assert os.path.exists(f'{filepath}/dnn_nets.h5')
+        newdt = deeptable.DeepTable.load(filepath)
+        preds = newdt.predict(self.X_test)
+        assert preds.shape, (200,)
 
 
 if __name__ == "__main__":

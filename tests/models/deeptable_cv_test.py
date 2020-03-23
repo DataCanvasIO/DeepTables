@@ -8,7 +8,8 @@ from sklearn.model_selection import train_test_split
 from deeptables.utils import consts
 from deeptables.models import deeptable
 from deeptables.datasets import dsutils
-
+import tempfile
+import os
 
 class Test_DeepTable_CV:
     def setup_class(self):
@@ -32,7 +33,7 @@ class Test_DeepTable_CV:
                                                                                         self.X_eval,
                                                                                         num_folds=3,
                                                                                         epochs=1,
-                                                                                        n_jobs=3)
+                                                                                        n_jobs=1)
 
     def teardown_class(self):
         print("Class teardown.")
@@ -83,6 +84,16 @@ class Test_DeepTable_CV:
         assert current
         assert byname
 
+    def test_save_load(self):
+        filepath = tempfile.mkdtemp()
+        self.dt.save(filepath)
+        assert os.path.exists(f'{filepath}/dt.pkl')
+        assert os.path.exists(f'{filepath}/dnn_nets-kfold-1.h5')
+        assert os.path.exists(f'{filepath}/dnn_nets-kfold-2.h5')
+        assert os.path.exists(f'{filepath}/dnn_nets-kfold-3.h5')
+        newdt = deeptable.DeepTable.load(filepath)
+        preds = newdt.predict(self.X_eval)
+        assert preds.shape, (200,)
 
 if __name__ == "__main__":
     pass
