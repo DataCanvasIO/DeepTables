@@ -8,8 +8,8 @@ version = '0.1.4'
 requirements = [
     'scipy>=1.3.1',
     'pandas>=0.25.3',
-    'scikit-learn==0.22.1',
-    'tensorflow==2.0.0',
+    'scikit-learn>=0.22.1',
+    'tensorflow>=2.0.0',
     'numpy>=1.17.4',
     'catboost==0.20.2',
     'lightgbm==2.3.0',
@@ -35,7 +35,7 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        'gpu': ['tensorflow-gpu==2.0.0', ]
+        'gpu': ['tensorflow-gpu>=2.0.0', ]
     },
 
     classifiers=(

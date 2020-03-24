@@ -51,7 +51,7 @@ Associated Tasks: **Binary Classification**
 Predict whether income exceeds $50K/yr based on census data. Also known as "Census Income" dataset.
 ```python
 from deeptables.datasets import dsutils
-dsutils.load_adult()
+df = dsutils.load_adult()
 ```
 See: [http://archive.ics.uci.edu/ml/datasets/Adult](http://archive.ics.uci.edu/ml/datasets/Adult)
 
@@ -61,7 +61,7 @@ Associated Tasks: **Multi-class Classification**
 From USA Forensic Science Service; 6 types of glass; defined in terms of their oxide content (i.e. Na, Fe, K, etc)
 ```python
 from deeptables.datasets import dsutils
-dsutils.load_glass_uci()
+df = dsutils.load_glass_uci()
 ```
 See: [http://archive.ics.uci.edu/ml/datasets/Glass+Identification](http://archive.ics.uci.edu/ml/datasets/Glass+Identification)
 
@@ -69,7 +69,7 @@ See: [http://archive.ics.uci.edu/ml/datasets/Glass+Identification](http://archiv
 Associated Tasks: **Regression**
 ```python
 from deeptables.datasets import dsutils
-dsutils.load_boston()
+df = dsutils.load_boston()
 ```
 
 See: [https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html)
