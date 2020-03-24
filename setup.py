@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.3'
+version = '0.1.4'
 
 requirements = [
     'scipy>=1.3.1',

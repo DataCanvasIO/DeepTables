@@ -19,14 +19,17 @@ pip install deeptables
 pip install deeptables[gpu]
 ```
                      
-
+***Verify the install***:
+```shell script
+python -c "from deeptables.utils.quicktest import test; test()”
+```
 
 ## Getting started: 5 lines to DT
 
 ### Supported Tasks
 DT can be use to solve **classification** and **regression** prediction problems on tabular data.
 
-### Simple Exapmle
+### Simple Example
 DT supports these tasks with extremely simple interface without dealing with data cleaning and feature engineering. You don't even specify the task type, DT will automatically infer.
 ```
 from deeptables.models.deeptable import DeepTable, ModelConfig
@@ -36,3 +39,41 @@ dt = DeepTable(ModelConfig(nets=DeepFM))
 dt.fit(X, y)
 preds = dt.predict(X_test)
 ```
+
+
+## Datasets
+
+DT has several build-in datasets for the demos or testing which covered binary classification, multi-class classification and regression task. All datasets are accessed through `deeptables.datasets.dsutils`. 
+
+### Adult 
+Associated Tasks: **Binary Classification**
+
+Predict whether income exceeds $50K/yr based on census data. Also known as "Census Income" dataset.
+```python
+from deeptables.datasets import dsutils
+dsutils.load_adult()
+```
+See: [http://archive.ics.uci.edu/ml/datasets/Adult](http://archive.ics.uci.edu/ml/datasets/Adult)
+
+### Glass Identification
+Associated Tasks: **Multi-class Classification**
+
+From USA Forensic Science Service; 6 types of glass; defined in terms of their oxide content (i.e. Na, Fe, K, etc)
+```python
+from deeptables.datasets import dsutils
+dsutils.load_glass_uci()
+```
+See: [http://archive.ics.uci.edu/ml/datasets/Glass+Identification](http://archive.ics.uci.edu/ml/datasets/Glass+Identification)
+
+### Boston house-prices
+Associated Tasks: **Regression**
+```python
+from deeptables.datasets import dsutils
+dsutils.load_boston()
+```
+
+See: [https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_boston.html)
+
+### Examples
+See: [Examples](https://deeptables.readthedocs.io/en/latest/examples.html)
+

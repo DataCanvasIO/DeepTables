@@ -4,10 +4,10 @@
 
 This example demonstrate how to use WideDeep nets to solve a binary classification prediction problem. 
 
-```
+```python
 from deeptables.models.deeptable import DeepTable, ModelConfig
 from deeptables.models.deepnets import WideDeep
-from examples.datasets import utils as dsutils
+from deeptables.datasets import dsutils
 from sklearn.model_selection import train_test_split
 
 #Adult Data Set from UCI Machine Learning Repository: https://archive.ics.uci.edu/ml/datasets/Adult
@@ -32,8 +32,8 @@ preds = dt.predict(X_test)
 
 This simple example demonstrate how to use a DNN(MLP) nets to solve a multiclass task on MNIST dataset.
 
-```
-from deeptables.models import deeptable,deepnets,modelset
+```python
+from deeptables.models import deeptable
 from tensorflow import keras
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -47,25 +47,22 @@ model, history = dt.fit(x_train, y_train, epochs=10)
 
 score = dt.evaluate(x_test, y_test, batch_size=512, verbose=0)
 
-preds = dt.predict(X_test)
+preds = dt.predict(x_test)
 ```
+
 ## Regression
 This example shows how to use DT to predicting Boston housing price.
 
-```
+```python
 from deeptables.models.deeptable import DeepTable, ModelConfig
+from deeptables.datasets import dsutils
 from sklearn.model_selection import train_test_split
-from sklearn import datasets
-import pandas as pd
 
-boston_dataset = datasets.load_boston()
-
-df_train = pd.DataFrame(boston_dataset.data)
-df_train.columns = boston_dataset.feature_names
-y = pd.Series(boston_dataset.target)
+df_train = dsutils.load_boston()
+y = df_train.pop('target')
 X = df_train
 
-conf = deeptable.ModelConfig(
+conf = ModelConfig(
     metrics=['RootMeanSquaredError'], 
     nets=['dnn_nets'],
     dnn_params={
@@ -75,7 +72,7 @@ conf = deeptable.ModelConfig(
     earlystopping_patience=5,
 )
 
-dt = deeptable.DeepTable(config=conf)
+dt = DeepTable(config=conf)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model, history = dt.fit(X_train, y_train, epochs=100)
