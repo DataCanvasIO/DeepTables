@@ -375,8 +375,9 @@ class DeepTable:
         if X_test is not None:
             print(f'transform X_test')
             X_test = self.preprocessor.transform_X(X_test)
+
         if iterators is None:
-            if stratified:
+            if stratified and self.task != consts.TASK_REGRESSION:
                 iterators = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=random_state)
             else:
                 iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)

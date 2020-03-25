@@ -6,6 +6,7 @@ import os
 import pprint
 import time
 import warnings
+import copy
 from contextlib import contextmanager
 
 import numpy as np
@@ -57,6 +58,9 @@ class BatchTrainer:
                  ):
         self.verbose = verbose
         # logger.setLevel(self.verbose)
+
+        if data_train is None:
+            raise ValueError('[data_train] must be provided.')
         if dt_config is None:
             raise ValueError('[dt_config] must be provided.')
         if metrics is None or len(metrics) <= 0:
@@ -76,8 +80,9 @@ class BatchTrainer:
             raise ValueError(f'[dt_config] can only be list or ModelConfig type.')
 
         self.dt_nets = dt_nets
-        self.train = data_train
-        self.test = data_test
+
+        self.train = copy.deepcopy(data_train)
+        self.test = data_test if data_test is None else copy.deepcopy(data_test)
         self.test_as_eval = test_as_eval
         self.target = target
         self.eval_size = eval_size

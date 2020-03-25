@@ -47,6 +47,11 @@ pip install deeptables
 pip install deeptables[gpu]
 ```
 
+***Verify the install***:
+```shell script
+python -c "from deeptables.utils.quicktest import test; test()”
+```
+
 ## Example：
 ``` python
 import numpy as np
