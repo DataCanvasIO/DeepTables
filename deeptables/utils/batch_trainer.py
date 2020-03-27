@@ -110,13 +110,19 @@ class BatchTrainer:
 
         if self.train.columns.dtype != 'object':
             self.train.columns = ['x_' + str(c) for c in self.train.columns]
-        if self.eval_size > 0:
-            self.X_train, self.X_eval = train_test_split(self.train, test_size=self.eval_size, random_state=self.seed)
-            self.y_eval = self.X_eval.pop(self.target)
-        else:
+
+        if self.test_as_eval and self.test is not None:
             self.X_train = self.train
-            self.X_eval = None
-            self.y_eval = None
+            self.X_eval = self.test
+            self.test = None
+        else:
+            if self.eval_size > 0:
+                self.X_train, self.X_eval = train_test_split(self.train, test_size=self.eval_size,
+                                                             random_state=self.seed)
+            else:
+                self.X_train = self.train
+                self.X_eval = None
+                self.y_eval = None
 
         if self.test is not None:
             if not isinstance(self.test, pd.DataFrame):
@@ -135,8 +141,9 @@ class BatchTrainer:
         else:
             self.X_test = None
             self.y_test = None
-        self.y_train = self.X_train.pop(self.target)
 
+        self.y_train = self.X_train.pop(self.target)
+        self.y_eval = self.X_eval.pop(self.target) if self.X_eval is not None else None
         self.task, labels = deeptable.infer_task_type(self.y_train)
         self.classes = len(labels)
         gc.collect()
@@ -289,30 +296,36 @@ class BatchTrainer:
         X_val[cat_vars] = X_val[cat_vars].astype('int')
         X_val[cont_vars] = X_val[cont_vars].astype('float')
 
-        X_eval = dt.preprocessor.transform_X(self.X_eval)
-        X_eval[cat_vars] = X_eval[cat_vars].astype('int')
-        X_eval[cont_vars] = X_eval[cont_vars].astype('float')
-
         pos_label = dt.preprocessor.pos_label
-        y_eval = self.y_eval
+
         model = fit_fn(X, y,
                        X_val, y_val,
                        cat_vars,
                        self.task,
                        params)
-        preds = model.predict(X_eval)
 
-        if self.task == consts.TASK_REGRESSION:
-            proba = preds
-        elif self.task == consts.TASK_MULTICLASS:
-            proba = model.predict_proba(X_eval)
+        if self.X_eval is not None:
+            X_eval = dt.preprocessor.transform_X(self.X_eval)
+            X_eval[cat_vars] = X_eval[cat_vars].astype('int')
+            X_eval[cont_vars] = X_eval[cont_vars].astype('float')
+
+            y_eval = self.y_eval
+
+            preds = model.predict(X_eval)
+
+            if self.task == consts.TASK_REGRESSION:
+                proba = preds
+            elif self.task == consts.TASK_MULTICLASS:
+                proba = model.predict_proba(X_eval)
+            else:
+                proba = model.predict_proba(X_eval)[:, 1]
+
+            print('Scoring...')
+            score = calc_score(self.y_eval, proba, preds, self.metrics, self.task, pos_label)
+            model_set.push(modelset.ModelInfo('eval', model_name, model, score, dt=dt))
+            print(f'\n------------{model_name} -------------Eval score:\n{score}')
         else:
-            proba = model.predict_proba(X_eval)[:, 1]
-
-        print('Scoring...')
-        score = calc_score(self.y_eval, proba, preds, self.metrics, self.task, pos_label)
-        model_set.push(modelset.ModelInfo('eval', model_name, model, score, dt=dt))
-        print(f'\n------------{model_name} -------------Eval score:\n{score}')
+            print('No evaluation dataset specified.')
         print(f'{model_name} finished.')
 
         return model, score
