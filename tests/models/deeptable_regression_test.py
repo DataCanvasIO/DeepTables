@@ -29,6 +29,10 @@ class Test_DeepTable_Regression:
         self.y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=42)
         self.model, self.history = self.dt.fit(self.X_train, self.y_train, epochs=100)
 
+    def test_leaderboard(self):
+        lb = self.dt.leaderboard
+        assert lb.shape, (1, 6)
+
     def teardown_class(self):
         print("Class teardown.")
 

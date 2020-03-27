@@ -21,7 +21,7 @@ class Test_Batch_Trainer:
             embeddings_output_dim=0,
             apply_gbm_features=False,
             auto_discrete=True,
-            auto_categorization=False,
+            auto_categorize=False,
             cat_exponent=0.4,
             cat_remain_numeric=True,
             # optimizer=keras.optimizers.RMSprop(),
@@ -129,7 +129,7 @@ class Test_Batch_Trainer:
             embeddings_output_dim=0,
             apply_gbm_features=True,
             auto_discrete=False,
-            auto_categorization=False,
+            auto_categorize=False,
             cat_exponent=0.2,
             cat_remain_numeric=True,
         )

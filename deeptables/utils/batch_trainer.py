@@ -275,7 +275,7 @@ class BatchTrainer:
             params['iterations'] = 20
 
         conf = config
-        conf = conf._replace(apply_gbm_features=False, auto_categorization=False)
+        conf = conf._replace(apply_gbm_features=False, auto_categorize=False)
         dt = deeptable.DeepTable(config=conf)
         print('Preparing datasets...')
 

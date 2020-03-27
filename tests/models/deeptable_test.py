@@ -171,7 +171,7 @@ class Test_DeepTable:
         df = pd.DataFrame({'x1': x1, 'x2': x2, 'x3': x3})
         dt = deeptable.DeepTable(config=deeptable.ModelConfig(
             apply_gbm_features=False,
-            auto_categorization=True,
+            auto_categorize=True,
             auto_discrete=True,
             # nets=['linear', 'cin_nets', 'fm_nets', 'afm_nets', 'pnn_nets', 'dnn2_nets', 'dcn_nets',
             #       'autoint_nets', 'fibi_dnn_nets'],
@@ -215,7 +215,7 @@ class Test_DeepTable:
         df.columns = ['x1', 'x1', 'x3']
         dt = deeptable.DeepTable(config=deeptable.ModelConfig(
             apply_gbm_features=False,
-            auto_categorization=True,
+            auto_categorize=True,
             auto_discrete=True,
         ))
         with pytest.raises(ValueError) as excinfo:

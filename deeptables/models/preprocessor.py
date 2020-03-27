@@ -205,7 +205,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             else:
                 if dtype == 'object' or dtype == 'category' or dtype == 'bool':
                     cat_vars.append((c, dtype, nunique))
-                elif self.config.auto_categorization and X[c].nunique() < unique_upper_limit:
+                elif self.config.auto_categorize and X[c].nunique() < unique_upper_limit:
                     convert2cat_vars.append((c, dtype, nunique))
                 else:
                     num_vars.append((c, dtype, nunique))

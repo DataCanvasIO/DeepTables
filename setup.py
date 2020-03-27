@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.4'
+version = '0.1.8'
 
 requirements = [
     'scipy>=1.3.1',
@@ -38,8 +38,8 @@ setup(
         'gpu': ['tensorflow-gpu>=2.0.0', ]
     },
 
-    classifiers=(
-        "Operating System :: OS Independent",
+    classifiers=[
+        'Operating System :: OS Independent',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
@@ -51,8 +51,8 @@ setup(
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ),
-    packages=find_packages(exclude=('tests',)),
+    ],
+    packages=find_packages(exclude=('docs', 'tests', 'examples')),
     package_data={
         # 包含data目录下所有的.dat文件
         'deeptables': ['datasets/*.csv'],

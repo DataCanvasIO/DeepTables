@@ -90,7 +90,7 @@ class DeepTable:
                 - 'auto'
                     get the columns of categorical type automatically. By default, the object,
                     bool and category will be selected.
-                    if 'auto' the [auto_categorization] will no longer takes effect.
+                    if 'auto' the [auto_categorize] will no longer takes effect.
                 - list of strings
                     e.g. ['x1','x2','x3','..']
 
@@ -105,7 +105,7 @@ class DeepTable:
                 Every metric should be a built-in evaluation metric in tf.keras.metrics.
                 See also: https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics
 
-            auto_categorization: bool, (default=False)
+            auto_categorize: bool, (default=False)
 
             cat_exponent: float, (default=0.5)
 

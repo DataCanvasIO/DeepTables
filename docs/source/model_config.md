@@ -14,7 +14,7 @@ conf = ModelConfig(
     nets=DeepFM, # same as `nets=['linear','dnn_nets','fm_nets']`
     categorical_columns='auto', # or categorical_columns=['x1', 'x2', 'x3', ...]
     metrics=['AUC', 'accuracy'], # can be `metrics=['RootMeanSquaredError']` for regression task
-    auto_categorization=True,
+    auto_categorize=True,
     auto_discrete=False,
     embeddings_output_dim=20,
     embedding_dropout=0.3,
@@ -103,7 +103,7 @@ Only categorical features will be passed into embedding layer, and most of the c
 
 If **list of strings**, interpreted as column names.
 
-If `'auto'`, get the categorical columns automatically. `object`, `bool` and `category` columns will be selected by default, and [auto_categorization] will no longer take effect.
+If `'auto'`, get the categorical columns automatically. `object`, `bool` and `category` columns will be selected by default, and [auto_categorize] will no longer take effect.
 
 If not necessary, we strongly recommend use default value `'auto'`.
 
@@ -127,7 +127,7 @@ List of metrics to be evaluated by the model during training and testing. Typica
 )
 
 
-### auto_categorization
+### auto_categorize
 bool, (default=`False`)
 
 Whether to automatically categorize eligible continuous features. 

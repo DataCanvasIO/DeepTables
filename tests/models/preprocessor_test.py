@@ -20,7 +20,7 @@ class Test_Preprocessor:
         conf = deeptable.ModelConfig(auto_discrete=True,
                                      auto_imputation=True,
                                      auto_encode_label=True,
-                                     auto_categorization=True,
+                                     auto_categorize=True,
                                      apply_gbm_features=False)
         processor = DefaultPreprocessor(conf)
         X1, y1 = processor.fit_transform(X_train, y_train)
@@ -45,7 +45,7 @@ class Test_Preprocessor:
             auto_discrete=False,
             auto_imputation=True,
             auto_encode_label=True,
-            auto_categorization=False,
+            auto_categorize=False,
             apply_gbm_features=False)
         processor = DefaultPreprocessor(conf)
         X, y = processor.fit_transform(df_train, y)
@@ -61,7 +61,7 @@ class Test_Preprocessor:
             auto_discrete=True,
             auto_imputation=True,
             auto_encode_label=True,
-            auto_categorization=False,
+            auto_categorize=False,
             apply_gbm_features=False)
         processor = DefaultPreprocessor(conf)
         X, y = processor.fit_transform(df_train, y)

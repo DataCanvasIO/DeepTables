@@ -20,7 +20,7 @@ class Test_DeepTable_CV:
 
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=False,
-                                     auto_categorization=False,
+                                     auto_categorize=False,
                                      auto_discrete=False)
         self.dt = deeptable.DeepTable(config=conf)
 
