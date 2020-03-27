@@ -26,7 +26,11 @@ class ModelInfo:
         return ldict
 
     def get_score(self, metric_name):
-        return self.score[metric_name.lower()]
+        score = self.score.get(metric_name.lower())
+        if score is None:
+            return 0
+        else:
+            return score
 
 
 class ModelSet:

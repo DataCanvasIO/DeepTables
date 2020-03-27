@@ -38,6 +38,14 @@ class Test_DeepTable:
     def teardown_class(self):
         print("Class teardown.")
 
+    def run_dt(self, config):
+        df_train = dsutils.load_adult().head(1000)
+        y = df_train.pop(14).values
+        X = df_train
+        dt = deeptable.DeepTable(config=config)
+        dm, history = dt.fit(X, y, epochs=1)
+        return dt, dm, history
+
     def test_evaluate(self):
         result = self.dt.evaluate(self.X_test, self.y_test)
         assert result['AUC'] > 0
@@ -126,34 +134,25 @@ class Test_DeepTable:
     #     assert lgbm_encoder.lgbm.reg_lambda, 0.07
 
     def test_gbm_feature_embedding(self):
-        df_train = dsutils.load_adult().head(1000)
-        y = df_train.pop(14).values
-        X = df_train
-
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=True,
                                      gbm_feature_type=consts.GBM_FEATURE_TYPE_EMB,
                                      gbm_params={'learning_rate': 0.01, 'colsample_bytree': 0.95, 'reg_alpha': 0.04,
                                                  'reg_lambda': 0.07, 'n_estimators': 10},
                                      )
-        dt = deeptable.DeepTable(config=conf)
-        dm, history = dt.fit(X, y, epochs=1)
+
+        dt, dm, history = self.run_dt(conf)
         lgbm_leaves = [c for c in dt.preprocessor.get_categorical_columns() if 'lgbm_leaf' in c]
         assert len(lgbm_leaves), 10
 
     def test_gbm_feature_dense(self):
-        df_train = dsutils.load_adult().head(1000)
-        y = df_train.pop(14).values
-        X = df_train
-
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=True,
                                      gbm_feature_type=consts.GBM_FEATURE_TYPE_DENSE,
                                      gbm_params={'learning_rate': 0.01, 'colsample_bytree': 0.95, 'reg_alpha': 0.04,
                                                  'reg_lambda': 0.07, 'n_estimators': 10},
                                      )
-        dt = deeptable.DeepTable(config=conf)
-        dm, history = dt.fit(X, y, epochs=1)
+        dt, dm, history = self.run_dt(conf)
         layers = dm.model.layers
         dense_lgbm_input = dm.model.get_layer(consts.INPUT_PREFIX_NUM + 'gbm_leaves')
         concat_continuous_inputs = dm.model.get_layer('concat_continuous_inputs')
@@ -161,6 +160,7 @@ class Test_DeepTable:
         # flatten_embeddings = model.get_layer('flatten_embeddings')
         assert dense_lgbm_input
         assert concat_continuous_inputs
+
 
     def test_predict_unseen_data(self):
         x1 = np.random.randint(0, 10, size=(100), dtype='int')
@@ -231,7 +231,6 @@ class Test_DeepTable:
         newdt = deeptable.DeepTable.load(filepath)
         preds = newdt.predict(self.X_test)
         assert preds.shape, (200,)
-
 
 
 if __name__ == "__main__":

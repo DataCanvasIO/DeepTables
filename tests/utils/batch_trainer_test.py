@@ -127,7 +127,7 @@ class Test_Batch_Trainer:
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
-            apply_gbm_features=True,
+            apply_gbm_features=False,
             auto_discrete=False,
             auto_categorize=False,
             cat_exponent=0.2,
@@ -138,7 +138,7 @@ class Test_Batch_Trainer:
                                         eval_size=0.2,
                                         validation_size=0.2,
                                         # metrics=['AUC','accuracy','recall','precision','f1'], #auc/recall/precision/f1/mse/mae/msle/rmse/r2
-                                        metrics=['mse', 'rmse', 'r2', 'mae'],
+                                        metrics=['RootMeanSquaredError', 'mse', 'rmse', 'r2', 'mae'],
                                         # auc/recall/precision/f1/mse/mae/msle/rmse/r2
                                         verbose=0,
                                         dt_config=conf,
@@ -148,7 +148,7 @@ class Test_Batch_Trainer:
                                         )
 
         ms = bt.start()
-        assert ms.leaderboard().shape[1], 6
+        assert ms.leaderboard().shape, (3, 7)
 
     def test_run_multiclass(self):
         data = dsutils.load_glass_uci()
@@ -397,7 +397,7 @@ class Test_Batch_Trainer:
                                         eval_size=0,
                                         validation_size=0.2,
                                         metrics=['AUC', 'accuracy', 'recall', 'precision', 'f1'],
-                                        dt_config=[conf1,conf2],
+                                        dt_config=[conf1, conf2],
                                         verbose=0,
                                         dt_epochs=1,
                                         cross_validation=True,
@@ -407,7 +407,6 @@ class Test_Batch_Trainer:
 
         ms = bt.start(models=['dt'])
         assert len(ms.get_models()), 2
-
 
     def test_leaderboard(self):
         data = dsutils.load_adult().head(1000)

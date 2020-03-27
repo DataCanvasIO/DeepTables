@@ -46,6 +46,8 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
             score['msle'] = mean_squared_log_error(y_true, y_preds)
         elif metric == 'rmse':
             score['rmse'] = np.sqrt(mean_squared_error(y_true, y_preds))
+        elif metric == 'rootmeansquarederror':
+            score['rootmeansquarederror'] = np.sqrt(mean_squared_error(y_true, y_preds))
         elif metric == 'r2':
             score['r2'] = r2_score(y_true, y_preds)
 

@@ -10,6 +10,7 @@ from tensorflow.python.framework import ops
 from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.keras.metrics import RootMeanSquaredError
 import itertools
 
 from ..utils import dt_logging, consts, gpu
