@@ -12,6 +12,9 @@ from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
 import itertools
 
+from ..utils import dt_logging, consts, gpu
+
+logger = dt_logging.get_logger()
 
 class FM(Layer):
     """Factorization Machine to model order-2 feature interactions
@@ -1089,8 +1092,14 @@ class GHMCLoss:
         loss = tf.reduce_sum(loss * weights) / tot
         return loss
 
+def register_custom_objects(objs_dict:dict):
+    for k,v in objs_dict.items():
+        if dt_custom_objects.get(k) is None:
+            dt_custom_objects[k] = v
+        else:
+            logger.error(f'`register_custom_objects` cannot register an existing key [{k}].')
 
-dt_cells_custom_objects = {
+dt_custom_objects = {
     'FM': FM,
     'Cross': Cross,
     'InnerProduct': InnerProduct,

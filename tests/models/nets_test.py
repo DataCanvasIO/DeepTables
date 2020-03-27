@@ -4,15 +4,21 @@ from sklearn.model_selection import train_test_split
 
 from deeptables.models import deeptable, deepnets
 from deeptables.datasets import dsutils
+from deeptables.models.layers import register_custom_objects
 from tensorflow.keras import layers
+
+from tensorflow.keras import backend as K
+import tensorflow as tf
+
+import tempfile, os
 
 
 class Test_DeepTable:
 
     def run_nets(self, nets):
         df_train = dsutils.load_adult().head(100)
-        self.y = df_train.pop(14).values
-        self.X = df_train
+        y = df_train.pop(14).values
+        X = df_train
 
         conf = deeptable.ModelConfig(nets=nets,
                                      metrics=['AUC'],
@@ -20,80 +26,59 @@ class Test_DeepTable:
                                      embeddings_output_dim=2,
                                      apply_gbm_features=False,
                                      apply_class_weight=True)
-        self.dt = deeptable.DeepTable(config=conf)
+        dt = deeptable.DeepTable(config=conf)
 
-        self.X_train, \
-        self.X_test, \
-        self.y_train, \
-        self.y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=42)
-        self.model, self.history = self.dt.fit(self.X_train, self.y_train, epochs=1)
-        result = self.dt.evaluate(self.X_test, self.y_test)
-        return result
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        model, history = dt.fit(X_train, y_train, epochs=1)
+        result = dt.evaluate(X_test, y_test)
+        assert result['AUC'] >= 0.0
+        return dt, result
 
     def test_DeepFM(self):
-        result = self.run_nets(nets=deepnets.DeepFM)
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=deepnets.DeepFM)
 
     def test_xDeepFM(self):
-        result = self.run_nets(nets=deepnets.xDeepFM)
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=deepnets.xDeepFM)
 
     def test_WideDeep(self):
-        result = self.run_nets(nets=deepnets.WideDeep)
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=deepnets.WideDeep)
 
     def test_callable(self):
-        result = self.run_nets(nets=[deepnets.linear])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=[deepnets.linear])
 
     def test_custom_nets(self):
         def custom_net(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc):
             out = layers.Dense(10)(flatten_emb_layer)
             return out
 
-        result = self.run_nets(nets=[deepnets.linear, custom_net, 'dnn_nets'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=[deepnets.linear, custom_net, 'dnn_nets'])
 
     def test_linear(self):
-        result = self.run_nets(nets=['linear'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=['linear'])
 
     def test_afm(self):
-        result = self.run_nets(nets=['afm_nets'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=['afm_nets'])
 
     def test_cin(self):
-        result = self.run_nets(nets=['cin_nets'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=['cin_nets'])
 
     def test_pnn_nets(self):
-        result = self.run_nets(nets=['opnn_nets', 'ipnn_nets', 'pnn_nets'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=['opnn_nets', 'ipnn_nets', 'pnn_nets'])
 
     def test_autoint_nets(self):
-        result = self.run_nets(nets=['autoint_nets'])
-        assert result['AUC'] >= 0.0
+        self.run_nets(nets=['autoint_nets'])
 
     def test_fgcnn_nets(self):
-        result1 = self.run_nets(nets=['fg_nets'])
-        result2 = self.run_nets(nets=['fgcnn_cin_nets'])
-        result3 = self.run_nets(nets=['fgcnn_ipnn_nets'])
-        result4 = self.run_nets(nets=['fgcnn_dnn_nets'])
-        result5 = self.run_nets(nets=['fgcnn_fm_nets'])
-        result6 = self.run_nets(nets=['fgcnn_afm_nets'])
-
-        assert result1['AUC'] >= 0.0
-        assert result2['AUC'] >= 0.0
-        assert result3['AUC'] >= 0.0
-        assert result4['AUC'] >= 0.0
-        assert result5['AUC'] >= 0.0
-        assert result6['AUC'] >= 0.0
+        self.run_nets(nets=['fg_nets'])
+        self.run_nets(nets=['fgcnn_cin_nets'])
+        self.run_nets(nets=['fgcnn_ipnn_nets'])
+        self.run_nets(nets=['fgcnn_dnn_nets'])
+        self.run_nets(nets=['fgcnn_fm_nets'])
+        self.run_nets(nets=['fgcnn_afm_nets'])
 
     def test_fibi_nets(self):
-        result1 = self.run_nets(nets=['fibi_nets'])
-        result2 = self.run_nets(nets=['fibi_dnn_nets'])
-        assert result1['AUC'] >= 0.0
-        assert result2['AUC'] >= 0.0
+        self.run_nets(nets=['fibi_nets'])
+        self.run_nets(nets=['fibi_dnn_nets'])
 
     def test_custom_dnn(self):
         df_train = dsutils.load_adult().head(100)
@@ -120,4 +105,45 @@ class Test_DeepTable:
         assert l1
         assert l2
         assert l3
-        assert 14
+        assert l4
+
+    def test_save_load_custom_nets(self):
+        def custom_net(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc):
+            if embeddings is None or len(embeddings) <= 0:
+                model_desc.add_net('fm', (None), (None))
+                return None
+            fm_concat = layers.Concatenate(axis=1, name='concat_fm_embedding')(embeddings)
+            fm_output = CustomFM(name='fm_layer')(fm_concat)  # use custom layer
+            model_desc.add_net('fm', fm_concat.shape, fm_output.shape)
+            return fm_output
+
+        dt, result = self.run_nets(nets=[custom_net, 'dnn_nets'])
+
+        filepath = tempfile.mkdtemp()
+        dt.save(filepath)
+        assert os.path.exists(f'{filepath}/dt.pkl')
+        assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')
+
+        register_custom_objects(
+            {
+                'CustomFM': CustomFM,
+            })
+
+        newdt = deeptable.DeepTable.load(filepath)
+        assert newdt.best_model
+
+class CustomFM(layers.Layer):
+
+    def __init__(self, **kwargs):
+        super(CustomFM, self).__init__(**kwargs)
+
+    def call(self, x, **kwargs):
+        if K.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        square_of_sum = tf.square(tf.reduce_sum(
+            x, axis=1, keepdims=True))
+        sum_of_square = tf.reduce_sum(
+            x * x, axis=1, keepdims=True)
+        cross = square_of_sum - sum_of_square
+        cross = 0.5 * tf.reduce_sum(cross, axis=2, keepdims=False)
+        return cross

@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, Bat
 from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.utils import to_categorical
 from . import deepnets
-from .layers import MultiColumnEmbedding, dt_cells_custom_objects
+from .layers import MultiColumnEmbedding, dt_custom_objects
 from ..utils import dt_logging, consts, gpu
 
 logger = dt_logging.get_logger()
@@ -39,7 +39,7 @@ class DeepModel:
         self.model_file = model_file
         self.model = None
         if model_file is not None:
-            self.model = load_model(model_file, dt_cells_custom_objects)
+            self.model = load_model(model_file, dt_custom_objects)
 
     def fit(self, X=None, y=None, batch_size=128, epochs=1, verbose=1, callbacks=None,
             validation_split=0.2, validation_data=None, shuffle=True,
