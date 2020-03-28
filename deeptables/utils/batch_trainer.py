@@ -40,7 +40,7 @@ class BatchTrainer:
                  test_as_eval=False,
                  eval_size=0.2,
                  validation_size=0.2,
-                 metrics=[],
+                 eval_metrics=[],
                  dt_config=None,
                  dt_nets=[['dnn_nets']],
                  dt_epochs=5,
@@ -63,8 +63,8 @@ class BatchTrainer:
             raise ValueError('[data_train] must be provided.')
         if dt_config is None:
             raise ValueError('[dt_config] must be provided.')
-        if metrics is None or len(metrics) <= 0:
-            raise ValueError('[metrics] is empty, at least one metric.')
+        if eval_metrics is None or len(eval_metrics) <= 0:
+            raise ValueError('[eval_metrics] is empty, at least one metric.')
 
         if eval_size is not None and (eval_size >= 1.0 or eval_size < 0):
             raise ValueError(f'[eval_size] must be >= 0 and < 1.0.')
@@ -87,7 +87,7 @@ class BatchTrainer:
         self.target = target
         self.eval_size = eval_size
         self.validation_size = validation_size
-        self.metrics = metrics
+        self.eval_metrics = eval_metrics
         self.dt_epochs = dt_epochs
         self.dt_batch_size = dt_batch_size
         self.seed = seed
@@ -104,9 +104,9 @@ class BatchTrainer:
 
     @property
     def first_metric_name(self):
-        if self.metrics is None or len(self.metrics)<=0:
+        if self.eval_metrics is None or len(self.eval_metrics)<=0:
             raise ValueError('`metrics` is none or empty.')
-        first_metric = self.metrics[0]
+        first_metric = self.eval_metrics[0]
         if isinstance(first_metric, str):
             return first_metric
         if callable(first_metric):
@@ -201,10 +201,11 @@ class BatchTrainer:
         fixed_embedding_dim = conf.fixed_embedding_dim
         if 'fm_nets' in nets:
             fixed_embedding_dim = True
-        print(f'metrics:{self.metrics}')
-        conf = conf._replace(nets=nets, metrics=[self.metrics[0]],
-                             fixed_embedding_dim=fixed_embedding_dim,
-                             )
+        print(f'train metrics:{config.metrics}')
+        print(f'eval metrics:{self.eval_metrics}')
+        # conf = conf._replace(nets=nets, metrics=[self.eval_metrics[0]],
+        #                      fixed_embedding_dim=fixed_embedding_dim,
+        #                      )
 
         dt = deeptable.DeepTable(config=conf)
 
@@ -223,7 +224,7 @@ class BatchTrainer:
                                                                         n_jobs=self.n_jobs)
             print(f'Scoring...')
             oof_preds = dt.proba2predict(oof_proba)
-            oof_score = calc_score(self.y_train, oof_proba, oof_preds, self.metrics, self.task,
+            oof_score = calc_score(self.y_train, oof_proba, oof_preds, self.eval_metrics, self.task,
                                    dt.pos_label)
             model_set.push(
                 modelset.ModelInfo('oof', f'{config.name} - {nets} - CV - oof', dt, oof_score,
@@ -232,7 +233,7 @@ class BatchTrainer:
 
             if eval_proba is not None:
                 eval_preds = dt.proba2predict(eval_proba)
-                eval_cv_score = calc_score(self.y_eval, eval_proba, eval_preds, self.metrics, self.task,
+                eval_cv_score = calc_score(self.y_eval, eval_proba, eval_preds, self.eval_metrics, self.task,
                                            dt.pos_label)
                 model_set.push(
                     modelset.ModelInfo('cv-eval', f'{config.name} - {nets} - CV - eval', dt, eval_cv_score,
@@ -243,7 +244,7 @@ class BatchTrainer:
                 all_model_proba = dt.predict_proba_all(self.X_eval)
                 for fold_name, fold_proba in all_model_proba.items():
                     fold_preds = dt.proba2predict(fold_proba)
-                    fold_score = calc_score(self.y_eval, fold_proba, fold_preds, self.metrics, self.task,
+                    fold_score = calc_score(self.y_eval, fold_proba, fold_preds, self.eval_metrics, self.task,
                                             dt.pos_label)
                     print(f'\n------------{fold_name} -------------Eval score:\n{fold_score}')
                     model_set.push(
@@ -262,7 +263,7 @@ class BatchTrainer:
             if self.X_eval is not None:
                 proba = dt.predict_proba(self.X_eval, model_selector=consts.MODEL_SELECTOR_BEST)
                 preds = dt.proba2predict(proba)
-                score = calc_score(self.y_eval, proba, preds, self.metrics, self.task, dt.pos_label)
+                score = calc_score(self.y_eval, proba, preds, self.eval_metrics, self.task, dt.pos_label)
                 # score = dt.evaluate(self.X_test, self.y_test)
                 print(f'\n------------{nets} -------------Eval score:\n{score}')
                 model_set.push(
@@ -277,7 +278,7 @@ class BatchTrainer:
 
             if self.X_test is not None:
                 test_proba = dt.predict_proba(self.X_test)
-                score = str(round(history.history[self.metrics[0]][-1], 5))
+                score = str(round(history.history[self.first_metric_name][-1], 5))
                 file = f'{dt.output_path}{score}_{"_".join(nets)}.csv'
                 pd.DataFrame(test_proba).to_csv(file, index=False)
 
@@ -332,7 +333,7 @@ class BatchTrainer:
                 proba = model.predict_proba(X_eval)[:, 1]
 
             print('Scoring...')
-            score = calc_score(self.y_eval, proba, preds, self.metrics, self.task, pos_label)
+            score = calc_score(self.y_eval, proba, preds, self.eval_metrics, self.task, pos_label)
             model_set.push(modelset.ModelInfo('eval', model_name, model, score, dt=dt))
             print(f'\n------------{model_name} -------------Eval score:\n{score}')
         else:
@@ -502,7 +503,7 @@ class BatchTrainer:
         score = None
         if y is not None and score_dt is not None:
             preds = score_dt.proba2predict(proba_avg)
-            score = calc_score(y, proba_avg, preds, self.metrics, score_dt.task, score_dt.pos_label)
+            score = calc_score(y, proba_avg, preds, self.eval_metrics, score_dt.task, score_dt.pos_label)
             print(f'\nEnsemble Test Score:\n{score}')
         if submission is not None and submission.shape[0] == proba_avg.shape[0]:
             submission[submission_target] = proba_avg[:, 0]

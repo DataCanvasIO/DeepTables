@@ -118,9 +118,9 @@ The label of positive class, used only when task is binary.
 
 
 ### metrics
-list of strings, (default=`['AUC', 'accuracy']`)
+list of strings or callable object, (default=`['accuracy']`)
 
-List of metrics to be evaluated by the model during training and testing. Typically you will use `metrics=['accuracy']` or `metrics=['AUC']`. Every metric should be a built-in evaluation metric in tf.keras.metrics.
+List of metrics to be evaluated by the model during training and testing. Typically you will use `metrics=['accuracy']` or `metrics=['AUC']`. Every metric should be a built-in evaluation metric in tf.keras.metrics or a callable object like `r2(y_true, y_pred):...`.
 
 **See also**: 
 [https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics](https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics
