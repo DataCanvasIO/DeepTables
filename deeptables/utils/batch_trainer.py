@@ -100,7 +100,18 @@ class BatchTrainer:
         self.lightgbm_params = lightgbm_params
         self.catboost_params = catboost_params
         self.__prepare_data()
-        self.model_set = modelset.ModelSet(metric=self.metrics[0], best_mode=consts.MODEL_SELECT_MODE_AUTO)
+        self.model_set = modelset.ModelSet(metric=self.first_metric_name, best_mode=consts.MODEL_SELECT_MODE_AUTO)
+
+    @property
+    def first_metric_name(self):
+        if self.metrics is None or len(self.metrics)<=0:
+            raise ValueError('`metrics` is none or empty.')
+        first_metric = self.metrics[0]
+        if isinstance(first_metric, str):
+            return first_metric
+        if callable(first_metric):
+            return first_metric.__name__
+        raise ValueError('`metric` must be string or callable object.')
 
     def __prepare_data(self):
         if self.train is None:
@@ -142,8 +153,8 @@ class BatchTrainer:
             self.X_test = None
             self.y_test = None
 
-        self.y_train = self.X_train.pop(self.target)
-        self.y_eval = self.X_eval.pop(self.target) if self.X_eval is not None else None
+        self.y_train = self.X_train.pop(self.target).values
+        self.y_eval = self.X_eval.pop(self.target).values if self.X_eval is not None else None
         self.task, labels = deeptable.infer_task_type(self.y_train)
         self.classes = len(labels)
         gc.collect()
@@ -155,7 +166,7 @@ class BatchTrainer:
         return self.train_model(self.model_set, config, lgbm_fit, 'LightGBM', **self.lightgbm_params)
 
     def start(self, models=['dt']):
-        self.model_set = modelset.ModelSet(metric=self.metrics[0], best_mode=consts.MODEL_SELECT_MODE_AUTO)
+        self.model_set = modelset.ModelSet(metric=self.first_metric_name, best_mode=consts.MODEL_SELECT_MODE_AUTO)
         for config in self.dt_config:
             if models is None or 'lightgbm' in models:
                 with timer('LightGBM'):

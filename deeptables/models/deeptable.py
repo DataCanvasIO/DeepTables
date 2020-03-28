@@ -282,7 +282,7 @@ class DeepTable:
         self.output_path = self._prepare_output_dir(config.home_dir, self.nets)
         self.preprocessor = DefaultPreprocessor(config)
         self.__current_model = None
-        self.__modelset = modelset.ModelSet(metric=self.config.metrics[0], best_mode=consts.MODEL_SELECT_MODE_AUTO)
+        self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name, best_mode=consts.MODEL_SELECT_MODE_AUTO)
 
     @property
     def task(self):
@@ -304,7 +304,7 @@ class DeepTable:
         monitor = self.config.monitor_metric
         if monitor is None:
             if self.config.metrics is not None and len(self.config.metrics) > 0:
-                monitor = 'val_' + self.config.metrics[0]
+                monitor = 'val_' + self.config.first_metric_name
         return monitor
 
     @property

@@ -9,6 +9,7 @@ from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from sklearn.datasets import load_boston
 import pandas as pd
+from tests.misc import r2_c
 
 
 class Test_Batch_Trainer:
@@ -138,7 +139,7 @@ class Test_Batch_Trainer:
                                         eval_size=0.2,
                                         validation_size=0.2,
                                         # metrics=['AUC','accuracy','recall','precision','f1'], #auc/recall/precision/f1/mse/mae/msle/rmse/r2
-                                        metrics=['RootMeanSquaredError', 'mse', 'rmse', 'r2', 'mae'],
+                                        metrics=[r2_c, 'RootMeanSquaredError', 'mse', 'rmse', 'r2', 'mae'],
                                         # auc/recall/precision/f1/mse/mae/msle/rmse/r2
                                         verbose=0,
                                         dt_config=conf,
@@ -148,7 +149,7 @@ class Test_Batch_Trainer:
                                         )
 
         ms = bt.start()
-        assert ms.leaderboard().shape, (3, 7)
+        assert ms.leaderboard().shape, (3, 8)
 
     def test_run_multiclass(self):
         data = dsutils.load_glass_uci()

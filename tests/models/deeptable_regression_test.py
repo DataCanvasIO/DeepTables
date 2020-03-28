@@ -6,9 +6,9 @@ __author__ = 'yangjian'
 import pandas as pd
 from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
-
+from tensorflow.keras import backend as K
 from deeptables.models import deeptable
-
+from tests.misc import r2_c
 
 class Test_DeepTable_Regression:
     def setup_class(self):
@@ -20,7 +20,7 @@ class Test_DeepTable_Regression:
         self.y = pd.Series(boston_dataset.target)
         self.X = df_train
 
-        conf = deeptable.ModelConfig(metrics=['RootMeanSquaredError'], apply_gbm_features=False)
+        conf = deeptable.ModelConfig(metrics=[r2_c, 'RootMeanSquaredError'], apply_gbm_features=False)
         self.dt = deeptable.DeepTable(config=conf)
 
         self.X_train, \
@@ -31,7 +31,7 @@ class Test_DeepTable_Regression:
 
     def test_leaderboard(self):
         lb = self.dt.leaderboard
-        assert lb.shape, (1, 6)
+        assert lb.shape, (1, 8)
 
     def teardown_class(self):
         print("Class teardown.")
@@ -39,3 +39,6 @@ class Test_DeepTable_Regression:
     def test_evaluate(self):
         result = self.dt.evaluate(self.X_test, self.y_test)
         assert result['RootMeanSquaredError'] > 0
+
+
+
