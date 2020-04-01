@@ -2,7 +2,7 @@
 __author__ = 'yangjian'
 
 import numpy as np
-from sklearn.metrics import roc_auc_score, roc_curve, mean_absolute_error, mean_squared_log_error, accuracy_score, \
+from sklearn.metrics import roc_auc_score, mean_squared_log_error, accuracy_score, \
     mean_squared_error, mean_absolute_error, r2_score, precision_score, recall_score, f1_score
 from ..utils import consts
 
