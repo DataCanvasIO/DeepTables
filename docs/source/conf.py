@@ -17,6 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
+import os, sys
+sys.path.insert(0, os.path.abspath('..'))
+
 project = 'DeepTables'
 copyright = '2020, Zetyun.com'
 author = 'Zetyun.com'
@@ -24,6 +27,9 @@ author = 'Zetyun.com'
 # The full version, including alpha/beta/rc tags
 release = '0.1.1'
 extensions = ['recommonmark',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.napoleon',
+              'sphinx.ext.viewcode'
               # 'sphinx.ext.autodoc',
               # 'sphinx.ext.mathjax',
               # 'sphinx.ext.ifconfig',
@@ -32,6 +38,7 @@ extensions = ['recommonmark',
               ]
 exclude_patterns = []
 #html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 pygments_style = 'sphinx'
 templates_path = ['_templates']
 source_suffix = ['.rst', '.md']
