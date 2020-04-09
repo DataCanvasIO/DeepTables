@@ -38,6 +38,7 @@ Example
    ModelConfig<model_config.md>
    Models<models.md>
    Layers<layers.md>
+   API<modules.rst>
    FAQ<faq.md>
 
 Indices and tables
