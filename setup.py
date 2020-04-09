@@ -59,6 +59,6 @@ setup(
         # 包含data目录下所有的.dat文件
         'deeptables': ['datasets/*.csv'],
     },
-    zip_safe=True,
+    zip_safe=False,
     include_package_data=True,
 )
