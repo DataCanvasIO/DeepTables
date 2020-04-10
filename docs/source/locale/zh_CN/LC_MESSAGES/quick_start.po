@@ -1,0 +1,187 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/quick_start.md:1
+msgid "Quick-Start"
+msgstr ""
+
+#: ../../source/quick_start.md:3
+msgid "Installation Guide"
+msgstr "安装引导"
+
+#: ../../source/quick_start.md:5
+msgid "Requirements"
+msgstr "环境依赖"
+
+#: ../../source/quick_start.md:6
+msgid "Python 3: DT requires Python version 3.6 or 3.7."
+msgstr "Python 3: DT 需要 Python 3.6  3.7。"
+
+#: ../../source/quick_start.md:8
+msgid ""
+"Tensorflow >= 2.0.0: DT is based on TensorFlow. Please follow this "
+"tutorial to install TensorFlow for python3."
+msgstr "Tensorflow >= 2.0.0: DT基于TensorFlow。"
+
+#: ../../source/quick_start.md:11
+msgid "Install DeepTables"
+msgstr "安装 DeepTables"
+
+#: ../../source/quick_start.md:17
+msgid ""
+"GPU Setup (Optional): If you have GPUs on your machine and want to use "
+"them to accelerate the training, you can use the following command."
+msgstr "GPU安装(可选): 如果你有gpu，并且想用它们加速训练，可以用下面命令安装："
+
+#: ../../source/quick_start.md:22
+msgid "Verify the install:"
+msgstr "验证安装："
+
+#: ../../source/quick_start.md:27
+msgid "Launch a DeepTables Docker Container"
+msgstr "启动Notebook Docker容器"
+
+#: ../../source/quick_start.md:28
+msgid "You can also quickly try DeepTables through the Docker:"
+msgstr "你可以通过Docker快速尝试DeepTables:"
+
+#: ../../source/quick_start.md:30
+msgid "Pull a DeepTables image (optional)."
+msgstr "拉取一个DeepTables镜像。"
+
+#: ../../source/quick_start.md:31
+msgid "Launch Docker container."
+msgstr "启动容器。"
+
+#: ../../source/quick_start.md:33
+msgid "Pull the latest image:"
+msgstr "拉取最新镜像:"
+
+#: ../../source/quick_start.md:38
+msgid "Then launch Docker container with this command line:"
+msgstr "用这个命令启动Docker容器："
+
+#: ../../source/quick_start.md:43
+msgid ""
+"The value \"your-token\" is a user specified string for the notebook and "
+"can be empty."
+msgstr " \"your-token\" 这个值是notebook的口令，也可以为空。"
+
+#: ../../source/quick_start.md:45
+msgid ""
+"As a result, notebook server should be running at: https://host-ip-"
+"address:8830?token=your-token Launch a browser and connect to that URL "
+"you will see the Jupyter Notebook like this:"
+msgstr "notebook服务运行在https://host-ip-address:8830?token=your-token"
+"启动浏览器访问这个URL，你能看到Notebook的页面："
+
+#: ../../source/quick_start.md:49
+msgid "Getting started: 5 lines to DT"
+msgstr "5行代码开启DT之旅"
+
+#: ../../source/quick_start.md:51
+msgid "Supported Tasks"
+msgstr "适用范围"
+
+#: ../../source/quick_start.md:52
+msgid ""
+"DT can be use to solve classification and regression prediction problems "
+"on tabular data."
+msgstr "DT能用来解决基于表格式数据的分类、回归预测问题。"
+
+#: ../../source/quick_start.md:54
+msgid "Simple Example"
+msgstr "简单例子"
+
+#: ../../source/quick_start.md:55
+msgid ""
+"DT supports these tasks with extremely simple interface without dealing "
+"with data cleaning and feature engineering. You don't even specify the "
+"task type, DT will automatically infer."
+msgstr "DT通过极其简单的接口支持这些任务，而不需要处理数据清理和特性工程。你甚至不指定任务类型，DT将自动推断。"
+
+#: ../../source/quick_start.md:66
+msgid "Datasets"
+msgstr "数据集"
+
+#: ../../source/quick_start.md:68
+msgid ""
+"DT has several build-in datasets for the demos or testing which covered "
+"binary classification, multi-class classification and regression task. "
+"All datasets are accessed through deeptables.datasets.dsutils."
+msgstr "DT有几个用于演示或测试的内置数据集，涵盖了二进制分类、多类分类和回归任务。所有数据集都是通过deeptables.datasets.dsutils访问的。"
+
+#: ../../source/quick_start.md:70
+msgid "Adult"
+msgstr ""
+
+#: ../../source/quick_start.md:71
+msgid "Associated Tasks: Binary Classification"
+msgstr ""
+
+#: ../../source/quick_start.md:73
+msgid ""
+"Predict whether income exceeds $50K/yr based on census data. Also known "
+"as \"Census Income\" dataset."
+msgstr "根据人口普查数据预测收入是否超过5万美元/年，也被成为\"Census Income\"数据集。"
+
+#: ../../source/quick_start.md:78
+msgid "See: http://archive.ics.uci.edu/ml/datasets/Adult"
+msgstr ""
+
+#: ../../source/quick_start.md:80
+msgid "Glass Identification"
+msgstr ""
+
+#: ../../source/quick_start.md:81
+msgid "Associated Tasks: Multi-class Classification"
+msgstr ""
+
+#: ../../source/quick_start.md:83
+msgid ""
+"From USA Forensic Science Service; 6 types of glass; defined in terms of "
+"their oxide content (i.e. Na, Fe, K, etc)"
+msgstr "来自美国法医科学服务局;6种玻璃; 根据氧化物含量定义(i.e. Na, Fe, K, etc)"
+
+#: ../../source/quick_start.md:88
+msgid "See: http://archive.ics.uci.edu/ml/datasets/Glass+Identification"
+msgstr ""
+
+#: ../../source/quick_start.md:90
+msgid "Boston house-prices"
+msgstr ""
+
+#: ../../source/quick_start.md:91
+msgid "Associated Tasks: Regression"
+msgstr ""
+
+#: ../../source/quick_start.md:97
+msgid ""
+"See: https://scikit-"
+"learn.org/stable/modules/generated/sklearn.datasets.load_boston.html"
+msgstr ""
+
+#: ../../source/quick_start.md:99
+msgid "Examples"
+msgstr ""
+
+#: ../../source/quick_start.md:100
+msgid "See: Examples"
+msgstr ""
+

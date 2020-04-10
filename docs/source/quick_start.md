@@ -24,6 +24,28 @@ pip install deeptables[gpu]
 python -c "from deeptables.utils.quicktest import test; test()”
 ```
 
+### Launch a DeepTables Docker Container
+You can also quickly try DeepTables through the [Docker](https://docs.docker.com/get-docker/):
+
+1. Pull a DeepTables image (optional).
+2. Launch Docker container.
+
+Pull the latest image:
+```
+docker pull datacanvas/deeptables-example
+```
+
+Then launch Docker container with this command line:
+```bash
+docker run -it -p 8830:8888 -e NotebookToken="your-token"  datacanvas/deeptables-example
+```
+
+The value "your-token" is a user specified string for the notebook and can be empty.
+
+As a result, notebook server should be running at: [https://host-ip-address:8830?token=your-token](https://host-ip-address:8830?token=your-token)
+Launch a browser and connect to that URL you will see the Jupyter Notebook like this:
+![](images/notebook_home.png)
+
 ## Getting started: 5 lines to DT
 
 ### Supported Tasks

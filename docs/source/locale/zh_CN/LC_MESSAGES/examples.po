@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/examples.md:1
+msgid "Exapmles"
+msgstr ""
+
+#: ../../source/examples.md:3
+msgid "Binary Classification"
+msgstr ""
+
+#: ../../source/examples.md:5
+msgid ""
+"This example demonstrate how to use WideDeep nets to solve a binary "
+"classification prediction problem."
+msgstr ""
+
+#: ../../source/examples.md:31
+msgid "Multiclass Classification"
+msgstr ""
+
+#: ../../source/examples.md:33
+msgid ""
+"This simple example demonstrate how to use a DNN(MLP) nets to solve a "
+"multiclass task on MNIST dataset."
+msgstr ""
+
+#: ../../source/examples.md:53
+msgid "Regression"
+msgstr ""
+
+#: ../../source/examples.md:54
+msgid "This example shows how to use DT to predicting Boston housing price."
+msgstr ""
+

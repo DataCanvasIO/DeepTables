@@ -1,0 +1,440 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/layers.md:1
+msgid "Layers"
+msgstr ""
+
+#: ../../source/layers.md:3
+msgid "FM"
+msgstr ""
+
+#: ../../source/layers.md:5
+msgid "Factorization Machine to model order-2 feature interactions."
+msgstr ""
+
+#: ../../source/layers.md:7 ../../source/layers.md:30 ../../source/layers.md:55
+#: ../../source/layers.md:79 ../../source/layers.md:103
+#: ../../source/layers.md:124 ../../source/layers.md:145
+#: ../../source/layers.md:164 ../../source/layers.md:179
+msgid "Call arguments:"
+msgstr ""
+
+#: ../../source/layers.md:8 ../../source/layers.md:56 ../../source/layers.md:80
+#: ../../source/layers.md:125 ../../source/layers.md:146
+msgid "x: A 3D tensor."
+msgstr ""
+
+#: ../../source/layers.md:10 ../../source/layers.md:33
+#: ../../source/layers.md:58 ../../source/layers.md:82
+#: ../../source/layers.md:106 ../../source/layers.md:127
+#: ../../source/layers.md:148 ../../source/layers.md:167
+#: ../../source/layers.md:182 ../../source/layers.md:204
+msgid "Input shape:"
+msgstr ""
+
+#: ../../source/layers.md:11 ../../source/layers.md:83
+#: ../../source/layers.md:128 ../../source/layers.md:131
+#: ../../source/layers.md:149
+msgid "3D tensor with shape: (batch_size, field_size, embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:13 ../../source/layers.md:36
+#: ../../source/layers.md:61 ../../source/layers.md:85
+#: ../../source/layers.md:109 ../../source/layers.md:130
+#: ../../source/layers.md:151 ../../source/layers.md:170
+#: ../../source/layers.md:185 ../../source/layers.md:207
+msgid "Output shape:"
+msgstr ""
+
+#: ../../source/layers.md:14 ../../source/layers.md:37
+msgid "2D tensor with shape: (batch_size, 1)"
+msgstr ""
+
+#: ../../source/layers.md:16 ../../source/layers.md:39
+#: ../../source/layers.md:64 ../../source/layers.md:88
+#: ../../source/layers.md:113 ../../source/layers.md:133
+#: ../../source/layers.md:154 ../../source/layers.md:173
+#: ../../source/layers.md:188 ../../source/layers.md:210
+msgid "References:"
+msgstr ""
+
+#: ../../source/layers.md:17
+msgid ""
+"[1] Rendle S. Factorization machines[C]//2010 IEEE International "
+"Conference on Data Mining. IEEE, 2010: 995-1000."
+msgstr ""
+
+#: ../../source/layers.md:18
+msgid ""
+"[2] Guo H, Tang R, Ye Y, et al. Deepfm: An end-to-end wide & deep "
+"learning framework for CTR prediction[J]. arXiv preprint "
+"arXiv:1804.04950, 2018."
+msgstr ""
+
+#: ../../source/layers.md:21
+msgid "AFM"
+msgstr ""
+
+#: ../../source/layers.md:22
+msgid ""
+"Attentional Factorization Machine (AFM), which learns the importance of "
+"each feature interaction from data via a neural attention network."
+msgstr ""
+
+#: ../../source/layers.md:24 ../../source/layers.md:47
+#: ../../source/layers.md:74 ../../source/layers.md:96
+#: ../../source/layers.md:120 ../../source/layers.md:139
+#: ../../source/layers.md:161 ../../source/layers.md:196
+msgid "Arguments:"
+msgstr ""
+
+#: ../../source/layers.md:25
+msgid "hidden_factor: int, (default=16)"
+msgstr ""
+
+#: ../../source/layers.md:26
+msgid "activation_function : str, (default='relu')"
+msgstr ""
+
+#: ../../source/layers.md:27
+msgid "kernel_regularizer : str or object, (default=None)"
+msgstr ""
+
+#: ../../source/layers.md:28 ../../source/layers.md:76
+msgid "dropout_rate: float, (default=0)"
+msgstr ""
+
+#: ../../source/layers.md:31 ../../source/layers.md:180
+#: ../../source/layers.md:202
+msgid "x: A list of 3D tensor."
+msgstr ""
+
+#: ../../source/layers.md:34
+msgid "A list of 3D tensor with shape: (batch_size, 1, embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:40
+msgid ""
+"[1] Xiao J, Ye H, He X, et al. Attentional factorization machines: "
+"Learning the weight of feature interactions via attention networks[J]. "
+"arXiv preprint arXiv:1708.04617, 2017."
+msgstr ""
+
+#: ../../source/layers.md:41
+msgid "[2] https://github.com/hexiangnan/attentional_factorization_machine"
+msgstr ""
+
+#: ../../source/layers.md:44
+msgid "CIN"
+msgstr ""
+
+#: ../../source/layers.md:45
+msgid ""
+"Compressed Interaction Network (CIN), with the following considerations: "
+"(1) interactions are applied at vector-wise level, not at bit-wise level;"
+" (2) high-order feature interactions is measured explicitly; (3) the "
+"complexity of network will not grow exponentially with the degree of "
+"interactions."
+msgstr ""
+
+#: ../../source/layers.md:48
+msgid "cross_layer_size: tuple of int, (default = (128, 128,))"
+msgstr ""
+
+#: ../../source/layers.md:49
+msgid "activation: str, (default='relu')"
+msgstr ""
+
+#: ../../source/layers.md:50
+msgid "use_residual: bool, (default=False)"
+msgstr ""
+
+#: ../../source/layers.md:51
+msgid "use_bias: bool, (default=False)"
+msgstr ""
+
+#: ../../source/layers.md:52
+msgid "direct: bool, (default=False)"
+msgstr ""
+
+#: ../../source/layers.md:53
+msgid "reduce_D:bool, (default=False)"
+msgstr ""
+
+#: ../../source/layers.md:59
+msgid "A 3D tensor with shape: (batch_size, num_fields, embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:62
+msgid "2D tensor with shape: (batch_size, *)"
+msgstr ""
+
+#: ../../source/layers.md:65
+msgid ""
+"[1] Lian J, Zhou X, Zhang F, et al. xdeepfm: Combining explicit and "
+"implicit feature interactions for recommender systems[C]//Proceedings of "
+"the 24th ACM SIGKDD International Conference on Knowledge Discovery & "
+"Data Mining. 2018: 1754-1763."
+msgstr ""
+
+#: ../../source/layers.md:66
+msgid "[2] https://github.com/Leavingseason/xDeepFM"
+msgstr ""
+
+#: ../../source/layers.md:70
+msgid "MultiheadAttention"
+msgstr ""
+
+#: ../../source/layers.md:72
+msgid ""
+"A multihead self-attentive nets with residual connections to explicitly "
+"model the feature interactions."
+msgstr ""
+
+#: ../../source/layers.md:75
+msgid "num_head: int, (default=1)"
+msgstr ""
+
+#: ../../source/layers.md:77
+msgid "use_residual: bool, (default=True)"
+msgstr ""
+
+#: ../../source/layers.md:86
+msgid "3D tensor with shape: (batch_size, field_size, embedding_size*num_head)"
+msgstr ""
+
+#: ../../source/layers.md:90
+msgid ""
+"[1] Song W, Shi C, Xiao Z, et al. Autoint: Automatic feature interaction "
+"learning via self-attentive neural networks[C]//Proceedings of the 28th "
+"ACM International Conference on Information and Knowledge Management. "
+"2019: 1161-1170."
+msgstr ""
+
+#: ../../source/layers.md:91
+msgid "[2] https://github.com/shichence/AutoInt"
+msgstr ""
+
+#: ../../source/layers.md:93
+msgid "FGCNN"
+msgstr ""
+
+#: ../../source/layers.md:94
+msgid ""
+"Feature Generation nets leverages the strength of CNN to generate local "
+"patterns and recombine them to generate new features."
+msgstr ""
+
+#: ../../source/layers.md:97
+msgid "filters: int, the filters of convolutional layer"
+msgstr ""
+
+#: ../../source/layers.md:98
+msgid "kernel_height: int, the height of kernel_size of convolutional layer"
+msgstr ""
+
+#: ../../source/layers.md:99
+msgid "new_filters: int, the number of new features' map in recombination layer"
+msgstr ""
+
+#: ../../source/layers.md:100
+msgid "pool_height: int, the height of pool_size of pooling layer"
+msgstr ""
+
+#: ../../source/layers.md:101
+msgid "activation: str, (default='tanh')"
+msgstr ""
+
+#: ../../source/layers.md:104
+msgid "x: A 4D tensor."
+msgstr ""
+
+#: ../../source/layers.md:107
+msgid "4D tensor with shape: (batch_size, field_size, embedding_size, 1)"
+msgstr ""
+
+#: ../../source/layers.md:110
+msgid "pooling_output - 4D tensor"
+msgstr ""
+
+#: ../../source/layers.md:111
+msgid ""
+"new_features - 3D tensor with shape: (batch_size, field_size*new_filters,"
+" embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:114
+msgid ""
+"[1] Liu B, Tang R, Chen Y, et al. Feature generation by convolutional "
+"neural network for click-through rate prediction[C]//The World Wide Web "
+"Conference. 2019: 1119-1129."
+msgstr ""
+
+#: ../../source/layers.md:116
+msgid "SENET"
+msgstr ""
+
+#: ../../source/layers.md:118
+msgid ""
+"SENET layer can dynamically increase the weights of important features "
+"and decrease the weights of uninformative features to let the model pay "
+"more attention to more important features."
+msgstr ""
+
+#: ../../source/layers.md:121
+msgid ""
+"pooling_op: str, (default='mean'). Pooling methods to squeeze the "
+"original embedding E into a statistic vector Z"
+msgstr ""
+
+#: ../../source/layers.md:122
+msgid ""
+"reduction_ratio: float, (default=3). Hyper-parameter for dimensionality-"
+"reduction"
+msgstr ""
+
+#: ../../source/layers.md:134 ../../source/layers.md:155
+msgid ""
+"[1] Huang T, Zhang Z, Zhang J. FiBiNET: combining feature importance and "
+"bilinear feature interaction for click-through rate "
+"prediction[C]//Proceedings of the 13th ACM Conference on Recommender "
+"Systems. 2019: 169-177."
+msgstr ""
+
+#: ../../source/layers.md:136
+msgid "BilinearInteraction"
+msgstr ""
+
+#: ../../source/layers.md:137
+msgid ""
+"The Bilinear-Interaction layer combines the inner product and Hadamard "
+"product to learn the feature interactions."
+msgstr ""
+
+#: ../../source/layers.md:140
+msgid ""
+"bilinear_type: str, (default='field_interaction'). The type of bilinear "
+"functions"
+msgstr ""
+
+#: ../../source/layers.md:141
+msgid "field_interaction"
+msgstr ""
+
+#: ../../source/layers.md:142
+msgid "field_all"
+msgstr ""
+
+#: ../../source/layers.md:143
+msgid "field_each"
+msgstr ""
+
+#: ../../source/layers.md:152
+msgid "3D tensor with shape: (batch_size, *, embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:158
+msgid "Cross"
+msgstr ""
+
+#: ../../source/layers.md:159
+msgid ""
+"The cross network is composed of cross layers to apply explicit feature "
+"crossing in an efficient way."
+msgstr ""
+
+#: ../../source/layers.md:162
+msgid "num_cross_layer: int, (default=2). The number of cross layers"
+msgstr ""
+
+#: ../../source/layers.md:165
+msgid "x: A 2D tensor."
+msgstr ""
+
+#: ../../source/layers.md:168 ../../source/layers.md:171
+msgid "2D tensor with shape: (batch_size, field_size)"
+msgstr ""
+
+#: ../../source/layers.md:174
+msgid ""
+"[1] Wang R, Fu B, Fu G, et al. Deep & cross network for ad click "
+"predictions[M]//Proceedings of the ADKDD'17. 2017: 1-7."
+msgstr ""
+
+#: ../../source/layers.md:176
+msgid "InnerProduct"
+msgstr ""
+
+#: ../../source/layers.md:177
+msgid "InnerProduct layer used in PNN"
+msgstr ""
+
+#: ../../source/layers.md:183 ../../source/layers.md:205
+msgid "A list of 3D tensor with shape (batch_size, 1, embedding_size)"
+msgstr ""
+
+#: ../../source/layers.md:186 ../../source/layers.md:208
+msgid "2D tensor with shape: (batch_size, num_fields*(num_fields-1)/2)"
+msgstr ""
+
+#: ../../source/layers.md:189 ../../source/layers.md:211
+msgid ""
+"[1] Qu Y, Cai H, Ren K, et al. Product-based neural networks for user "
+"response prediction[C]//2016 IEEE 16th International Conference on Data "
+"Mining (ICDM). IEEE, 2016: 1149-1154."
+msgstr ""
+
+#: ../../source/layers.md:190 ../../source/layers.md:212
+msgid ""
+"[2] Qu Y, Fang B, Zhang W, et al. Product-based neural networks for user "
+"response prediction over multi-field categorical data[J]. ACM "
+"Transactions on Information Systems (TOIS), 2018, 37(1): 1-35."
+msgstr ""
+
+#: ../../source/layers.md:191 ../../source/layers.md:213
+msgid "[3] https://github.com/Atomu2014/product-nets"
+msgstr ""
+
+#: ../../source/layers.md:193
+msgid "OuterProduct"
+msgstr ""
+
+#: ../../source/layers.md:194
+msgid "OuterProduct layer used in PNN"
+msgstr ""
+
+#: ../../source/layers.md:197
+msgid ""
+"outer_product_kernel_type: str, (default='mat'). The type of outer "
+"product kernel"
+msgstr ""
+
+#: ../../source/layers.md:198
+msgid "mat"
+msgstr ""
+
+#: ../../source/layers.md:199
+msgid "vec"
+msgstr ""
+
+#: ../../source/layers.md:200
+msgid "num Call arguments:"
+msgstr ""
+
