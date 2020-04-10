@@ -1,0 +1,205 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/index.rst:62
+msgid "Quick-Start"
+msgstr "快速开始"
+
+#: ../../source/index.rst:62
+msgid "Examples"
+msgstr "例子"
+
+#: ../../source/index.rst:62
+msgid "ModelConfig"
+msgstr ""
+
+#: ../../source/index.rst:62
+msgid "Models"
+msgstr ""
+
+#: ../../source/index.rst:62
+msgid "Layers"
+msgstr ""
+
+#: ../../source/index.rst:62
+msgid "API"
+msgstr ""
+
+#: ../../source/index.rst:62
+msgid "FAQ"
+msgstr ""
+
+#: ../../source/index.rst:62
+msgid "Home:"
+msgstr ""
+
+#: ../../source/index.rst:2
+msgid "Welcome to DeepTables"
+msgstr ""
+
+#: ../../source/index.rst:5
+msgid "DeepTables: Deep-learning Toolkit for Tabular data"
+msgstr "DeepTables: 表格式数据深度学习工具包"
+
+#: ../../source/index.rst:7
+msgid ""
+"DeepTables(DT) is a easy-to-use toolkit that enables deep learning to "
+"unleash great power on tabular data."
+msgstr "DeepTables(DT)是一个易用的工具包，在结构化数据上释放深度学习的洪荒之力。"
+
+#: ../../source/index.rst:12
+msgid "Overview"
+msgstr ""
+
+#: ../../source/index.rst:14
+msgid ""
+"MLP (also known as Fully-connected neural networks) have been shown "
+"inefficient in learning distribution representation. The “add” operations"
+" of the perceptron layer have been proven poor performance to exploring "
+"multiplicative feature interactions. In most cases, manual feature "
+"engineering is necessary and this work requires extensive domain "
+"knowledge and very cumbersome. How learning feature interactions "
+"efficiently in neural networks becomes the most important problem."
+msgstr "MLP（也称为全连接神经网络）在学习分布表示方面表现出低效。"
+"感知器层的“添加”操作在探索乘法特征交互方面表现不佳。"
+"在大多数情况下，手工特征工程是必要的，这项工作需要广泛的领域知识和非常繁琐。"
+"如何在神经网络中有效地学习特征间的相互作用成为最重要的问题。"
+
+#: ../../source/index.rst:16
+msgid ""
+"A lot of models have been proposed to CTR prediction and continue to "
+"outperform existing state-of-the-art approaches to the late years. Well-"
+"known examples include FM, DeepFM, Wide&Deep, DCN, PNN, etc. These models"
+" can also provide good performance on tabular data under reasonable "
+"utilization."
+msgstr "近年来，已有许多模型被提出用于CTR预测，并继续优于现有的最新方法。"
+"众所周知的例子有FM、DeepFM、Wide&Deep、DCN、PNN等，这些模型在合理利用表格式数据的情况下也能提供良好的性能。"
+
+#: ../../source/index.rst:18
+msgid ""
+"DT aims to utilize the latest research findings to provide users with an "
+"end-to-end toolkit on tabular data."
+msgstr "DT致力于利用最新的研究成果为用户提供一个关于表格数据的端到端工具包。"
+
+#: ../../source/index.rst:20
+msgid "DT has been designed with these key goals in mind:"
+msgstr "设计DT时考虑到了这些关键目标:"
+
+#: ../../source/index.rst:22
+msgid "Easy to use, non-experts can also use."
+msgstr "使用方便，非专家也可以使用。"
+
+#: ../../source/index.rst:23
+msgid "Provide good performance out of the box."
+msgstr "默认配置下提供良好的性能。"
+
+#: ../../source/index.rst:24
+msgid "Flexible architecture and easy expansion by user."
+msgstr "结构灵活，易于用户扩展。"
+
+#: ../../source/index.rst:26
+msgid "DT follow these steps to build a neural network:"
+msgstr "DT构建神经网络遵循以下步骤:"
+
+#: ../../source/index.rst:28
+msgid "Category features sent to embedding layers."
+msgstr "提取到类别型特征送到Embedding层。"
+
+#: ../../source/index.rst:29
+msgid ""
+"Continuous feature sent to dense layer or to embedding layers after "
+"discretization/categorization."
+msgstr "连续型特征送到Dense层或者离散化类别化后送到embedding层处理。"
+
+#: ../../source/index.rst:30
+msgid "Embedding/Dense layers output to various network components."
+msgstr "Embedding/Dense层输出到不同的网络组件中。"
+
+#: ../../source/index.rst:31
+msgid ""
+"Different network components are fused through add/concat operation as "
+"the output of the model."
+msgstr "不同的网络组件通过Add/Concat操作融合后作为模型的输出。"
+
+#: ../../source/index.rst:36
+msgid "Why use DeepTables?"
+msgstr "DeepTables的优势"
+
+#: ../../source/index.rst:38
+msgid "Free preprocessing and processing."
+msgstr "特征预处理或者加工简单。"
+
+#: ../../source/index.rst:40
+msgid ""
+"Easy to expert data scientist or a business analyst without modeling "
+"ability."
+msgstr "不管是数据科学家还是没有建模能力的业务人员都可以使用。"
+
+#: ../../source/index.rst:41
+msgid ""
+"Simpler than the traditional machine learning algorithm which highly "
+"depends on manual feature engineering."
+msgstr "比传统高度依赖特征工程的机器学习简单易用。"
+
+#: ../../source/index.rst:43
+msgid "Excellent performance out of the box."
+msgstr "默认配置下具有良好的性能"
+
+#: ../../source/index.rst:45
+msgid ""
+"Builtin a group of neural network components (NETs) from the most "
+"excellent research results in recent years."
+msgstr "包含了一系列近几年的最优秀的网络组件。"
+
+#: ../../source/index.rst:47
+msgid "Extremely easy to use."
+msgstr "非常容易上手。"
+
+#: ../../source/index.rst:49
+msgid "Only 5 lines of code can complete the modeling of any data set."
+msgstr "5行代码就可以训练任何表格数据集。"
+
+#: ../../source/index.rst:51
+msgid "Very open architecture design."
+msgstr "开放架构设计。"
+
+#: ../../source/index.rst:53
+msgid "supports plug-in extension."
+msgstr "支持插件扩展。"
+
+#: ../../source/index.rst:57
+msgid "Example"
+msgstr ""
+
+#: ../../source/index.rst:75
+msgid "Indices and tables"
+msgstr ""
+
+#: ../../source/index.rst:77
+msgid ":ref:`genindex`"
+msgstr ""
+
+#: ../../source/index.rst:78
+msgid ":ref:`modindex`"
+msgstr ""
+
+#: ../../source/index.rst:79
+msgid ":ref:`search`"
+msgstr ""
+

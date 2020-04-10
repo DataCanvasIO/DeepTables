@@ -1,0 +1,1604 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/deeptables.models.rst:2
+msgid "deeptables\\.models package"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:8
+msgid "deeptables\\.models\\.config module"
+msgstr ""
+
+#: deeptables.models.config.ModelConfig:1 of
+msgid "基类：:class:`deeptables.models.config.ModelConfig`"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:16
+msgid "deeptables\\.models\\.deepmodel module"
+msgstr ""
+
+#: deeptables.models.deepmodel.DeepModel:1
+#: deeptables.models.deepmodel.ModelDesc:1
+#: deeptables.models.deeptable.DeepTable:1 deeptables.models.layers.GHMCLoss:1
+#: deeptables.models.modelset.ModelInfo:1 deeptables.models.modelset.ModelSet:1
+#: deeptables.models.preprocessor.AbstractPreprocessor:1 of
+msgid "基类：:class:`object`"
+msgstr ""
+
+#: deeptables.models.deepmodel.DeepModel:1 of
+msgid "Class for neural network models"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:24
+msgid "deeptables\\.models\\.deepnets module"
+msgstr ""
+
+#: deeptables.models.deepnets.afm_nets:1 deeptables.models.layers.AFM:1 of
+msgid ""
+"Attentional Factorization Machine (AFM), which learns the importance of "
+"each feature interaction from datasets via a neural attention network."
+msgstr ""
+
+#: deeptables.models.deepnets.autoint_nets:1 of
+msgid ""
+"AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural"
+" Networks."
+msgstr ""
+
+#: deeptables.models.deepnets.cin_nets:1 deeptables.models.layers.CIN:1 of
+msgid ""
+"Compressed Interaction Network (CIN), with the following considerations: "
+"(1) interactions are applied at vector-wise level, not at bit-wise level;"
+" (2) high-order feature interactions is measured explicitly; (3) the "
+"complexity of network will not grow exponentially with the degree of "
+"interactions."
+msgstr ""
+
+#: deeptables.models.deepnets.cross_dnn_nets:1 of
+msgid "Cross nets -> DNN -> logit_out"
+msgstr ""
+
+#: deeptables.models.deepnets.cross_nets:1 of
+msgid ""
+"The Cross networks is composed of cross layers to apply explicit feature "
+"crossing in an efficient way."
+msgstr ""
+
+#: deeptables.models.deepnets.dcn_nets:1 of
+msgid ""
+"Concat the outputs from Cross nets and DNN nets and feed into a standard "
+"logits layer"
+msgstr ""
+
+#: deeptables.models.deepnets.dnn_nets:1 of
+msgid "MLP (fully-connected feed-forward neural nets)"
+msgstr ""
+
+#: deeptables.models.deepnets.fg_nets:2 of
+msgid ""
+"Feature Generation leverages the strength of CNN to generate local "
+"patterns and recombine"
+msgstr ""
+
+#: deeptables.models.deepnets.fg_nets:2 of
+msgid "them to generate new features."
+msgstr ""
+
+#: deeptables.models.deepnets.fg_nets:5
+#: deeptables.models.deeptable.DeepTable:256 deeptables.models.layers.AFM:22
+#: deeptables.models.layers.BilinearInteraction:24
+#: deeptables.models.layers.BinaryFocalLoss:12 deeptables.models.layers.CIN:27
+#: deeptables.models.layers.CategoricalFocalLoss:14
+#: deeptables.models.layers.Cross:21 deeptables.models.layers.FM:18
+#: deeptables.models.layers.InnerProduct:18
+#: deeptables.models.layers.MultiheadAttention:24
+#: deeptables.models.layers.OuterProduct:22 of
+msgid "引用"
+msgstr ""
+
+#: deeptables.models.deepnets.fg_nets:6 deeptables.models.layers.FGCNN:31 of
+msgid ""
+"`Liu B, Tang R, Chen Y, et al. Feature generation by convolutional neural"
+" network"
+msgstr ""
+
+#: deeptables.models.deepnets.fg_nets:7 deeptables.models.layers.FGCNN:32 of
+msgid ""
+"for click-through rate prediction[C]//The World Wide Web Conference. "
+"2019: 1119-1129.`"
+msgstr ""
+
+#: deeptables.models.deepnets.fgcnn_afm_nets:1 of
+msgid "FGCNN with AFM as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fgcnn_cin_nets:1 of
+msgid "FGCNN with CIN as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fgcnn_dnn_nets:1 of
+msgid "FGCNN with DNN as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fgcnn_fm_nets:1 of
+msgid "FGCNN with FM as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fgcnn_ipnn_nets:1 of
+msgid "FGCNN with IPNN as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fibi_dnn_nets:1 of
+msgid "FiBiNet with DNN as deep classifier"
+msgstr ""
+
+#: deeptables.models.deepnets.fibi_nets:1 of
+msgid ""
+"The SENET layer can convert an embedding layer into the SENET-Like "
+"embedding features, which helps to boost feature discriminability. The "
+"following Bilinear-Interaction layer models second order feature "
+"interactions on the original embedding and the SENET-Like embedding "
+"respectively. Subsequently, these cross features are concatenated by a "
+"combination layer which merges the outputs of Bilinear-Interaction layer."
+msgstr ""
+
+#: deeptables.models.deepnets.fm_nets:1 of
+msgid "FM models pairwise(order-2) feature interactions"
+msgstr ""
+
+#: deeptables.models.deepnets.get:1 of
+msgid "Returns function. :param identifier: Function or string"
+msgstr ""
+
+#: deeptables.models.deepnets.get deeptables.models.layers.AFM.call
+#: deeptables.models.layers.AFM.get_config
+#: deeptables.models.layers.BilinearInteraction.call
+#: deeptables.models.layers.BilinearInteraction.get_config
+#: deeptables.models.layers.CIN.call deeptables.models.layers.CIN.get_config
+#: deeptables.models.layers.Cross.call
+#: deeptables.models.layers.Cross.get_config
+#: deeptables.models.layers.FGCNN.call
+#: deeptables.models.layers.FGCNN.get_config deeptables.models.layers.FM.call
+#: deeptables.models.layers.InnerProduct.call
+#: deeptables.models.layers.InnerProduct.get_config
+#: deeptables.models.layers.MultiColumnEmbedding.call
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask
+#: deeptables.models.layers.MultiColumnEmbedding.get_config
+#: deeptables.models.layers.MultiheadAttention.call
+#: deeptables.models.layers.MultiheadAttention.get_config
+#: deeptables.models.layers.OuterProduct.call
+#: deeptables.models.layers.OuterProduct.get_config
+#: deeptables.models.layers.SENET.call
+#: deeptables.models.layers.SENET.get_config of
+msgid "返回"
+msgstr ""
+
+#: deeptables.models.deepnets.get:4 of
+msgid "- Function corresponding to the input string or input function."
+msgstr ""
+
+#: deeptables.models.deepnets.get:6 of
+msgid "Function corresponding to the input string or input function."
+msgstr ""
+
+#: deeptables.models.deepnets.get of
+msgid "返回类型"
+msgstr ""
+
+#: deeptables.models.deepnets.get:9 of
+msgid "For example: >>> nets.get('dnn_nets')"
+msgstr ""
+
+#: deeptables.models.deepnets.get:11 of
+msgid "<function dnnlogit at 0x1222a3d90>"
+msgstr ""
+
+#: deeptables.models.deepnets.ipnn_nets:1 of
+msgid "Inner Product-based Neural Network InnerProduct+DNN"
+msgstr ""
+
+#: deeptables.models.deepnets.linear:1 of
+msgid "Linear(order-1) interactions"
+msgstr ""
+
+#: deeptables.models.deepnets.opnn_nets:1 of
+msgid "Outer Product-based Neural Network OuterProduct+DNN"
+msgstr ""
+
+#: deeptables.models.deepnets.pnn_nets:1 of
+msgid "Concatenation of inner product and outer product + DNN"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:32
+msgid "deeptables\\.models\\.deeptable module"
+msgstr ""
+
+#: deeptables.models.deeptable:1 of
+msgid "Training and inference for tabular datasets using neural nets."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:1 of
+msgid ""
+"`DeepTables` can be use to solve classification and regression prediction"
+" problems on tabular datasets. Easy to use and provide good performance "
+"out of box, no datasets preprocessing is required."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable deeptables.models.layers.AFM
+#: deeptables.models.layers.AFM.build deeptables.models.layers.AFM.call
+#: deeptables.models.layers.BilinearInteraction
+#: deeptables.models.layers.BilinearInteraction.build
+#: deeptables.models.layers.BilinearInteraction.call
+#: deeptables.models.layers.BinaryFocalLoss
+#: deeptables.models.layers.BinaryFocalLoss.call deeptables.models.layers.CIN
+#: deeptables.models.layers.CIN.build deeptables.models.layers.CIN.call
+#: deeptables.models.layers.CategoricalFocalLoss
+#: deeptables.models.layers.CategoricalFocalLoss.call
+#: deeptables.models.layers.Cross deeptables.models.layers.Cross.build
+#: deeptables.models.layers.Cross.call deeptables.models.layers.FGCNN.build
+#: deeptables.models.layers.FGCNN.call deeptables.models.layers.FM.call
+#: deeptables.models.layers.InnerProduct.call
+#: deeptables.models.layers.MultiColumnEmbedding.build
+#: deeptables.models.layers.MultiColumnEmbedding.call
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask
+#: deeptables.models.layers.MultiheadAttention
+#: deeptables.models.layers.MultiheadAttention.build
+#: deeptables.models.layers.MultiheadAttention.call
+#: deeptables.models.layers.OuterProduct
+#: deeptables.models.layers.OuterProduct.build
+#: deeptables.models.layers.OuterProduct.call
+#: deeptables.models.layers.SENET.build deeptables.models.layers.SENET.call of
+msgid "参数"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:4 of
+msgid ""
+"Options of ModelConfig ----------------------     name: str, "
+"(default='conf-1')      nets: list of str or callable object, "
+"(default=['dnn_nets'])         Preset Nets         -----------         - "
+"DeepFM    -> ['linear','dnn_nets','fm_nets']         - xDeepFM         - "
+"DCN         - PNN         - WideDeep         - AutoInt         - AFM"
+"         - FGCNN         - FibiNet          Avalible Build Blocks"
+"         ---------------------         - 'dnn_nets'         - 'linear'"
+"         - 'cin_nets'         - 'fm_nets'         - 'afm_nets'         - "
+"'opnn_nets'         - 'ipnn_nets'         - 'pnn_nets',         - "
+"'cross_nets'         - 'cross_dnn_nets'         - 'dcn_nets',         - "
+"'autoint_nets'         - 'fg_nets'         - 'fgcnn_cin_nets'         - "
+"'fgcnn_fm_nets'         - 'fgcnn_ipnn_nets'         - 'fgcnn_dnn_nets'"
+"         - 'fibi_nets'         - 'fibi_dnn_nets'          Examples"
+"         --------         >>>from deeptables.models import deepnets"
+"         >>>#preset nets         >>>conf = "
+"ModelConfig(nets=deepnets.DeepFM)         >>>#list of names of nets"
+"         >>>conf = "
+"ModelConfig(nets=['linear','dnn_nets','cin_nets','cross_nets'])         "
+">>>#mixed preset nets and names         >>>conf = "
+"ModelConfig(nets=deepnets.WideDeep+['cin_nets'])         >>>#mixed names "
+"and custom nets         >>>def custom_net(embeddings, flatten_emb_layer, "
+"dense_layer, concat_emb_dense, config, model_desc):         >>>     out ="
+" layers.Dense(10)(flatten_emb_layer)         >>>     return out         "
+">>>conf = ModelConfig(nets=['linear', custom_net])      "
+"categorical_columns: list of strings, (default='auto')         - 'auto'"
+"             get the columns of categorical type automatically. By "
+"default, the object,             bool and category will be selected."
+"             if 'auto' the [auto_categorize] will no longer takes effect."
+"         - list of strings             e.g. ['x1','x2','x3','..']      "
+"exclude_columns: list of strings, (default=[])      pos_label: str or "
+"int, (default=None)         The label of positive class, used only when "
+"task is binary.      metrics: list of string or callable object, "
+"(default=['accuracy'])         List of metrics to be evaluated by the "
+"model during training and testing.         Typically you will use "
+"`metrics=['accuracy']` or `metrics=['AUC']`.         Every metric should "
+"be a built-in evaluation metric in tf.keras.metrics or a callable object"
+"         like `r2(y_true, y_pred):...` .         See also: "
+"https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics"
+"      auto_categorize: bool, (default=False)      cat_exponent: float, "
+"(default=0.5)      cat_remain_numeric: bool, (default=True)      "
+"auto_encode_label: bool, (default=True)      auto_imputation: bool, "
+"(default=True)      auto_discrete: bool, (default=False)      "
+"apply_gbm_features: bool, (default=False)      gbm_params: dict, "
+"(default={})      gbm_feature_type: str, (default=embedding)         - "
+"embedding         - dense      fixed_embedding_dim: bool, (default=True)"
+"      embeddings_output_dim: int, (default=4)      "
+"embeddings_initializer: str or object, (default='uniform')         "
+"Initializer for the `embeddings` matrix.      embeddings_regularizer: str"
+" or object, (default=None)         Regularizer function applied to the "
+"`embeddings` matrix.      dense_dropout: float, (default=0) between 0 and"
+" 1         Fraction of the dense input units to drop.      "
+"embedding_dropout: float, (default=0.3) between 0 and 1         Fraction "
+"of the embedding input units to drop.      stacking_op: str, "
+"(default='add')         - add         - concat      output_use_bias: "
+"bool, (default=True)      apply_class_weight: bool, (default=False)      "
+"optimizer: str or object, (default='auto')         - auto         - str"
+"         - object      loss: str or object, (default='auto')      "
+"dnn_params: dict, (default={'dnn_units': ((128, 0, False), (64, 0, "
+"False)),                                 'dnn_activation': 'relu'})      "
+"autoint_params:dict, (default={'num_attention': 3,'num_heads': 1,"
+"                                     'dropout_rate': 0,'use_residual': "
+"True})          fgcnn_params={'fg_filters': (14, 16),"
+"                       'fg_widths': (7, 7),                       "
+"'fg_pool_widths': (2, 2),                       'fg_new_feat_filters': "
+"(2, 2),                       },         fibinet_params={             "
+"'senet_pooling_op': 'mean',             'senet_reduction_ratio': 3,"
+"             'bilinear_type': 'field_interaction',         },         "
+"cross_params={             'num_cross_layer': 4,         },         "
+"pnn_params={             'outer_product_kernel_type': 'mat',         },"
+"         afm_params={             'attention_factor': 4,             "
+"'dropout_rate': 0         },         cin_params={             "
+"'cross_layer_size': (128, 128),             'activation': 'relu',"
+"             'use_residual': False,             'use_bias': False,"
+"             'direct': False,             'reduce_D': False,         },"
+"      home_dir: str, (default=None)         The home directory for saving"
+" model-related files. Each time running `fit(...)`         or "
+"`fit_cross_validation(...)`, a subdirectory with a time-stamp will be "
+"created         in this directory.      monitor_metric: str, "
+"(default=None)      earlystopping_patience: int, (default=1)      "
+"gpu_usage_strategy: str, (default='memory_growth')         - "
+"memory_growth         - None      distribute_strategy: "
+"tensorflow.python.distribute.distribute_lib.Strategy, (default=None)"
+"         -"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:6 of
+msgid "name: str, (default='conf-1')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:56 of
+msgid "nets: list of str or callable object, (default=['dnn_nets'])"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:11 of
+msgid "DeepFM    -> ['linear','dnn_nets','fm_nets']"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:12 of
+msgid "xDeepFM"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:13 of
+msgid "DCN"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:14 of
+msgid "PNN"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:15 of
+msgid "WideDeep"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:16 of
+msgid "AutoInt"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:17 of
+msgid "AFM"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:18 of
+msgid "FGCNN"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:19 of
+msgid "FibiNet"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:23 of
+msgid "'dnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:24 of
+msgid "'linear'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:25 of
+msgid "'cin_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:26 of
+msgid "'fm_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:27 of
+msgid "'afm_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:28 of
+msgid "'opnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:29 of
+msgid "'ipnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:30 of
+msgid "'pnn_nets',"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:31 of
+msgid "'cross_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:32 of
+msgid "'cross_dnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:33 of
+msgid "'dcn_nets',"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:34 of
+msgid "'autoint_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:35 of
+msgid "'fg_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:36 of
+msgid "'fgcnn_cin_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:37 of
+msgid "'fgcnn_fm_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:38 of
+msgid "'fgcnn_ipnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:39 of
+msgid "'fgcnn_dnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:40 of
+msgid "'fibi_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:41 of
+msgid "'fibi_dnn_nets'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:45 of
+msgid ""
+">>>from deeptables.models import deepnets >>>#preset nets >>>conf = "
+"ModelConfig(nets=deepnets.DeepFM) >>>#list of names of nets >>>conf = "
+"ModelConfig(nets=['linear','dnn_nets','cin_nets','cross_nets']) >>>#mixed"
+" preset nets and names >>>conf = "
+"ModelConfig(nets=deepnets.WideDeep+['cin_nets']) >>>#mixed names and "
+"custom nets >>>def custom_net(embeddings, flatten_emb_layer, dense_layer,"
+" concat_emb_dense, config, model_desc): >>>     out = "
+"layers.Dense(10)(flatten_emb_layer) >>>     return out >>>conf = "
+"ModelConfig(nets=['linear', custom_net])"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:64 of
+msgid "categorical_columns: list of strings, (default='auto')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:61 of
+msgid "'auto'"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:60 of
+msgid ""
+"get the columns of categorical type automatically. By default, the "
+"object, bool and category will be selected. if 'auto' the "
+"[auto_categorize] will no longer takes effect."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:64 of
+msgid "list of strings"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:64 of
+msgid "e.g. ['x1','x2','x3','..']"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:66 of
+msgid "exclude_columns: list of strings, (default=[])"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:69 of
+msgid "pos_label: str or int, (default=None)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:69
+#: deeptables.models.deeptable.DeepTable:199 of
+msgid "The label of positive class, used only when task is binary."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:76 of
+msgid "metrics: list of string or callable object, (default=['accuracy'])"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:72 of
+msgid ""
+"List of metrics to be evaluated by the model during training and testing."
+" Typically you will use `metrics=['accuracy']` or `metrics=['AUC']`. "
+"Every metric should be a built-in evaluation metric in tf.keras.metrics "
+"or a callable object like `r2(y_true, y_pred):...` . See also: "
+"https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:78 of
+msgid "auto_categorize: bool, (default=False)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:80 of
+msgid "cat_exponent: float, (default=0.5)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:82 of
+msgid "cat_remain_numeric: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:84 of
+msgid "auto_encode_label: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:86 of
+msgid "auto_imputation: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:88 of
+msgid "auto_discrete: bool, (default=False)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:90 of
+msgid "apply_gbm_features: bool, (default=False)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:92 of
+msgid "gbm_params: dict, (default={})"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:96 of
+msgid "gbm_feature_type: str, (default=embedding)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:95 of
+msgid "embedding"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:96 of
+msgid "dense"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:98 of
+msgid "fixed_embedding_dim: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:100 of
+msgid "embeddings_output_dim: int, (default=4)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:103 of
+msgid "embeddings_initializer: str or object, (default='uniform')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:103 of
+msgid "Initializer for the `embeddings` matrix."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:106 of
+msgid "embeddings_regularizer: str or object, (default=None)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:106 of
+msgid "Regularizer function applied to the `embeddings` matrix."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:109 of
+msgid "dense_dropout: float, (default=0) between 0 and 1"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:109 of
+msgid "Fraction of the dense input units to drop."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:112 of
+msgid "embedding_dropout: float, (default=0.3) between 0 and 1"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:112 of
+msgid "Fraction of the embedding input units to drop."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:116 of
+msgid "stacking_op: str, (default='add')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:115 of
+msgid "add"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:116 of
+msgid "concat"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:118 of
+msgid "output_use_bias: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:120 of
+msgid "apply_class_weight: bool, (default=False)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:125 of
+msgid "optimizer: str or object, (default='auto')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:123 of
+msgid "auto"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:124
+#: deeptables.models.deeptable.DeepTable:189
+#: deeptables.models.deeptable.DeepTable:212
+#: deeptables.models.deeptable.DeepTable:232 of
+msgid "str"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:125 of
+msgid "object"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:127 of
+msgid "loss: str or object, (default='auto')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:130 of
+msgid ""
+"dnn_params: dict, (default={'dnn_units': ((128, 0, False), (64, 0, "
+"False)),"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:130 of
+msgid "'dnn_activation': 'relu'})"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:162 of
+msgid "autoint_params:dict, (default={'num_attention': 3,'num_heads': 1,"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:133 of
+msgid "'dropout_rate': 0,'use_residual': True})"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:138 of
+msgid "fgcnn_params={'fg_filters': (14, 16),"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:136 of
+msgid ""
+"'fg_widths': (7, 7), 'fg_pool_widths': (2, 2), 'fg_new_feat_filters': (2,"
+" 2), },"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:142 of
+msgid "fibinet_params={"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:141 of
+msgid ""
+"'senet_pooling_op': 'mean', 'senet_reduction_ratio': 3, 'bilinear_type': "
+"'field_interaction',"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:144 of
+msgid "}, cross_params={"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:146 of
+msgid "'num_cross_layer': 4,"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:147 of
+msgid "}, pnn_params={"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:149 of
+msgid "'outer_product_kernel_type': 'mat',"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:150 of
+msgid "}, afm_params={"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:152 of
+msgid "'attention_factor': 4, 'dropout_rate': 0"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:154 of
+msgid "}, cin_params={"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:156 of
+msgid ""
+"'cross_layer_size': (128, 128), 'activation': 'relu', 'use_residual': "
+"False, 'use_bias': False, 'direct': False, 'reduce_D': False,"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:162 of
+msgid "},"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:167 of
+msgid "home_dir: str, (default=None)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:165 of
+msgid ""
+"The home directory for saving model-related files. Each time running "
+"`fit(...)` or `fit_cross_validation(...)`, a subdirectory with a time-"
+"stamp will be created in this directory."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:169 of
+msgid "monitor_metric: str, (default=None)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:171 of
+msgid "earlystopping_patience: int, (default=1)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:175 of
+msgid "gpu_usage_strategy: str, (default='memory_growth')"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:174 of
+msgid "memory_growth"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:175 of
+msgid "None"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:177 of
+msgid ""
+"distribute_strategy: "
+"tensorflow.python.distribute.distribute_lib.Strategy, (default=None)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:183 of
+msgid ""
+"Type of prediction problem, if 'config.task = None'(by default), it will "
+"be inferred base on the values of `y` when calling 'fit(...)' or "
+"'fit_cross_validation(...)'. -'binary' : binary classification task "
+"-'multiclass' multiclass classfication task -'regression' regression task"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable of
+msgid "type"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:193 of
+msgid "The number of classes, used only when task is multiclass."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:195 of
+msgid "int"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:201 of
+msgid "str or int"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:205 of
+msgid ""
+"Path to directory used to save models. In addition, if a valid 'X_test' "
+"is passed into `fit_cross_validation(...)`, the prediction results of the"
+" test set will be saved in this path as well. The path is a subdirectory "
+"with time-stamp created in the `home directory`. `home directory` is "
+"specified through `config.home_dir`, if `config.home_dir=None` "
+"`output_path` will be created in working directory."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:216 of
+msgid ""
+"Preprocessor is used to perform datasets preprocessing, such as "
+"categorization, label encoding, imputation, discretization, etc., before "
+"feeding into neural nets."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:219 of
+msgid "AbstractPreprocessor (default = DefaultPreprocessor)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:223 of
+msgid "List of the network cells used to build the DeepModel"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:225 of
+msgid "list(str)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:229 of
+msgid ""
+"The metric for monitoring the quality of model in early_stopping, if not "
+"specified, the first metric in [config.metrics] will be used. (e.g. "
+"log_loss/auc_val/accuracy_val...)"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:236 of
+msgid "The models produced by `fit(...)` or `fit_cross_validation(...)`"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:238 of
+msgid "ModelSet"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:242 of
+msgid ""
+"A set of models will be produced by `fit_cross_validation(...)`, instead "
+"of only one model by `fit(...)`. The Best Model is the model with best "
+"performance on specific metric. The first metric in [config.metrics] will"
+" be used by default."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:246 of
+msgid "Model"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:250 of
+msgid ""
+"List sorted by specific metric with some meta information and scores. The"
+" first metric in [config.metrics] will be used by default."
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:253 of
+msgid "pandas.DataFrame"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:257 of
+msgid "``_"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:260 of
+msgid "实际案例"
+msgstr ""
+
+#: deeptables.models.deeptable.DeepTable:261 of
+msgid ""
+">>>X_train = pd.read_csv('https://storage.googleapis.com/tf-"
+"datasets/titanic/train.csv') >>>X_eval = "
+"pd.read_csv('https://storage.googleapis.com/tf-"
+"datasets/titanic/eval.csv') >>>y_train = X_train.pop('survived') "
+">>>y_eval = X_eval.pop('survived') >>> >>>config = "
+"ModelConfig(nets=deepnets.DeepFM, fixed_embedding_dim=True, "
+"embeddings_output_dim=4, auto_discrete=True) >>>dt = "
+"DeepTable(config=config) >>> >>>model, history = dt.fit(train, y_train, "
+"epochs=100) >>>preds = dt.predict(X_eval)"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:40
+msgid "deeptables\\.models\\.evaluation module"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:48
+msgid "deeptables\\.models\\.layers module"
+msgstr ""
+
+#: deeptables.models.layers.AFM:1
+#: deeptables.models.layers.BilinearInteraction:1
+#: deeptables.models.layers.CIN:1 deeptables.models.layers.Cross:1
+#: deeptables.models.layers.FGCNN:1 deeptables.models.layers.FM:1
+#: deeptables.models.layers.InnerProduct:1
+#: deeptables.models.layers.MultiColumnEmbedding:1
+#: deeptables.models.layers.MultiheadAttention:1
+#: deeptables.models.layers.OuterProduct:1 deeptables.models.layers.SENET:1 of
+msgid "基类：:class:`tensorflow.python.keras.engine.base_layer.Layer`"
+msgstr ""
+
+#: deeptables.models.layers.AFM:4 of
+msgid "int, (default=16)"
+msgstr ""
+
+#: deeptables.models.layers.AFM:5 deeptables.models.layers.CIN:7 of
+msgid "str, (default='relu')"
+msgstr ""
+
+#: deeptables.models.layers.AFM:6 of
+msgid "str or object, (default=None)"
+msgstr ""
+
+#: deeptables.models.layers.AFM:7 of
+msgid "float, (default=0)"
+msgstr ""
+
+#: deeptables.models.layers.AFM:10
+#: deeptables.models.layers.BilinearInteraction:11
+#: deeptables.models.layers.CIN:14 deeptables.models.layers.Cross:8
+#: deeptables.models.layers.FGCNN:16 deeptables.models.layers.FM:5
+#: deeptables.models.layers.InnerProduct:6
+#: deeptables.models.layers.MultiheadAttention:11
+#: deeptables.models.layers.OuterProduct:10 deeptables.models.layers.SENET:13
+#: of
+msgid "Call arguments:"
+msgstr ""
+
+#: deeptables.models.layers.AFM:10 deeptables.models.layers.InnerProduct:6
+#: deeptables.models.layers.OuterProduct:10 of
+msgid "x: A list of 3D tensor."
+msgstr ""
+
+#: deeptables.models.layers.AFM:14 of
+msgid "A list of 3D tensor with shape: (batch_size, 1, embedding_size)"
+msgstr ""
+
+#: deeptables.models.layers.AFM:18 deeptables.models.layers.CIN:23
+#: deeptables.models.layers.Cross:12 deeptables.models.layers.Cross:17
+#: deeptables.models.layers.FM:14 deeptables.models.layers.InnerProduct:14
+#: deeptables.models.layers.OuterProduct:18 of
+msgid "2D tensor with shape:"
+msgstr ""
+
+#: deeptables.models.layers.AFM:19 deeptables.models.layers.FM:15 of
+msgid "`(batch_size, 1)`"
+msgstr ""
+
+#: deeptables.models.layers.AFM:23 of
+msgid ""
+"`Xiao J, Ye H, He X, et al. Attentional factorization machines: Learning "
+"the weight of feature"
+msgstr ""
+
+#: deeptables.models.layers.AFM:24 of
+msgid ""
+"interactions via attention networks[J]. arXiv preprint arXiv:1708.04617, "
+"2017.` .. [2] "
+"https://github.com/hexiangnan/attentional_factorization_machine"
+msgstr ""
+
+#: deeptables.models.layers.AFM.build:1
+#: deeptables.models.layers.BilinearInteraction.build:1
+#: deeptables.models.layers.CIN.build:1 deeptables.models.layers.Cross.build:1
+#: deeptables.models.layers.FGCNN.build:1
+#: deeptables.models.layers.MultiColumnEmbedding.build:1
+#: deeptables.models.layers.MultiheadAttention.build:1
+#: deeptables.models.layers.OuterProduct.build:1
+#: deeptables.models.layers.SENET.build:1 of
+msgid "Creates the variables of the layer (optional, for subclass implementers)."
+msgstr ""
+
+#: deeptables.models.layers.AFM.build:3
+#: deeptables.models.layers.BilinearInteraction.build:3
+#: deeptables.models.layers.CIN.build:3 deeptables.models.layers.Cross.build:3
+#: deeptables.models.layers.FGCNN.build:3
+#: deeptables.models.layers.MultiColumnEmbedding.build:3
+#: deeptables.models.layers.MultiheadAttention.build:3
+#: deeptables.models.layers.OuterProduct.build:3
+#: deeptables.models.layers.SENET.build:3 of
+msgid ""
+"This is a method that implementers of subclasses of `Layer` or `Model` "
+"can override if they need a state-creation step in-between layer "
+"instantiation and layer call."
+msgstr ""
+
+#: deeptables.models.layers.AFM.build:7
+#: deeptables.models.layers.BilinearInteraction.build:7
+#: deeptables.models.layers.CIN.build:7 deeptables.models.layers.Cross.build:7
+#: deeptables.models.layers.FGCNN.build:7
+#: deeptables.models.layers.MultiColumnEmbedding.build:7
+#: deeptables.models.layers.MultiheadAttention.build:7
+#: deeptables.models.layers.OuterProduct.build:7
+#: deeptables.models.layers.SENET.build:7 of
+msgid "This is typically used to create the weights of `Layer` subclasses."
+msgstr ""
+
+#: deeptables.models.layers.AFM.build:9
+#: deeptables.models.layers.BilinearInteraction.build:9
+#: deeptables.models.layers.CIN.build:9 deeptables.models.layers.Cross.build:9
+#: deeptables.models.layers.FGCNN.build:9
+#: deeptables.models.layers.MultiColumnEmbedding.build:9
+#: deeptables.models.layers.MultiheadAttention.build:9
+#: deeptables.models.layers.OuterProduct.build:9
+#: deeptables.models.layers.SENET.build:9 of
+msgid ""
+"Instance of `TensorShape`, or list of instances of `TensorShape` if the "
+"layer expects a list of inputs (one instance per input)."
+msgstr ""
+
+#: deeptables.models.layers.AFM.call:1
+#: deeptables.models.layers.BilinearInteraction.call:1
+#: deeptables.models.layers.CIN.call:1 deeptables.models.layers.Cross.call:1
+#: deeptables.models.layers.FGCNN.call:1 deeptables.models.layers.FM.call:1
+#: deeptables.models.layers.InnerProduct.call:1
+#: deeptables.models.layers.MultiColumnEmbedding.call:1
+#: deeptables.models.layers.MultiheadAttention.call:1
+#: deeptables.models.layers.OuterProduct.call:1
+#: deeptables.models.layers.SENET.call:1 of
+msgid "This is where the layer's logic lives."
+msgstr ""
+
+#: deeptables.models.layers.AFM.call:3
+#: deeptables.models.layers.BilinearInteraction.call:3
+#: deeptables.models.layers.CIN.call:3 deeptables.models.layers.Cross.call:3
+#: deeptables.models.layers.FGCNN.call:3 deeptables.models.layers.FM.call:3
+#: deeptables.models.layers.InnerProduct.call:3
+#: deeptables.models.layers.MultiColumnEmbedding.call:3
+#: deeptables.models.layers.MultiheadAttention.call:3
+#: deeptables.models.layers.OuterProduct.call:3
+#: deeptables.models.layers.SENET.call:3 of
+msgid "Input tensor, or list/tuple of input tensors."
+msgstr ""
+
+#: deeptables.models.layers.AFM.call:4
+#: deeptables.models.layers.BilinearInteraction.call:4
+#: deeptables.models.layers.CIN.call:4 deeptables.models.layers.Cross.call:4
+#: deeptables.models.layers.FGCNN.call:4 deeptables.models.layers.FM.call:4
+#: deeptables.models.layers.InnerProduct.call:4
+#: deeptables.models.layers.MultiColumnEmbedding.call:4
+#: deeptables.models.layers.MultiheadAttention.call:4
+#: deeptables.models.layers.OuterProduct.call:4
+#: deeptables.models.layers.SENET.call:4 of
+msgid "Additional keyword arguments."
+msgstr ""
+
+#: deeptables.models.layers.AFM.call:6
+#: deeptables.models.layers.BilinearInteraction.call:6
+#: deeptables.models.layers.CIN.call:6 deeptables.models.layers.Cross.call:6
+#: deeptables.models.layers.FGCNN.call:6 deeptables.models.layers.FM.call:6
+#: deeptables.models.layers.InnerProduct.call:6
+#: deeptables.models.layers.MultiColumnEmbedding.call:6
+#: deeptables.models.layers.MultiheadAttention.call:6
+#: deeptables.models.layers.OuterProduct.call:6
+#: deeptables.models.layers.SENET.call:6 of
+msgid "A tensor or list/tuple of tensors."
+msgstr ""
+
+#: deeptables.models.layers.AFM.get_config:1
+#: deeptables.models.layers.BilinearInteraction.get_config:1
+#: deeptables.models.layers.CIN.get_config:1
+#: deeptables.models.layers.Cross.get_config:1
+#: deeptables.models.layers.FGCNN.get_config:1
+#: deeptables.models.layers.InnerProduct.get_config:1
+#: deeptables.models.layers.MultiColumnEmbedding.get_config:1
+#: deeptables.models.layers.MultiheadAttention.get_config:1
+#: deeptables.models.layers.OuterProduct.get_config:1
+#: deeptables.models.layers.SENET.get_config:1 of
+msgid "Returns the config of the layer."
+msgstr ""
+
+#: deeptables.models.layers.AFM.get_config:3
+#: deeptables.models.layers.BilinearInteraction.get_config:3
+#: deeptables.models.layers.CIN.get_config:3
+#: deeptables.models.layers.Cross.get_config:3
+#: deeptables.models.layers.FGCNN.get_config:3
+#: deeptables.models.layers.InnerProduct.get_config:3
+#: deeptables.models.layers.MultiColumnEmbedding.get_config:3
+#: deeptables.models.layers.MultiheadAttention.get_config:3
+#: deeptables.models.layers.OuterProduct.get_config:3
+#: deeptables.models.layers.SENET.get_config:3 of
+msgid ""
+"A layer config is a Python dictionary (serializable) containing the "
+"configuration of a layer. The same layer can be reinstantiated later "
+"(without its trained weights) from this configuration."
+msgstr ""
+
+#: deeptables.models.layers.AFM.get_config:8
+#: deeptables.models.layers.BilinearInteraction.get_config:8
+#: deeptables.models.layers.CIN.get_config:8
+#: deeptables.models.layers.Cross.get_config:8
+#: deeptables.models.layers.FGCNN.get_config:8
+#: deeptables.models.layers.InnerProduct.get_config:8
+#: deeptables.models.layers.MultiColumnEmbedding.get_config:8
+#: deeptables.models.layers.MultiheadAttention.get_config:8
+#: deeptables.models.layers.OuterProduct.get_config:8
+#: deeptables.models.layers.SENET.get_config:8 of
+msgid ""
+"The config of a layer does not include connectivity information, nor the "
+"layer class name. These are handled by `Network` (one layer of "
+"abstraction above)."
+msgstr ""
+
+#: deeptables.models.layers.AFM.get_config:12
+#: deeptables.models.layers.BilinearInteraction.get_config:12
+#: deeptables.models.layers.CIN.get_config:12
+#: deeptables.models.layers.Cross.get_config:12
+#: deeptables.models.layers.FGCNN.get_config:12
+#: deeptables.models.layers.InnerProduct.get_config:12
+#: deeptables.models.layers.MultiColumnEmbedding.get_config:12
+#: deeptables.models.layers.MultiheadAttention.get_config:12
+#: deeptables.models.layers.OuterProduct.get_config:12
+#: deeptables.models.layers.SENET.get_config:12 of
+msgid "Python dictionary."
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:1 of
+msgid ""
+"The Bilinear-Interaction layer combines the inner product and Hadamard "
+"product to learn the feature interactions."
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:4 of
+msgid ""
+"str, (default='field_interaction') the type of bilinear functions - "
+"field_interaction - field_all - field_each"
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:11
+#: deeptables.models.layers.CIN:14 deeptables.models.layers.FM:5
+#: deeptables.models.layers.MultiheadAttention:11
+#: deeptables.models.layers.SENET:13 of
+msgid "x: A 3D tensor."
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:15
+#: deeptables.models.layers.BilinearInteraction:20
+#: deeptables.models.layers.FM:9 deeptables.models.layers.MultiheadAttention:15
+#: deeptables.models.layers.MultiheadAttention:20
+#: deeptables.models.layers.SENET:17 deeptables.models.layers.SENET:22 of
+msgid "3D tensor with shape:"
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:16
+#: deeptables.models.layers.FM:10
+#: deeptables.models.layers.MultiheadAttention:16
+#: deeptables.models.layers.SENET:18 deeptables.models.layers.SENET:23 of
+msgid "`(batch_size, field_size, embedding_size)`"
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:21 of
+msgid "`(batch_size, *, embedding_size)`"
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:25
+#: deeptables.models.layers.SENET:27 of
+msgid ""
+"`Huang T, Zhang Z, Zhang J. FiBiNET: combining feature importance and "
+"bilinear feature"
+msgstr ""
+
+#: deeptables.models.layers.BilinearInteraction:26
+#: deeptables.models.layers.SENET:28 of
+msgid ""
+"interaction for click-through rate prediction[C]//Proceedings of the 13th"
+" ACM Conference on Recommender Systems. 2019: 169-177.`"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:1
+#: deeptables.models.layers.CategoricalFocalLoss:1 of
+msgid "基类：:class:`tensorflow.python.keras.losses.Loss`"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:2 of
+msgid "Binary form of focal loss."
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:2 of
+msgid ""
+"FL(p_t) = -alpha * (1 - p_t)**gamma * log(p_t) where p = sigmoid(x), p_t "
+"= p or 1 - p depending on if the label is 1 or 0, respectively."
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:9
+#: deeptables.models.layers.CategoricalFocalLoss:11 of
+msgid "Default value:"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:9
+#: deeptables.models.layers.CategoricalFocalLoss:11 of
+msgid ""
+"gamma -- 2.0 as mentioned in the paper alpha -- 0.25 as mentioned in the "
+"paper"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:13 of
+msgid ""
+"https://arxiv.org/pdf/1708.02002.pdf https://github.com/umbertogriffo"
+"/focal-loss-keras"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:18
+#: deeptables.models.layers.CategoricalFocalLoss:20 of
+msgid "Usage:"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss:17 of
+msgid ""
+"model.compile(loss=[BinaryFocalLoss(alpha=.25, gamma=2)], "
+"metrics=[\"accuracy\"], optimizer=adam)"
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss.call:1
+#: deeptables.models.layers.CategoricalFocalLoss.call:1 of
+msgid "Invokes the `Loss` instance."
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss.call:3
+#: deeptables.models.layers.CategoricalFocalLoss.call:3 of
+msgid "Ground truth values, with the same shape as 'y_pred'."
+msgstr ""
+
+#: deeptables.models.layers.BinaryFocalLoss.call:4
+#: deeptables.models.layers.CategoricalFocalLoss.call:4 of
+msgid "The predicted values."
+msgstr ""
+
+#: deeptables.models.layers.CIN:6 of
+msgid "tuple of int, (default = (128, 128,))"
+msgstr ""
+
+#: deeptables.models.layers.CIN:8 deeptables.models.layers.CIN:9
+#: deeptables.models.layers.CIN:10 deeptables.models.layers.CIN:11 of
+msgid "bool, (default=False)"
+msgstr ""
+
+#: deeptables.models.layers.CIN:18 of
+msgid "A 3D tensor with shape:"
+msgstr ""
+
+#: deeptables.models.layers.CIN:19 of
+msgid "`(batch_size, num_fields, embedding_size)`"
+msgstr ""
+
+#: deeptables.models.layers.CIN:24 of
+msgid "`(batch_size, *)`"
+msgstr ""
+
+#: deeptables.models.layers.CIN:28 of
+msgid ""
+"`Lian J, Zhou X, Zhang F, et al. xdeepfm: Combining explicit and implicit"
+" feature interactions"
+msgstr ""
+
+#: deeptables.models.layers.CIN:29 of
+msgid ""
+"for recommender systems[C]//Proceedings of the 24th ACM SIGKDD "
+"International Conference on Knowledge Discovery & Data Mining. 2018: "
+"1754-1763.` .. [2] https://github.com/Leavingseason/xDeepFM"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:4 of
+msgid "Softmax version of focal loss."
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:2 of
+msgid "m"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:3 of
+msgid "FL = ∑  -alpha * (1 - p_o,c)^gamma * y_o,c * log(p_o,c)"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:4 of
+msgid "c=1"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:5 of
+msgid "where m = number of classes, c = class and o = observation"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:15 of
+msgid ""
+"Official paper: https://arxiv.org/pdf/1708.02002.pdf "
+"https://github.com/umbertogriffo/focal-loss-keras"
+msgstr ""
+
+#: deeptables.models.layers.CategoricalFocalLoss:19 of
+msgid ""
+"model.compile(loss=[CategoricalFocalLoss(alpha=.25, gamma=2)], "
+"metrics=[\"accuracy\"], optimizer=adam)"
+msgstr ""
+
+#: deeptables.models.layers.Cross:1 of
+msgid ""
+"The cross network is composed of cross layers to apply explicit feature "
+"crossing in an efficient way."
+msgstr ""
+
+#: deeptables.models.layers.Cross:4 of
+msgid "int, (default=2) the number of cross layers"
+msgstr ""
+
+#: deeptables.models.layers.Cross:8 of
+msgid "x: A 2D tensor."
+msgstr ""
+
+#: deeptables.models.layers.Cross:13 deeptables.models.layers.Cross:18 of
+msgid "`(batch_size, field_size)`"
+msgstr ""
+
+#: deeptables.models.layers.Cross:22 of
+msgid ""
+"`Wang R, Fu B, Fu G, et al. Deep & cross network for ad click "
+"predictions[M]//Proceedings"
+msgstr ""
+
+#: deeptables.models.layers.Cross:23 of
+msgid "of the ADKDD'17. 2017: 1-7.`"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:1 of
+msgid ""
+"Feature Generation nets leverages the strength of CNN to generate local "
+"patterns and recombine them to generate new features."
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:13 deeptables.models.layers.InnerProduct:3
+#: deeptables.models.layers.SENET:10 of
+msgid "Arguments:"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:5 of
+msgid "filters: int"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:6 of
+msgid "the filters of convolutional layer"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:7 of
+msgid "kernel_height"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:8 of
+msgid "the height of kernel_size of convolutional layer"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:9 of
+msgid "new_filters"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:10 of
+msgid "the number of new features' map in recombination layer"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:11 of
+msgid "pool_height"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:12 of
+msgid "the height of pool_size of pooling layer"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:13 of
+msgid "activation: str, (default='tanh')"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:16 of
+msgid "x: A 4D tensor."
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:20 of
+msgid "4D tensor with shape:"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:21 of
+msgid "`(batch_size, field_size, embedding_size, 1)`"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:25 of
+msgid "pooling_output - 4D tensor new_features - 3D tensor with shape:"
+msgstr ""
+
+#: deeptables.models.layers.FGCNN:27 of
+msgid "`(batch_size, field_size*new_filters, embedding_size)`"
+msgstr ""
+
+#: deeptables.models.layers.FM:1 of
+msgid "Factorization Machine to model order-2 feature interactions Arguments:"
+msgstr ""
+
+#: deeptables.models.layers.FM:19 of
+msgid ""
+"`Rendle S. Factorization machines[C]//2010 IEEE International Conference "
+"on Data Mining. IEEE, 2010: 995-1000.`"
+msgstr ""
+
+#: deeptables.models.layers.FM:20 of
+msgid ""
+"`Guo H, Tang R, Ye Y, et al. Deepfm: An end-to-end wide & deep learning "
+"framework for CTR prediction[J]. arXiv preprint arXiv:1804.04950, 2018.`"
+msgstr ""
+
+#: deeptables.models.layers.GHMCLoss.calc:1 of
+msgid "Args: input [batch_num, class_num]:"
+msgstr ""
+
+#: deeptables.models.layers.GHMCLoss.calc:3 of
+msgid "The direct prediction of classification fc layer."
+msgstr ""
+
+#: deeptables.models.layers.GHMCLoss.calc:5 of
+msgid "target [batch_num, class_num]:"
+msgstr ""
+
+#: deeptables.models.layers.GHMCLoss.calc:5 of
+msgid ""
+"Binary target (0 or 1) for each sample each class. The value is -1 when "
+"the sample is ignored."
+msgstr ""
+
+#: deeptables.models.layers.GHMCLoss.calc:7 of
+msgid "mask [batch_num, class_num]"
+msgstr ""
+
+#: deeptables.models.layers.InnerProduct:1 of
+msgid "Inner-Product layer"
+msgstr ""
+
+#: deeptables.models.layers.InnerProduct:10
+#: deeptables.models.layers.OuterProduct:14 of
+msgid "A list of 3D tensor with shape (batch_size, 1, embedding_size)"
+msgstr ""
+
+#: deeptables.models.layers.InnerProduct:15
+#: deeptables.models.layers.OuterProduct:19 of
+msgid "`(batch_size, num_fields*(num_fields-1)/2)`"
+msgstr ""
+
+#: deeptables.models.layers.InnerProduct:19
+#: deeptables.models.layers.OuterProduct:23 of
+msgid ""
+"`Qu Y, Cai H, Ren K, et al. Product-based neural networks for user "
+"response prediction[C]//2016"
+msgstr ""
+
+#: deeptables.models.layers.InnerProduct:20
+#: deeptables.models.layers.OuterProduct:24 of
+msgid ""
+"IEEE 16th International Conference on Data Mining (ICDM). IEEE, 2016: "
+"1149-1154.` .. [2] `Qu Y, Fang B, Zhang W, et al. Product-based neural "
+"networks for user response prediction over multi-field categorical "
+"datasets[J]. ACM Transactions on Information Systems (TOIS), 2018, 37(1):"
+" 1-35.` .. [3] https://github.com/Atomu2014/product-nets"
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding:1 of
+msgid ""
+"This class is adapted from tensorflow's implementation of Embedding We "
+"modify the code to make it suitable for multiple variables from different"
+" column in one input."
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:1 of
+msgid "Computes an output mask tensor."
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:3
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:4 of
+msgid "Tensor or list of tensors."
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:6 of
+msgid ""
+"None or a tensor (or list of tensors,     one per output tensor of the "
+"layer)."
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:8 of
+msgid "None or a tensor (or list of tensors,"
+msgstr ""
+
+#: deeptables.models.layers.MultiColumnEmbedding.compute_mask:9 of
+msgid "one per output tensor of the layer)."
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:1 of
+msgid ""
+"A multihead self-attentive nets with residual connections to explicitly "
+"model the feature interactions."
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:4 of
+msgid "dict"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:5 of
+msgid ""
+"- num_head: int, (default=1) - dropout_rate: float, (default=0) - "
+"use_residual: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:6 of
+msgid "num_head: int, (default=1)"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:7 of
+msgid "dropout_rate: float, (default=0)"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:8 of
+msgid "use_residual: bool, (default=True)"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:21 of
+msgid "`(batch_size, field_size, embedding_size*num_head)`"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:25 of
+msgid ""
+"`Song W, Shi C, Xiao Z, et al. Autoint: Automatic feature interaction "
+"learning via"
+msgstr ""
+
+#: deeptables.models.layers.MultiheadAttention:26 of
+msgid ""
+"self-attentive neural networks[C]//Proceedings of the 28th ACM "
+"International Conference on Information and Knowledge Management. 2019: "
+"1161-1170.` .. [2] https://github.com/shichence/AutoInt"
+msgstr ""
+
+#: deeptables.models.layers.OuterProduct:1 of
+msgid "Outer-Product layer"
+msgstr ""
+
+#: deeptables.models.layers.OuterProduct:3 of
+msgid "str, (default='mat') the type of outer product kernel - mat - vec - num"
+msgstr ""
+
+#: deeptables.models.layers.SENET:1 of
+msgid ""
+"SENET layer can dynamically increase the weights of important features "
+"and decrease the weights of uninformative features to let the model pay "
+"more attention to more important features."
+msgstr ""
+
+#: deeptables.models.layers.SENET:7 of
+msgid "pooling_op: str, (default='mean')"
+msgstr ""
+
+#: deeptables.models.layers.SENET:6 of
+msgid ""
+"pooling methods to squeeze the original embedding E into a statistic "
+"vector Z - mean - max"
+msgstr ""
+
+#: deeptables.models.layers.SENET:10 of
+msgid "reduction_ratio: float, (default=3)"
+msgstr ""
+
+#: deeptables.models.layers.SENET:10 of
+msgid "hyper-parameter for dimensionality-reduction"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:56
+msgid "deeptables\\.models\\.metainfo module"
+msgstr ""
+
+#: deeptables.models.metainfo.CategoricalColumn:1 of
+msgid "基类：:class:`deeptables.models.metainfo.CategoricalColumn`"
+msgstr ""
+
+#: deeptables.models.metainfo.ContinuousColumn:1 of
+msgid "基类：:class:`deeptables.models.metainfo.ContinuousColumn`"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:64
+msgid "deeptables\\.models\\.modelset module"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:72
+msgid "deeptables\\.models\\.preprocessor module"
+msgstr ""
+
+#: deeptables.models.preprocessor.DefaultPreprocessor:1 of
+msgid "基类：:class:`deeptables.models.preprocessor.AbstractPreprocessor`"
+msgstr ""
+
+#: ../../source/deeptables.models.rst:81
+msgid "Module contents"
+msgstr ""
+

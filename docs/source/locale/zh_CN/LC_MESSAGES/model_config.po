@@ -1,0 +1,592 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, Zetyun.com
+# This file is distributed under the same license as the DeepTables package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DeepTables \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-10 15:39+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: ../../source/model_config.md:1
+msgid "ModelConfig"
+msgstr ""
+
+#: ../../source/model_config.md:3
+msgid ""
+"ModelConfig is the most important parameter in DT. It is used to set how "
+"to clean and preprocess the data automatically, and how to assemble "
+"various network components to building a neural nets for prediction "
+"tasks, as well as the setting of hyper-parameters of nets, etc. If you do"
+" not change any settings in ModelConfig, DT will work in most cases as "
+"well. However, you can get a better performance by tuning the parameters "
+"in ModelConfig."
+msgstr ""
+
+#: ../../source/model_config.md:5
+msgid "We describe in detail below."
+msgstr ""
+
+#: ../../source/model_config.md:7
+msgid "Simple use case for ModelConfig"
+msgstr ""
+
+#: ../../source/model_config.md:26
+msgid "Parameters"
+msgstr ""
+
+#: ../../source/model_config.md:28
+msgid "nets"
+msgstr ""
+
+#: ../../source/model_config.md:29
+msgid "list of str or custom function, (default=['dnn_nets'])"
+msgstr ""
+
+#: ../../source/model_config.md:31
+msgid ""
+"You can use multiple components to compose neural network joint training "
+"to perform prediction tasks."
+msgstr ""
+
+#: ../../source/model_config.md:33
+msgid ""
+"The value of nets can be any combination of component name, preset model "
+"and custom function."
+msgstr ""
+
+#: ../../source/model_config.md:35
+msgid "components:"
+msgstr ""
+
+#: ../../source/model_config.md:37
+msgid "'dnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:38
+msgid "'linear'"
+msgstr ""
+
+#: ../../source/model_config.md:39
+msgid "'cin_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:40
+msgid "'fm_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:41
+msgid "'afm_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:42
+msgid "'opnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:43
+msgid "'ipnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:44
+msgid "'pnn_nets',"
+msgstr ""
+
+#: ../../source/model_config.md:45
+msgid "'cross_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:46
+msgid "'cross_dnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:47
+msgid "'dcn_nets',"
+msgstr ""
+
+#: ../../source/model_config.md:48
+msgid "'autoint_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:49
+msgid "'fg_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:50
+msgid "'fgcnn_cin_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:51
+msgid "'fgcnn_fm_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:52
+msgid "'fgcnn_ipnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:53
+msgid "'fgcnn_dnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:54
+msgid "'fibi_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:55
+msgid "'fibi_dnn_nets'"
+msgstr ""
+
+#: ../../source/model_config.md:57
+msgid "preset models: （in package deeptables.models.deepnets）"
+msgstr ""
+
+#: ../../source/model_config.md:59
+msgid "DeepFM"
+msgstr ""
+
+#: ../../source/model_config.md:60
+msgid "xDeepFM"
+msgstr ""
+
+#: ../../source/model_config.md:61
+msgid "DCN"
+msgstr ""
+
+#: ../../source/model_config.md:62
+msgid "PNN"
+msgstr ""
+
+#: ../../source/model_config.md:63
+msgid "WideDeep"
+msgstr ""
+
+#: ../../source/model_config.md:64
+msgid "AutoInt"
+msgstr ""
+
+#: ../../source/model_config.md:65
+msgid "AFM"
+msgstr ""
+
+#: ../../source/model_config.md:66
+msgid "FGCNN"
+msgstr ""
+
+#: ../../source/model_config.md:67
+msgid "FibiNet"
+msgstr ""
+
+#: ../../source/model_config.md:69
+msgid "custom function:"
+msgstr ""
+
+#: ../../source/model_config.md:76
+msgid "examples:"
+msgstr ""
+
+#: ../../source/model_config.md:98
+msgid "categorical_columns"
+msgstr ""
+
+#: ../../source/model_config.md:99
+msgid "list of strings or 'auto', optional, (default='auto')"
+msgstr ""
+
+#: ../../source/model_config.md:101
+msgid ""
+"Only categorical features will be passed into embedding layer, and most "
+"of the components in DT are specially designed for the embedding outputs "
+"for feature extraction. Reasonable selection of categorical features is "
+"critical to model performance."
+msgstr ""
+
+#: ../../source/model_config.md:104
+msgid "If list of strings, interpreted as column names."
+msgstr ""
+
+#: ../../source/model_config.md:106
+msgid ""
+"If 'auto', get the categorical columns automatically. object, bool and "
+"category columns will be selected by default, and [auto_categorize] will "
+"no longer take effect."
+msgstr ""
+
+#: ../../source/model_config.md:108
+msgid "If not necessary, we strongly recommend use default value 'auto'."
+msgstr ""
+
+#: ../../source/model_config.md:110
+msgid "exclude_columns"
+msgstr ""
+
+#: ../../source/model_config.md:111
+msgid "list of strings, (default=[])"
+msgstr ""
+
+#: ../../source/model_config.md:114
+msgid "pos_label"
+msgstr ""
+
+#: ../../source/model_config.md:115
+msgid "str or int, (default=None)"
+msgstr ""
+
+#: ../../source/model_config.md:117
+msgid "The label of positive class, used only when task is binary."
+msgstr ""
+
+#: ../../source/model_config.md:120
+msgid "metrics"
+msgstr ""
+
+#: ../../source/model_config.md:121
+msgid "list of strings or callable object, (default=['accuracy'])"
+msgstr ""
+
+#: ../../source/model_config.md:123
+msgid ""
+"List of metrics to be evaluated by the model during training and testing."
+" Typically you will use metrics=['accuracy'] or metrics=['AUC']. Every "
+"metric should be a built-in evaluation metric in tf.keras.metrics or a "
+"callable object like r2(y_true, y_pred):...."
+msgstr ""
+
+#: ../../source/model_config.md:125
+msgid ""
+"See also: "
+"https://tensorflow.google.cn/versions/r2.0/api_docs/python/tf/keras/metrics"
+msgstr ""
+
+#: ../../source/model_config.md:130
+msgid "auto_categorize"
+msgstr ""
+
+#: ../../source/model_config.md:131 ../../source/model_config.md:169
+msgid "bool, (default=False)"
+msgstr ""
+
+#: ../../source/model_config.md:133
+msgid "Whether to automatically categorize eligible continuous features."
+msgstr ""
+
+#: ../../source/model_config.md:135 ../../source/model_config.md:154
+msgid "True:"
+msgstr ""
+
+#: ../../source/model_config.md:136 ../../source/model_config.md:155
+msgid "False:"
+msgstr ""
+
+#: ../../source/model_config.md:139
+msgid "cat_exponent"
+msgstr ""
+
+#: ../../source/model_config.md:140
+msgid "float, (default=0.5), between 0 and 1"
+msgstr ""
+
+#: ../../source/model_config.md:142 ../../source/model_config.md:150
+msgid "Only usable when auto_categrization = True."
+msgstr ""
+
+#: ../../source/model_config.md:144
+msgid ""
+"Columns with (number of unique values < number of samples ** "
+"cat_exponent) will be treated as categorical feature."
+msgstr ""
+
+#: ../../source/model_config.md:147
+msgid "cat_remain_numeric"
+msgstr ""
+
+#: ../../source/model_config.md:148 ../../source/model_config.md:158
+#: ../../source/model_config.md:164 ../../source/model_config.md:175
+#: ../../source/model_config.md:216
+msgid "bool, (default=True)"
+msgstr ""
+
+#: ../../source/model_config.md:152
+msgid ""
+"Whether continuous features transformed into categorical retain numerical"
+" features."
+msgstr ""
+
+#: ../../source/model_config.md:157
+msgid "auto_encode_label"
+msgstr ""
+
+#: ../../source/model_config.md:160
+msgid "Whether to automatically perform label encoding on categorical features."
+msgstr ""
+
+#: ../../source/model_config.md:163
+msgid "auto_imputation"
+msgstr ""
+
+#: ../../source/model_config.md:166
+msgid "Whether to automatically perform imputation on all features."
+msgstr ""
+
+#: ../../source/model_config.md:168
+msgid "auto_discrete"
+msgstr ""
+
+#: ../../source/model_config.md:171
+msgid "Whether to discretize all continuous features into categorical features."
+msgstr ""
+
+#: ../../source/model_config.md:174
+msgid "fixed_embedding_dim"
+msgstr ""
+
+#: ../../source/model_config.md:177
+msgid ""
+"Whether the embeddings output of all categorical features uses the same "
+"'output_dim'. It should be noted that some components require that the "
+"output_dim of embeddings must be the same, including FM, AFM, CIN, "
+"MultiheadAttention, SENET, InnerProduct, etc."
+msgstr ""
+
+#: ../../source/model_config.md:179
+msgid ""
+"If False and embedding_output_dim=0, then the output_dim of embeddings "
+"will be calculated using the following formula:"
+msgstr ""
+
+#: ../../source/model_config.md:186
+msgid "embeddings_output_dim"
+msgstr ""
+
+#: ../../source/model_config.md:187
+msgid "int, (default=4)"
+msgstr ""
+
+#: ../../source/model_config.md:189
+msgid "embeddings_initializer"
+msgstr ""
+
+#: ../../source/model_config.md:190
+msgid "str or object, (default='uniform')"
+msgstr ""
+
+#: ../../source/model_config.md:192
+msgid "Initializer for the embeddings matrix."
+msgstr ""
+
+#: ../../source/model_config.md:194
+msgid "embeddings_regularizer"
+msgstr ""
+
+#: ../../source/model_config.md:195
+msgid "str or object, (default=None)"
+msgstr ""
+
+#: ../../source/model_config.md:197
+msgid "Regularizer function applied to the embeddings matrix."
+msgstr ""
+
+#: ../../source/model_config.md:199
+msgid "dense_dropout"
+msgstr ""
+
+#: ../../source/model_config.md:200
+msgid "float, (default=0) between 0 and 1"
+msgstr ""
+
+#: ../../source/model_config.md:202
+msgid "Fraction of the dense input units to drop."
+msgstr ""
+
+#: ../../source/model_config.md:204
+msgid "embedding_dropout"
+msgstr ""
+
+#: ../../source/model_config.md:205
+msgid "float, (default=0.3) between 0 and 1"
+msgstr ""
+
+#: ../../source/model_config.md:207
+msgid "Fraction of the embedding input units to drop."
+msgstr ""
+
+#: ../../source/model_config.md:209
+msgid "stacking_op"
+msgstr ""
+
+#: ../../source/model_config.md:210
+msgid "str, (default='add')"
+msgstr ""
+
+#: ../../source/model_config.md:212
+msgid "'add'"
+msgstr ""
+
+#: ../../source/model_config.md:213
+msgid "'concat'"
+msgstr ""
+
+#: ../../source/model_config.md:215
+msgid "output_use_bias"
+msgstr ""
+
+#: ../../source/model_config.md:218
+msgid "optimizer"
+msgstr ""
+
+#: ../../source/model_config.md:219
+msgid "str(name of optimizer) or optimizer instance or 'auto', (default='auto')"
+msgstr ""
+
+#: ../../source/model_config.md:221
+msgid "See tf.keras.optimizers."
+msgstr ""
+
+#: ../../source/model_config.md:223
+msgid "'auto': Automatically select optimizer based on task type."
+msgstr ""
+
+#: ../../source/model_config.md:226
+msgid "loss"
+msgstr ""
+
+#: ../../source/model_config.md:227
+msgid ""
+"str(name of objective function) or objective function or tf.losses.Loss "
+"instance or 'auto', (default='auto')"
+msgstr ""
+
+#: ../../source/model_config.md:229
+msgid "See tf.losses."
+msgstr ""
+
+#: ../../source/model_config.md:231
+msgid "'auto': Automatically select objective function based on task type."
+msgstr ""
+
+#: ../../source/model_config.md:233
+msgid "home_dir"
+msgstr ""
+
+#: ../../source/model_config.md:234 ../../source/model_config.md:239
+msgid "str, (default=None)"
+msgstr ""
+
+#: ../../source/model_config.md:236
+msgid ""
+"The home directory for saving model-related files. Each time running "
+"fit(...) or fit_cross_validation(...), a subdirectory with a time-stamp "
+"will be created in this directory."
+msgstr ""
+
+#: ../../source/model_config.md:238
+msgid "monitor_metric"
+msgstr ""
+
+#: ../../source/model_config.md:241
+msgid "earlystopping_patience"
+msgstr ""
+
+#: ../../source/model_config.md:242
+msgid "int, (default=1)"
+msgstr ""
+
+#: ../../source/model_config.md:244
+msgid "gpu_usage_strategy"
+msgstr ""
+
+#: ../../source/model_config.md:246
+msgid "str, (default='memory_growth')"
+msgstr ""
+
+#: ../../source/model_config.md:248
+msgid "'memory_growth'"
+msgstr ""
+
+#: ../../source/model_config.md:249
+msgid "'None'"
+msgstr ""
+
+#: ../../source/model_config.md:251
+msgid "distribute_strategy:"
+msgstr ""
+
+#: ../../source/model_config.md:253
+msgid "tensorflow.python.distribute.distribute_lib.Strategy, (default=None)"
+msgstr ""
+
+#: ../../source/model_config.md:257
+msgid "dnn_params"
+msgstr ""
+
+#: ../../source/model_config.md:258
+msgid ""
+"dictionary Only usable when 'dnn_nets' or a component using 'dnn' like "
+"'pnn_nets','dcn_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:267
+msgid "autoint_params"
+msgstr ""
+
+#: ../../source/model_config.md:268
+msgid "dictionary Only usable when 'autoint_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:278
+msgid "fgcnn_params"
+msgstr ""
+
+#: ../../source/model_config.md:279
+msgid ""
+"dictionary Only usable when 'fgcnn_nets' or a component using 'fgcnn' "
+"included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:290
+msgid "fibinet_params"
+msgstr ""
+
+#: ../../source/model_config.md:291
+msgid "dictionary Only usable when 'fibi_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:301
+msgid "cross_params"
+msgstr ""
+
+#: ../../source/model_config.md:302
+msgid "dictionary Only usable when 'cross_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:310
+msgid "pnn_params"
+msgstr ""
+
+#: ../../source/model_config.md:311
+msgid "dictionary Only usable when 'pnn_nets' or 'opnn_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:319
+msgid "afm_params"
+msgstr ""
+
+#: ../../source/model_config.md:320
+msgid "dictionary Only usable when 'afm_nets' included in [nets]."
+msgstr ""
+
+#: ../../source/model_config.md:329
+msgid "cin_params"
+msgstr ""
+
+#: ../../source/model_config.md:330
+msgid "dictionary Only usable when 'cin_nets' included in [nets]."
+msgstr ""
+
