@@ -23,6 +23,36 @@ DT has been designed with these key goals in mind:
 * Provide good performance out of the box.
 * Flexible architecture and easy expansion by user.
 
+DT follow these steps to build a neural network:
+
+1. Category features sent to embedding layers.
+2. Continuous feature sent to dense layer or to embedding layers after discretization/categorization.
+3. Embedding/Dense layers output to various network components.
+4. Different network components are fused through add/concat operation as the output of the model.
+
+.. image:: images/architecture.png
+
+Why use DeepTables?
+###################
+
+- Free preprocessing and processing.
+
+  * Easy to expert data scientist or a business analyst without modeling ability.
+  * Simpler than the traditional machine learning algorithm which highly depends on manual feature engineering.
+
+- Excellent performance out of the box.
+
+  * Builtin a group of neural network components (NETs) from the most excellent research results in recent years.
+
+- Extremely easy to use.
+
+  * Only 5 lines of code can complete the modeling of any data set.
+
+- Very open architecture design.
+
+  * supports plug-in extension.
+
+
 Example
 #######
 
