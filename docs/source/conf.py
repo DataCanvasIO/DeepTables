@@ -44,9 +44,6 @@ templates_path = ['_templates']
 source_suffix = ['.rst', '.md']
 master_doc = 'index'
 html_static_path = ['_static']
-# language = 'zh_CN'  # en
-locale_dirs = ['locale/']   # path is example but recommended.
-gettext_compact = False
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
