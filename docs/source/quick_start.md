@@ -21,7 +21,7 @@ pip install deeptables[gpu]
                      
 ***Verify the install***:
 ```shell script
-python -c "from deeptables.utils.quicktest import test; test()”
+python -c "from deeptables.utils.quicktest import test; test()"
 ```
 
 ### Launch a DeepTables Docker Container
