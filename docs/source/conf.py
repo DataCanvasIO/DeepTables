@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 import os, sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'DeepTables'
 copyright = '2020, Zetyun.com'
