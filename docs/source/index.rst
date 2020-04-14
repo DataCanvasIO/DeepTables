@@ -25,10 +25,10 @@ DT has been designed with these key goals in mind:
 
 DT follow these steps to build a neural network:
 
-1. Category features sent to embedding layers.
-2. Continuous feature sent to dense layer or to embedding layers after discretization/categorization.
-3. Embedding/Dense layers output to various network components.
-4. Different network components are fused through add/concat operation as the output of the model.
+1. Category features -> Embedding Layer.
+2. Continuous feature -> Dense Layer or to Embedding Layer after discretization/categorization.
+3. Embedding/Dense layers -> Feature Interactions/Extractions nets.
+4. Stacking(add/concat) outputs of nets as the output of the model.
 
 .. image:: images/architecture.png
 
