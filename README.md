@@ -78,3 +78,9 @@ print(result)
 #scoring
 preds = dt.predict(df_test)
 ```
+
+## DataCanvas
+
+![](docs/source/images/dc_logo_1.png)
+
+DeepTables is an open source project created by [DataCanvas](https://www.datacanvas.com/). 
