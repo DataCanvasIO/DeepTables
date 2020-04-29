@@ -44,8 +44,6 @@ class Test_DeepTable:
         result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
         assert result_dt_loaded['AUC'] >= 0.0
 
-        # delete when passed
-        os.rmdir(model_path)
 
         return dt, result
 
