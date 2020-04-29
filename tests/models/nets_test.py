@@ -10,7 +10,7 @@ from tensorflow.keras import layers
 from tensorflow.keras import backend as K
 import tensorflow as tf
 
-import tempfile, os
+import tempfile, os, uuid
 
 
 class Test_DeepTable:
@@ -30,8 +30,23 @@ class Test_DeepTable:
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model, history = dt.fit(X_train, y_train, epochs=1)
+
+
+
         result = dt.evaluate(X_test, y_test)
         assert result['AUC'] >= 0.0
+
+        # test reload from disk
+        model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
+        dt.save(model_path)
+        dt_loaded = deeptable.DeepTable.load(model_path)
+
+        result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
+        assert result_dt_loaded['AUC'] >= 0.0
+
+        # delete when passed
+        os.rmdir(model_path)
+
         return dt, result
 
     def test_all_nets(self):
