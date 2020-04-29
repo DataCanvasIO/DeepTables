@@ -7,6 +7,7 @@ from tensorflow.python.keras.utils.generic_utils import deserialize_keras_object
 from tensorflow.python.keras.utils.generic_utils import serialize_keras_object
 
 from . import layers
+from ..utils import counter
 
 WideDeep = ['linear', 'dnn_nets']
 DeepFM = ['linear', 'fm_nets', 'dnn_nets']
@@ -211,7 +212,9 @@ def fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config
     if embeddings is None or len(embeddings) <= 0:
         model_desc.add_net('fgcnn', (None), (None))
         return None
-    fgcnn_emb_concat = Concatenate(axis=1, name='concat_fgcnn_embedding')(embeddings)
+
+    fgcnn_emb_concat_index = counter.next_num('concat_fgcnn_embedding')
+    fgcnn_emb_concat = Concatenate(axis=1, name=f'concat_fgcnn_embedding_{fgcnn_emb_concat_index}')(embeddings)
     fg_inputs = tf.expand_dims(fgcnn_emb_concat, axis=-1)
     fg_filters = config.fgcnn_params.get('fg_filters', (14, 16))
     fg_heights = config.fgcnn_params.get('fg_heights', (7, 7))
@@ -298,7 +301,10 @@ def fibi_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, conf
     if embeddings is None or len(embeddings) <= 0:
         model_desc.add_net('fibi', (None), (None))
         return None
-    senet_emb_concat = Concatenate(axis=1, name='concat_senet_embedding')(embeddings)
+
+    senet_index = counter.next_num('senet_layer')
+
+    senet_emb_concat = Concatenate(axis=1, name=f'concat_senet_embedding_{senet_index}')(embeddings)
 
     senet_pooling_op = config.fibinet_params.get('senet_pooling_op', 'mean')
     senet_reduction_ratio = config.fibinet_params.get('senet_reduction_ratio', 3)
@@ -306,12 +312,12 @@ def fibi_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, conf
 
     senet_embedding = layers.SENET(pooling_op=senet_pooling_op,
                                    reduction_ratio=senet_reduction_ratio,
-                                   name='senet_layer')(senet_emb_concat)
+                                   name=f'senet_layer_{senet_index}')(senet_emb_concat)
     senet_bilinear_out = layers.BilinearInteraction(bilinear_type=bilinear_type,
-                                                    name='senet_bilinear_layer')(senet_embedding)
+                                                    name=f'senet_bilinear_layer_{senet_index}')(senet_embedding)
     bilinear_out = layers.BilinearInteraction(bilinear_type=bilinear_type,
-                                              name='embedding_bilinear_layer')(senet_emb_concat)
-    concat_bilinear = Concatenate(axis=1, name='concat_bilinear')([senet_bilinear_out, bilinear_out])
+                                              name=f'embedding_bilinear_layer_{senet_index}')(senet_emb_concat)
+    concat_bilinear = Concatenate(axis=1, name=f'concat_bilinear_{senet_index}')([senet_bilinear_out, bilinear_out])
     model_desc.add_net('fibi', senet_emb_concat.shape, concat_bilinear.shape)
     return concat_bilinear
 
