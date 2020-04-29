@@ -333,7 +333,7 @@ class DeepTable:
         if validation_data is not None:
             if len(validation_data) != 2:
                 raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
-            X_val, y_val = validation_data(0), validation_data(1)
+            X_val, y_val = validation_data[0], validation_data[1]
             X_val, y_val = self.preprocessor.transform(X_val, y_val)
             validation_data = (X_val, y_val)
 
