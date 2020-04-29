@@ -234,7 +234,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         continuous_vars = self.get_continuous_columns()
         categorical_vars = self.get_categorical_columns()
         ct = ColumnTransformer([
-            ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant', fill_value='nan-fillvalue'),
+            ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
              categorical_vars),
             ('continuous', SimpleImputer(missing_values=np.nan, strategy='mean'), continuous_vars),
         ])
