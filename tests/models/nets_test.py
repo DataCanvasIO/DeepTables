@@ -34,6 +34,9 @@ class Test_DeepTable:
         assert result['AUC'] >= 0.0
         return dt, result
 
+    def test_all_nets(self):
+        self.run_nets(nets=['dnn_nets','linear','cin_nets','fm_nets','afm_nets','opnn_nets','ipnn_nets','pnn_nets','cross_nets','cross_dnn_nets','dcn_nets','autoint_nets','fg_nets','fgcnn_cin_nets','fgcnn_fm_nets','fgcnn_ipnn_nets','fgcnn_dnn_nets','fibi_nets','fibi_dnn_nets'])
+
     def test_DeepFM(self):
         self.run_nets(nets=deepnets.DeepFM)
 
