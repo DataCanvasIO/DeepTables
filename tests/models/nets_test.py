@@ -44,7 +44,6 @@ class Test_DeepTable:
         result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
         assert result_dt_loaded['AUC'] >= 0.0
 
-
         return dt, result
 
     def test_all_nets(self):
@@ -124,6 +123,11 @@ class Test_DeepTable:
         assert l4
 
     def test_save_load_custom_nets(self):
+        register_custom_objects(
+            {
+                'CustomFM': CustomFM,
+            })
+
         def custom_net(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc):
             if embeddings is None or len(embeddings) <= 0:
                 model_desc.add_net('fm', (None), (None))
@@ -140,10 +144,7 @@ class Test_DeepTable:
         #assert os.path.exists(f'{filepath}/dt.pkl')
         #assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')
 
-        register_custom_objects(
-            {
-                'CustomFM': CustomFM,
-            })
+
 
         newdt = deeptable.DeepTable.load(filepath)
         assert newdt.best_model
