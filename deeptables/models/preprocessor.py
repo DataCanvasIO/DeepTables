@@ -75,6 +75,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def __init__(self, config: ModelConfig):
         super().__init__(config)
         self.reset()
+        self.X_types = None
+        self.y_type = None
+        # self.classes_ = None
 
     def reset(self):
         self.metainfo = None
@@ -107,8 +110,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             raise ValueError(f'y must be a 1D datasets.')
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
-        if pd.Series(y).isnull().sum() > 0:
+        y_series = pd.Series(y)
+        if y_series.isnull().sum() > 0:
             raise ValueError("Missing values in y.")
+
+        self.X_types = X.dtypes
+        self.y_type = y_series.dtype
 
         if copy:
             X = copy.deepcopy(X)
