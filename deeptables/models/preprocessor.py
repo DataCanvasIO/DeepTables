@@ -139,11 +139,17 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return X, y
 
     def fit_transform_y(self, y):
-        self.task_, self.labels_ = deeptable.infer_task_type(y)
+        if self.config.task == consts.TASK_AUTO:
+            self.task_, self.labels_ = deeptable.infer_task_type(y)
+        else:
+            self.task_ = self.config.task
+
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
             self.y_lable_encoder = LabelEncoder()
             y = self.y_lable_encoder.fit_transform(y)
             self.labels_ = self.y_lable_encoder.classes_
+        else:
+            self.labels_ = []
         return y
 
     def transform(self, X, y, copy_data=True):
