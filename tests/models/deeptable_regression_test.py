@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras import backend as K
 from deeptables.models import deeptable
 from tests.misc import r2_c
+from deeptables.utils import consts
+
 
 class Test_DeepTable_Regression:
     def setup_class(self):
@@ -20,7 +22,7 @@ class Test_DeepTable_Regression:
         self.y = pd.Series(boston_dataset.target)
         self.X = df_train
 
-        conf = deeptable.ModelConfig(metrics=[r2_c, 'RootMeanSquaredError'], apply_gbm_features=False)
+        conf = deeptable.ModelConfig(task=consts.TASK_REGRESSION, metrics=[r2_c, 'RootMeanSquaredError'], apply_gbm_features=False)
         self.dt = deeptable.DeepTable(config=conf)
 
         self.X_train, \
@@ -40,5 +42,5 @@ class Test_DeepTable_Regression:
         result = self.dt.evaluate(self.X_test, self.y_test)
         assert result['RootMeanSquaredError'] > 0
 
-
-
+    def test_task(self):
+        assert self.dt.task == consts.TASK_REGRESSION

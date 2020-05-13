@@ -75,6 +75,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def __init__(self, config: ModelConfig):
         super().__init__(config)
         self.reset()
+        self.X_types = None
+        self.y_type = None
+        # self.classes_ = None
 
     def reset(self):
         self.metainfo = None
@@ -107,8 +110,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             raise ValueError(f'y must be a 1D datasets.')
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
-        if pd.Series(y).isnull().sum() > 0:
+        y_series = pd.Series(y)
+        if y_series.isnull().sum() > 0:
             raise ValueError("Missing values in y.")
+
+        self.X_types = X.dtypes
+        self.y_type = y_series.dtype
 
         if copy:
             X = copy.deepcopy(X)
@@ -132,11 +139,17 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return X, y
 
     def fit_transform_y(self, y):
-        self.task_, self.labels_ = deeptable.infer_task_type(y)
+        if self.config.task == consts.TASK_AUTO:
+            self.task_, self.labels_ = deeptable.infer_task_type(y)
+        else:
+            self.task_ = self.config.task
+
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
             self.y_lable_encoder = LabelEncoder()
             y = self.y_lable_encoder.fit_transform(y)
             self.labels_ = self.y_lable_encoder.classes_
+        else:
+            self.labels_ = []
         return y
 
     def transform(self, X, y, copy_data=True):
@@ -234,7 +247,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         continuous_vars = self.get_continuous_columns()
         categorical_vars = self.get_categorical_columns()
         ct = ColumnTransformer([
-            ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant', fill_value='nan-fillvalue'),
+            ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
              categorical_vars),
             ('continuous', SimpleImputer(missing_values=np.nan, strategy='mean'), continuous_vars),
         ])

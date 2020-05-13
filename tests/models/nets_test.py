@@ -10,7 +10,7 @@ from tensorflow.keras import layers
 from tensorflow.keras import backend as K
 import tensorflow as tf
 
-import tempfile, os
+import tempfile, os, uuid
 
 
 class Test_DeepTable:
@@ -30,8 +30,20 @@ class Test_DeepTable:
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model, history = dt.fit(X_train, y_train, epochs=1)
+
+
+
         result = dt.evaluate(X_test, y_test)
         assert result['AUC'] >= 0.0
+
+        # test reload from disk
+        model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
+        dt.save(model_path)
+        dt_loaded = deeptable.DeepTable.load(model_path)
+
+        result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
+        assert result_dt_loaded['AUC'] >= 0.0
+
         return dt, result
 
     def test_all_nets(self):
@@ -111,6 +123,11 @@ class Test_DeepTable:
         assert l4
 
     def test_save_load_custom_nets(self):
+        register_custom_objects(
+            {
+                'CustomFM': CustomFM,
+            })
+
         def custom_net(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc):
             if embeddings is None or len(embeddings) <= 0:
                 model_desc.add_net('fm', (None), (None))
@@ -127,10 +144,7 @@ class Test_DeepTable:
         #assert os.path.exists(f'{filepath}/dt.pkl')
         #assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')
 
-        register_custom_objects(
-            {
-                'CustomFM': CustomFM,
-            })
+
 
         newdt = deeptable.DeepTable.load(filepath)
         assert newdt.best_model

@@ -40,6 +40,9 @@ class Test_DeepTable_CV:
 
     def test_evaluate(self):
         result = self.dt.evaluate(self.X_eval, self.y_test)
+        print("show result: ")
+        print(result)
+        print(str(result))
         assert result['AUC'] > 0
 
     def test_best_model(self):

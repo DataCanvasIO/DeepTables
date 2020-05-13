@@ -226,9 +226,9 @@ class FGCNN(Layer):
 
     def get_config(self, ):
         config = {'filters': self.filters,
-                  'kernel_width': self.kernel_height,
+                  'kernel_height': self.kernel_height,
                   'new_filters': self.new_filters,
-                  'pool_width': self.pool_height,
+                  'pool_height': self.pool_height,
                   'activation': self.activation, }
         base_config = super(FGCNN, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

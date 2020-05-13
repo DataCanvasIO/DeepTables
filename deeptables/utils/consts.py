@@ -5,6 +5,7 @@ DeepTables constants module.
 
 PROJECT_NAME = 'deeptables'
 
+TASK_AUTO = 'auto'
 TASK_BINARY = 'binary'
 TASK_MULTICLASS = 'multiclass'
 TASK_REGRESSION = 'regression'
