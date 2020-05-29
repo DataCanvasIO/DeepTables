@@ -14,7 +14,7 @@ requirements = [
     'tensorflow==2.1.0',
     'numpy>=1.17.4',
     'catboost==0.20.2',
-    'lightgbm==2.3.0',
+    'lightgbm>=2.3.0',
     'scikit-optimize==0.7.1',
     'category_encoders==2.1.0',
 ]
