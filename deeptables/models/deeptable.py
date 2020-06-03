@@ -657,7 +657,7 @@ class DeepTable:
             filepath = filepath + '/'
 
         if not os.path.exists(filepath):
-            os.makedirs(filepath)
+            os.makedir(filepath)
 
         for mi in self.__modelset.get_modelinfos():
             if isinstance(mi.model, str):
