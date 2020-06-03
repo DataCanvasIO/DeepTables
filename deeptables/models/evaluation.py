@@ -28,6 +28,7 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
                     score['auc'] = roc_auc_score(y_true, y_proba)
                     # use sklearn version bigger than 0.22.0
                     # score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
+                    score['auc'] = 0
                 else:
                     score['auc'] = roc_auc_score(y_true, y_proba)
 
