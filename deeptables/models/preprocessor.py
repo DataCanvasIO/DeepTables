@@ -133,7 +133,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
             X = self._discretization(X)
         if self.config.apply_gbm_features and y is not None:
             X = self._apply_gbm_features(X, y)
-        self.X_transformers['last'] = 'passthrough'
+
+        from deeptables.preprocessing.transformer import PassThroughEstimator
+        self.X_transformers['last'] = PassThroughEstimator()
 
         print(f'fit_transform cost:{time.time() - start}')
         return X, y
@@ -174,7 +176,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if copy_data:
             X = copy.deepcopy(X)
         X = self.prepare_X(X)
-        steps = (step for step in self.X_transformers.values())
+        steps = [step for step in self.X_transformers.values()]
         pipeline = make_pipeline(*steps)
         X_t = pipeline.transform(X)
         print(f'transform_X cost:{time.time() - start}')
