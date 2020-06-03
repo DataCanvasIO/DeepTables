@@ -25,7 +25,9 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
 
             if metric == 'auc':
                 if len(y_proba.shape) == 2:
-                    score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
+                    score['auc'] = roc_auc_score(y_true, y_proba)
+                    # use sklearn version bigger than 0.22.0
+                    # score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
                 else:
                     score['auc'] = roc_auc_score(y_true, y_proba)
 
