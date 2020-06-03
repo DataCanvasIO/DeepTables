@@ -44,7 +44,8 @@ class Test_DeepTable_Multiclass:
 
     def test_predict_proba(self):
         proba = self.dt.predict_proba(self.X_test)
-        auc = roc_auc_score(self.y_test, proba, multi_class='ovo')  # ovr
+        auc = roc_auc_score(self.y_test, proba)  # ovr
+        # auc = roc_auc_score(self.y_test, proba, multi_class='ovo')  # ovr
         assert proba.shape[1] == 6
         assert auc > 0
 
@@ -52,7 +53,8 @@ class Test_DeepTable_Multiclass:
         proba = self.dt.predict_proba(self.X_test)
         preds = self.dt.predict(self.X_test)
         preds2 = self.dt.proba2predict(proba)
-        auc = roc_auc_score(self.y_test, proba, multi_class='ovo')  # ovr
+        auc = roc_auc_score(self.y_test, proba)  # ovr
+        # auc = roc_auc_score(self.y_test, proba, multi_class='ovo')  # ovr
 
         assert proba.shape[1] == 6
         assert (preds == preds2).sum(), 43
