@@ -10,7 +10,7 @@ version = '0.1.9'
 requirements = [
     'scipy>=1.3.1',
     'pandas>=0.25.3',
-    'scikit-learn>=0.22.1',
+    'scikit-learn>=0.20.3',
     'tensorflow<=2.1.0,>=2.0.0',
     'numpy>=1.17.4',
     'catboost==0.20.2',
