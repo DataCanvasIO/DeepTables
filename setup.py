@@ -29,7 +29,7 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        'gpu': ['tensorflow-gpu<2.1.0,>=2.0.0', ]
+        'gpu': ['tensorflow-gpu<=2.1.0,>=2.0.0', ]
     },
 
     classifiers=[
