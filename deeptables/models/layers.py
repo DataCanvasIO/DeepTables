@@ -986,7 +986,7 @@ class CategoricalFocalLoss(losses.Loss):
             gamma {float} -- (default: {2.0})
             alpha {float} -- (default: {4.0})
         """
-        super(BinaryFocalLoss, self).__init__(reduction=reduction, name=name)
+        super(CategoricalFocalLoss, self).__init__(reduction=reduction, name=name)
         self.gamma = float(gamma)
         self.alpha = float(alpha)
 
