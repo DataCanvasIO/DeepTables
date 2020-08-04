@@ -86,7 +86,7 @@ class Test_DeepTable:
         self.run_nets(nets=['autoint_nets'],
                       autoint_params={
                           'num_attention': 3,
-                          'num_heads': 4,
+                          'num_heads': 2,
                           'dropout_rate': 0,
                           'use_residual': True,
                       }, )
