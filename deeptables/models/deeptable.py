@@ -294,6 +294,10 @@ class DeepTable:
         return len(self.preprocessor.labels)
 
     @property
+    def classes_(self):
+        return self.preprocessor.labels
+
+    @property
     def pos_label(self):
         if self.config.pos_label is not None:
             return self.config.pos_label
