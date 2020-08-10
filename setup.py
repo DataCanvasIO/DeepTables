@@ -4,16 +4,24 @@ from __future__ import absolute_import
 
 from setuptools import find_packages
 from setuptools import setup
-from os import path as P
 
-version = '0.1.9'
+version = '0.1.10'
 
-with open(P.join(P.dirname(P.abspath(__file__)), 'requirements.txt'), 'r') as f:
-    requirements = f.readlines()
+requirements = [
+    'scipy>=1.3.1',
+    'pandas>=0.25.3',
+    'scikit-learn>=0.22.1',
+    'tensorflow<=2.1.0,>=2.0.0',
+    'numpy>=1.17.4',
+    'catboost==0.20.2',
+    'lightgbm>=2.3.0',
+    'scikit-optimize==0.7.1',
+    'category_encoders==2.1.0',
+]
 
 MIN_PYTHON_VERSION = '>=3.6.*'
 
-long_description = open('README.md', encoding ='utf-8').read()
+long_description = open('README.md', encoding='utf-8').read()
 
 setup(
     name='deeptables',
@@ -29,7 +37,7 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        'gpu': ['tensorflow-gpu<=2.1.0,>=2.0.0', ]
+        'gpu': ['tensorflow-gpu<=2.1.0, >=2.0.0', ]
     },
 
     classifiers=[
