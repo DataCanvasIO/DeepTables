@@ -17,6 +17,7 @@ from deeptables.models import deeptable, deepmodel
 from deeptables.utils import consts
 from deeptables.datasets import dsutils
 import pytest
+from deeptables.models.deepmodel import IgnoreCaseDict
 
 
 class Test_DeepTable:
@@ -231,6 +232,19 @@ class Test_DeepTable:
         newdt = deeptable.DeepTable.load(filepath)
         preds = newdt.predict(self.X_test)
         assert preds.shape, (200,)
+
+    def test_ignore_case_dict(self):
+        metrics = {"AUC": 0.82, 'Accuracy': 0.9}
+        _dict = IgnoreCaseDict(metrics)
+
+        assert _dict['auc'] == 0.82
+        assert _dict['Auc'] == 0.82
+        assert _dict['AUC'] == 0.82
+
+        assert _dict.get('AUC') == 0.82
+
+        assert _dict['Accuracy'] == 0.9
+        assert _dict['accuracy'] == 0.9
 
 
 if __name__ == "__main__":
