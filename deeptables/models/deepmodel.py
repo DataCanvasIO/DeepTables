@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from collections import OrderedDict
-
+import collections
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
@@ -39,7 +39,7 @@ class DeepModel:
         self.model_file = model_file
         self.model = None
         if model_file is not None:
-            self.model = load_model(model_file, dt_custom_objects)
+            self.model = load_model(model_file, dt_custom_objects)  # fixme `load_model` executed multiple times in a process, resulting in a metric name rename to like auc_1, auc_2
 
     def fit(self, X=None, y=None, batch_size=128, epochs=1, verbose=1, callbacks=None,
             validation_split=0.2, validation_data=None, shuffle=True,
@@ -101,6 +101,7 @@ class DeepModel:
                                  use_multiprocessing=use_multiprocessing,
                                  )
         logger.info(f'Training finished.')
+        history.history = IgnoreCaseDict(history.history)  # update dict metrics
         return history
 
     def predict(self, X, batch_size=128, verbose=0):
@@ -140,7 +141,8 @@ class DeepModel:
             y_t = to_categorical(y_t, num_classes=self.num_classes)
         result = self.model.evaluate(X_input, y_t, batch_size=batch_size, verbose=verbose)
         result = {k: v for k, v in zip(self.model.metrics_names, result)}
-        return result
+
+        return IgnoreCaseDict(result)
 
     def save(self, filepath):
         save_model(self.model, filepath, save_format='h5')
@@ -395,3 +397,32 @@ class ModelDesc:
                f'---------------------------------------------------------\n' \
                f''
         return text
+
+
+class IgnoreCaseDict(collections.UserDict):
+
+    def __init__(self, *args, **kwargs):
+        super(IgnoreCaseDict, self).__init__(*args, **kwargs)
+        # update key
+        for k in self.data:
+            if not isinstance(k, str):
+                raise KeyError(f"Key should be str but is {k}")
+
+        _data = {k.lower(): self.data[k] for k in self.data}
+        self.data.update(_data)
+
+    def __contains__(self, item):
+        if not isinstance(item, str):
+            raise KeyError(f"Key should be str but is {item}")
+        return item.lower() in self.data
+
+    def __setitem__(self, item, value):
+        if not isinstance(item, str):
+            raise KeyError(f"Key should be str but is {item}")
+        self.data[item.lower()] = value
+
+    def __getitem__(self, item):
+        if not isinstance(item, str):
+            raise KeyError(f"Key should be str but is {item}")
+        return self.data[item.lower()]
+

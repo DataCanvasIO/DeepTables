@@ -40,7 +40,12 @@ class Test_DeepTable_Regression:
 
     def test_evaluate(self):
         result = self.dt.evaluate(self.X_test, self.y_test)
-        assert result['RootMeanSquaredError'] > 0
+        score = result.get('RootMeanSquaredError')
+        if score is None:
+            score = result.get('Root_Mean_Squared_Error')  # for tf v2.2+
+
+        assert score
+        assert score > 0
 
     def test_task(self):
         assert self.dt.task == consts.TASK_REGRESSION

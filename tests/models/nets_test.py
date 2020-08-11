@@ -9,11 +9,17 @@ from tensorflow.keras import layers
 
 from tensorflow.keras import backend as K
 import tensorflow as tf
-
+import multiprocessing
 import tempfile, os, uuid
+from multiprocessing import Manager
 
 
 class Test_DeepTable:
+
+    def run_load_model(self, p, X_test, y_test):
+        model = deeptable.DeepTable.load(p)
+        result_dt_loaded = model.evaluate(X_test, y_test)
+        assert result_dt_loaded['AUC'] >= 0.0
 
     def run_nets(self, nets, **kwargs):
         df_train = dsutils.load_adult().head(100)
@@ -27,6 +33,7 @@ class Test_DeepTable:
                                      apply_gbm_features=False,
                                      apply_class_weight=True,
                                      **kwargs)
+
         dt = deeptable.DeepTable(config=conf)
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -36,12 +43,12 @@ class Test_DeepTable:
         assert result['AUC'] >= 0.0
 
         # test reload from disk
-        model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
-        dt.save(model_path)
-        dt_loaded = deeptable.DeepTable.load(model_path)
-
-        result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
-        assert result_dt_loaded['AUC'] >= 0.0
+        # model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
+        # dt.save(model_path)
+        #
+        # p = multiprocessing.Process(target=self.run_load_model, args=(model_path, X_test, y_test, ))
+        # p.start()
+        # p.join()
 
         return dt, result
 

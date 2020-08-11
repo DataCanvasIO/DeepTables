@@ -222,3 +222,16 @@ class GaussRankScaler:
         transformed = erfinv(transformed)
 
         return transformed
+
+
+class PassThroughEstimator(object):
+
+    def fit(self, X):
+        return self
+
+    def transform(self, X):
+        return X
+
+    def fit_transform(self, X):
+        self.fit(X)
+        return self.transform(X)

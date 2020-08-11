@@ -204,7 +204,8 @@ class FGCNN(Layer):
             kernel_initializer='glorot_uniform',
             use_bias=True
         )
-        self.maxpooling2d = MaxPooling2D(pool_size=(self.pool_height, 1))
+        # set padding to prevent dimension during downsampling
+        self.maxpooling2d = MaxPooling2D(pool_size=(self.pool_height, 1), padding='same')
         self.flatten = Flatten()
         self.dense_output = Dense(
             units=input_shape[1] * input_shape[2] * self.new_filters,
