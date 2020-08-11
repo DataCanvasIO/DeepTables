@@ -10,7 +10,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-
+from deeptables.preprocessing.transformer import PassThroughEstimator
 from .metainfo import CategoricalColumn, ContinuousColumn
 from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameWrapper, LgbmLeavesEncoder, \
     CategorizeEncoder
@@ -134,7 +134,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if self.config.apply_gbm_features and y is not None:
             X = self._apply_gbm_features(X, y)
 
-        from deeptables.preprocessing.transformer import PassThroughEstimator
         self.X_transformers['last'] = PassThroughEstimator()
 
         print(f'fit_transform cost:{time.time() - start}')
