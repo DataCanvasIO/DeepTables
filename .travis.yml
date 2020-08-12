@@ -4,10 +4,16 @@ python:
 #  - "3.5" TF 2.0.0b1
   - "3.6"
   - "3.7"
-
+env:
+  - TF_VERSION=2.0.0
+  - TF_VERSION=2.1.0
+  - TF_VERSION=2.2.0
+  - TF_VERSION=2.3.0
 cache: pip
+
 # command to install dependencies
 install:
+  - pip install -q tensorflow==$TF_VERSION
   - pip install -r requirements.txt
   - pip install -q pytest-cov==2.4.0
   - pip install -q python-coveralls
