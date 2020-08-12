@@ -5,13 +5,13 @@ from __future__ import absolute_import
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.10'
+version = '0.1.11'
 
 requirements = [
     'scipy>=1.3.1',
     'pandas>=0.25.3',
-    'scikit-learn>=0.22.1',
-    'tensorflow<=2.2.0,>=2.0.0',
+    'scikit-learn>=0.20.3',
+    'tensorflow>=2.0.0',
     'numpy>=1.17.4',
     'catboost==0.20.2',
     'lightgbm>=2.3.0',
@@ -37,7 +37,7 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        'gpu': ['tensorflow-gpu<=2.2.0, >=2.0.0', ]
+        'gpu': ['tensorflow-gpu>=2.0.0', ]
     },
 
     classifiers=[
