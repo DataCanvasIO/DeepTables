@@ -39,7 +39,8 @@ class DeepModel:
         self.model_file = model_file
         self.model = None
         if model_file is not None:
-            self.model = load_model(model_file, dt_custom_objects)  # fixme `load_model` executed multiple times in a process, resulting in a metric name rename to like auc_1, auc_2
+            self.model = load_model(model_file,
+                                    dt_custom_objects)  # fixme `load_model` executed multiple times in a process, resulting in a metric name rename to like auc_1, auc_2
 
     def fit(self, X=None, y=None, batch_size=128, epochs=1, verbose=1, callbacks=None,
             validation_split=0.2, validation_data=None, shuffle=True,
@@ -293,7 +294,7 @@ class DeepModel:
         dense_layer = None
         if continuous_inputs:
             if len(continuous_inputs) > 1:
-                dense_layer = Concatenate(name=consts.LAYER_NAME_CONCAT_CONT_INPUTS)(continuous_inputs.values())
+                dense_layer = Concatenate(name=consts.LAYER_NAME_CONCAT_CONT_INPUTS)(list(continuous_inputs.values()))
             else:
                 dense_layer = list(continuous_inputs.values())[0]
         if dense_dropout > 0:
@@ -425,4 +426,3 @@ class IgnoreCaseDict(collections.UserDict):
         if not isinstance(item, str):
             raise KeyError(f"Key should be str but is {item}")
         return self.data[item.lower()]
-
