@@ -283,7 +283,8 @@ class DeepTable:
         self.output_path = self._prepare_output_dir(config.home_dir, self.nets)
         self.preprocessor = DefaultPreprocessor(config)
         self.__current_model = None
-        self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name, best_mode=consts.MODEL_SELECT_MODE_AUTO)
+        self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name,
+                                            best_mode=consts.MODEL_SELECT_MODE_AUTO)
 
     @property
     def task(self):
@@ -656,19 +657,23 @@ class DeepTable:
             print(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, patience:{es.patience}, mode:{mode}')
         return callbacks
 
-    def save(self, filepath):
+    def save(self, filepath, deepmodel_basename=None):
         if filepath[-1] != '/':
             filepath = filepath + '/'
 
         if not os.path.exists(filepath):
             os.makedirs(filepath)
-
+        num_model = len(self.__modelset.get_modelinfos())
         for mi in self.__modelset.get_modelinfos():
             if isinstance(mi.model, str):
                 dm = self.load_deepmodel(mi.model)
                 mi.model = dm
             if not isinstance(mi.model, DeepModel):
                 raise ValueError(f'Currently does not support saving non-DeepModel models.')
+
+            if num_model == 1 and deepmodel_basename is not None:
+                mi.name = deepmodel_basename
+                self.__current_model = deepmodel_basename
             modelfile = f'{filepath}{mi.name}.h5'
             mi.model.save(modelfile)
             mi.model = modelfile
