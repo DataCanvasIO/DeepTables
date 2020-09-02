@@ -18,7 +18,6 @@ requirements = [
     'scikit-optimize==0.7.1',
     'category_encoders==2.1.0',
     'tables==3.6.1'
-    'hypernets'
 ]
 
 MIN_PYTHON_VERSION = '>=3.6.*'
