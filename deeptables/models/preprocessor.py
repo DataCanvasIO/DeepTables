@@ -468,9 +468,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if os.path.exists(transformer_path):
             try:
                 with open(transformer_path, 'rb') as input:
-                    X_transformers, y_lable_encoder = pickle.load(input)
-                    self.X_transformers = X_transformers
-                    self.y_lable_encoder = y_lable_encoder
+                    preprocessor = pickle.load(input)
+                    self.__dict__.update(preprocessor.__dict__)
                     return True
             except Exception as e:
                 logger.error(e)
@@ -480,7 +479,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def save_transformers_to_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
         with open(transformer_path, 'wb') as output:
-            pickle.dump((self.X_transformers, self.y_lable_encoder), output, protocol=2)
+            pickle.dump(self, output, protocol=2)
 
     def clear_cache(self):
         shutil.rmtree(self.cache_dir)
