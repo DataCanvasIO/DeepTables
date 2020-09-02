@@ -5,6 +5,11 @@ import collections
 import numpy as np
 import pandas as pd
 import copy
+import hashlib
+import os
+import shutil
+import pickle
+
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
@@ -42,6 +47,47 @@ class AbstractPreprocessor:
     def task(self):
         return self.task_
 
+    @property
+    def signature(self):
+        repr = f'''{self.config.auto_imputation}|
+{self.config.auto_encode_label}|
+{self.config.auto_discrete}|
+{self.config.apply_gbm_features}|
+{self.config.task}|
+{self.config.cat_exponent}|
+{self.config.exclude_columns}|
+{self.config.categorical_columns}|
+{self.config.auto_categorize}|
+{self.config.cat_remain_numeric}|
+{self.config.gbm_params}|
+{self.config.gbm_feature_type}|
+{self.config.fixed_embedding_dim}|
+{self.config.embeddings_output_dim}'''
+        sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        return sign
+
+    def get_X_y_signature(self, X, y):
+        repr = ''
+        if X is not None:
+            if isinstance(X, list):
+                repr += f'X len({len(X)})|'
+            if hasattr(X, 'shape'):
+                repr += f'X shape{X.shape}|'
+            if hasattr(X, 'dtypes'):
+                repr += f'x.dtypes({list(X.dtypes)})|'
+
+        if y is not None:
+            if isinstance(y, list):
+                repr += f'y len({len(y)})|'
+            if hasattr(y, 'shape'):
+                repr += f'y shape{y.shape}|'
+
+            if hasattr(y, 'dtype'):
+                repr += f'y.dtype({y.dtype})|'
+
+        sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        return sign
+
     def fit_transform(self, X, y, copy_data=True):
         raise NotImplementedError
 
@@ -72,12 +118,13 @@ class AbstractPreprocessor:
 
 
 class DefaultPreprocessor(AbstractPreprocessor):
-    def __init__(self, config: ModelConfig):
+    def __init__(self, config: ModelConfig, cache_home=None, use_cache=False):
         super().__init__(config)
         self.reset()
         self.X_types = None
         self.y_type = None
-        # self.classes_ = None
+        self.cache_dir = self._prepare_cache_dir(cache_home)
+        self.use_cache = use_cache
 
     def reset(self):
         self.metainfo = None
@@ -98,6 +145,16 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return X
 
     def fit_transform(self, X, y, copy_data=True):
+        sign = self.get_X_y_signature(X, y)
+        if self.use_cache:
+            logger.info('Try to load (X, y) from cache')
+            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
+            if X_t is not None and y_t is not None:
+                if self.load_transformers_from_cache():
+                    return X_t, y_t
+            else:
+                logger.info('Load failed')
+
         start = time.time()
         self.reset()
         if X is None:
@@ -113,9 +170,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         y_series = pd.Series(y)
         if y_series.isnull().sum() > 0:
             raise ValueError("Missing values in y.")
-
-        self.X_types = X.dtypes
-        self.y_type = y_series.dtype
 
         if copy:
             X = copy.deepcopy(X)
@@ -136,7 +190,19 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         self.X_transformers['last'] = PassThroughEstimator()
 
+        cat_cols = self.get_categorical_columns()
+        cont_cols = self.get_continuous_columns()
+        if len(cat_cols) > 0:
+            X[cat_cols] = X[cat_cols].astype('category')
+        if len(cont_cols) > 0:
+            X[cont_cols] = X[cont_cols].astype('float')
+
         print(f'fit_transform cost:{time.time() - start}')
+
+        if self.use_cache:
+            logger.info('Put (X, y) into cache')
+            self.save_transformed_X_y_to_cache(sign, X, y)
+            self.save_transformers_to_cache()
         return X, y
 
     def fit_transform_y(self, y):
@@ -154,8 +220,29 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return y
 
     def transform(self, X, y, copy_data=True):
+        sign = self.get_X_y_signature(X, y)
+        if self.use_cache:
+            logger.info('Try to load (X, y) from cache')
+            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
+            if X_t is not None and y_t is not None:
+                return X_t, y_t
+            else:
+                logger.info('Load failed')
+
         X_t = self.transform_X(X, copy_data)
         y_t = self.transform_y(y, copy_data)
+
+        cat_cols = self.get_categorical_columns()
+        cont_cols = self.get_continuous_columns()
+        if len(cat_cols) > 0:
+            X_t[cat_cols] = X_t[cat_cols].astype('category')
+        if len(cont_cols) > 0:
+            X_t[cont_cols] = X_t[cont_cols].astype('float')
+
+        if self.use_cache:
+            logger.info('Put (X, y) into cache')
+            self.save_transformed_X_y_to_cache(sign, X_t, y_t)
+
         return X_t, y_t
 
     def transform_y(self, y, copy_data=True):
@@ -328,3 +415,73 @@ class DefaultPreprocessor(AbstractPreprocessor):
         for c in self.continuous_columns:
             cont_vars = cont_vars + c.column_names
         return cont_vars
+
+    def _prepare_cache_dir(self, cache_home, clear_cache=False):
+        if cache_home is None:
+            cache_home = 'cache'
+        if cache_home[-1] == '/':
+            cache_home = cache_home[:-1]
+
+        cache_home = os.path.expanduser(f'{cache_home}')
+        if not os.path.exists(cache_home):
+            os.makedirs(cache_home)
+        else:
+            if clear_cache:
+                shutil.rmtree(cache_home)
+                os.makedirs(cache_home)
+        cache_dir = f'{cache_home}/{self.signature}'
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        return cache_dir
+
+    def get_transformed_X_y_from_cache(self, sign):
+        file_x_y = f'{self.cache_dir}/X_y_{sign}.h5'
+        X_t, y_t = None, None
+        if os.path.exists(file_x_y):
+            global h5
+            try:
+                h5 = pd.HDFStore(file_x_y)
+                df = h5['data']
+                y_t = df.pop('saved__y__')
+                X_t = df
+            except Exception as e:
+                logger.error(e)
+                h5.close()
+                os.remove(file_x_y)
+        return X_t, y_t
+
+    def save_transformed_X_y_to_cache(self, sign, X, y):
+        filepath = f'{self.cache_dir}/X_y_{sign}.h5'
+        try:
+            # x_t = X.copy(deep=True)
+            X.insert(0, 'saved__y__', y)
+            X.to_hdf(filepath, key='data', mode='w', format='t')
+            return True
+        except Exception as e:
+            logger.error(e)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        return False
+
+    def load_transformers_from_cache(self):
+        transformer_path = f'{self.cache_dir}/transformers.pkl'
+        if os.path.exists(transformer_path):
+            try:
+                with open(transformer_path, 'rb') as input:
+                    X_transformers, y_lable_encoder = pickle.load(input)
+                    self.X_transformers = X_transformers
+                    self.y_lable_encoder = y_lable_encoder
+                    return True
+            except Exception as e:
+                logger.error(e)
+                os.remove(transformer_path)
+        return False
+
+    def save_transformers_to_cache(self):
+        transformer_path = f'{self.cache_dir}/transformers.pkl'
+        with open(transformer_path, 'wb') as output:
+            pickle.dump((self.X_transformers, self.y_lable_encoder), output, protocol=2)
+
+    def clear_cache(self):
+        shutil.rmtree(self.cache_dir)
+        os.makedirs(self.cache_dir)

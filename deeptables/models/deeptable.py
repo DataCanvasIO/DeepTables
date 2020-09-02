@@ -8,8 +8,10 @@ import numpy as np
 import time
 import pandas as pd
 import pickle
+import shutil
 from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
+from sklearn.utils.validation import check_array
 from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
@@ -275,13 +277,14 @@ class DeepTable:
     >>>preds = dt.predict(X_eval)
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, preprocessor=None):
         if config is None:
             config = ModelConfig()
         self.config = config
         self.nets = config.nets
         self.output_path = self._prepare_output_dir(config.home_dir, self.nets)
-        self.preprocessor = DefaultPreprocessor(config)
+
+        self.preprocessor = preprocessor if preprocessor is not None else DefaultPreprocessor(config)
         self.__current_model = None
         self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name,
                                             best_mode=consts.MODEL_SELECT_MODE_AUTO)
@@ -336,13 +339,9 @@ class DeepTable:
 
         X, y = self.preprocessor.fit_transform(X, y)
         if validation_data is not None:
-            if len(validation_data) != 2:
-                raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
-            X_val, y_val = validation_data
-            X_val, y_val = self.preprocessor.transform(X_val, y_val)
-            validation_data = (X_val, y_val)
+            validation_data = self.preprocessor.transform(*validation_data)
 
-        logger.info(f'training...')
+        logger.info(f'Training...')
         if class_weight is None and self.config.apply_class_weight and self.task != consts.TASK_REGRESSION:
             class_weight = self.get_class_weight(y)
 
