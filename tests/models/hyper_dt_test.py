@@ -68,7 +68,7 @@ class Test_HyperDT():
                           'dnn_activation': 'relu',
                       },
                       cache_preprocessed_data=True,
-                      cache_home=homedir+'/cache'
+                      cache_home=homedir + '/cache'
                       )
         x1 = np.random.randint(0, 10, size=(100), dtype='int')
         x2 = np.random.randint(0, 2, size=(100)).astype('str')
@@ -81,7 +81,7 @@ class Test_HyperDT():
         assert hdt.best_model
         best_trial = hdt.get_best_trail()
 
-        estimator = hdt.final_train(best_trial.space_sample, df, y)
+        estimator = hdt.final_train(best_trial.space_sample, df, y, cross_validation=True, num_folds=3)
         score = estimator.predict(df)
         result = estimator.evaluate(df, y)
         assert len(score) == 100

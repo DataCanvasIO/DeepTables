@@ -131,7 +131,11 @@ class DTEstimator(Estimator):
         fit_params = self.space_sample.__dict__.get('fit_params')
         if fit_params is not None:
             kwargs.update(fit_params.param_values)
-        self.model.fit(X, y, **kwargs)
+        if kwargs.get('cross_validation') is not None:
+            kwargs.pop('cross_validation')
+            self.model.fit_cross_validation(X, y, **kwargs)
+        else:
+            self.model.fit(X, y, **kwargs)
 
     def predict(self, X, **kwargs):
         return self.model.predict(X, **kwargs)
@@ -173,6 +177,11 @@ class HyperDT(HyperModel):
                 conf_set.append(f'\n\t{f}={new_conf.__getattribute__(f)}')
         str = f'ModelConfig({",".join(conf_set)})\n\nfit params:{trail.space_sample.fit_params.param_values}'
         return str
+
+    def final_train(self, space_sample, X, y, **kwargs):
+        estimator = self._get_estimator(space_sample)
+        estimator.fit(X, y, **kwargs)
+        return estimator
 
 
 def default_dt_space():
