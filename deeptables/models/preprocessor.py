@@ -163,12 +163,13 @@ class DefaultPreprocessor(AbstractPreprocessor):
             raise ValueError(f'y cannot be none.')
         if len(X.shape) != 2:
             raise ValueError(f'X must be a 2D datasets.')
-        if len(y.shape) != 1:
-            raise ValueError(f'y must be a 1D datasets.')
+        #if len(y.shape) != 1:
+        #    raise ValueError(f'y must be a 1D datasets.')
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
-        y_series = pd.Series(y)
-        if y_series.isnull().sum() > 0:
+
+        y_df = pd.DataFrame(y)
+        if y_df.isnull().sum().sum() > 0:
             raise ValueError("Missing values in y.")
 
         if copy:
@@ -210,11 +211,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.task_, self.labels_ = deeptable.infer_task_type(y)
         else:
             self.task_ = self.config.task
-
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
             self.y_lable_encoder = LabelEncoder()
             y = self.y_lable_encoder.fit_transform(y)
             self.labels_ = self.y_lable_encoder.classes_
+        elif self.task_ == consts.TASK_MULTILABEL:
+            self.labels_ = list(range(y.shape[-1]))
         else:
             self.labels_ = []
         return y

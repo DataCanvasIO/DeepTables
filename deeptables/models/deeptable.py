@@ -648,7 +648,7 @@ class DeepTable:
                                restore_best_weights=True,
                                patience=self.config.earlystopping_patience,
                                verbose=1,
-                               min_delta=0.001,
+                               #min_delta=0.0001,
                                mode=mode,
                                baseline=None,
                                )
@@ -742,6 +742,11 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
 
 
 def infer_task_type(y):
+    if len(y.shape) > 1 and y.shape[-1] > 1:
+        labels = list(range(y.shape[-1]))
+        task = consts.TASK_MULTILABEL
+        return task, labels
+
     uniques = set(y)
     n_unique = len(uniques)
     labels = []

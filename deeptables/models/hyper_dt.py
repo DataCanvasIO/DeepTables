@@ -178,11 +178,6 @@ class HyperDT(HyperModel):
         str = f'ModelConfig({",".join(conf_set)})\n\nfit params:{trail.space_sample.fit_params.param_values}'
         return str
 
-    def final_train(self, space_sample, X, y, **kwargs):
-        estimator = self._get_estimator(space_sample)
-        estimator.fit(X, y, **kwargs)
-        return estimator
-
 
 def default_dt_space():
     space = HyperSpace()
