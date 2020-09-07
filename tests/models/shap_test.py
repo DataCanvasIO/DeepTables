@@ -6,14 +6,13 @@ __author__ = 'yangjian'
 
 try:
     import shap
-
+    from deeptables.utils.shap import DeepTablesExplainer
     have_shap = True
 except ImportError:
     have_shap = False
 
 from deeptables.models import deeptable
 from deeptables.datasets import dsutils
-from deeptables.utils.shap import DeepTablesExplainer
 from sklearn.model_selection import train_test_split
 
 
