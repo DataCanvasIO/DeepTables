@@ -10,13 +10,14 @@ import numpy as np
 from deeptables.models.evaluation import calc_score
 
 
-def get_score_importances(dt_model, X, y, metric, n_iter=5):
+def get_score_importances(dt_model, X, y, metric, n_iter=5, mode='min'):
     columns = X.columns.to_list()
     metric = metric.lower()
+
     def score(X_s, y_s) -> float:
         df = pd.DataFrame(X_s)
         df.columns = columns
-        if metric == 'auc':
+        if metric in ['auc', 'log_loss']:
             y_proba = dt_model.predict_proba(df)
             y_pred = y_proba
         else:
@@ -25,7 +26,12 @@ def get_score_importances(dt_model, X, y, metric, n_iter=5):
         del df
         dict = calc_score(y_s, y_proba, y_pred, [metric], dt_model.task, dt_model.pos_label)
         print(f'score:{dict}')
-        return dict[metric]
+        if mode == 'min':
+            return -dict[metric]
+        elif mode == 'max':
+            return dict[metric]
+        else:
+            raise ValueError(f'Unsupported mode:{mode}')
 
     base_score, score_decreases = eli5_importances(score, X.values, y, n_iter=n_iter)
     feature_importances = np.stack([columns, np.mean(score_decreases, axis=0)], axis=1)

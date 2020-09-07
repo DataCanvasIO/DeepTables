@@ -6,6 +6,7 @@ __author__ = 'yangjian'
 
 try:
     from deeptables.utils.feature_importance import get_score_importances
+
     have_eli5 = True
 except ImportError:
     have_eli5 = False
@@ -26,9 +27,10 @@ class Test_Importances():
 
             config = deeptable.ModelConfig(nets=['dnn_nets'], auto_discrete=True, metrics=['AUC'])
             dt = deeptable.DeepTable(config=config)
-            dt.fit(X, y, epochs=1)
+            dt.fit(X, y, epochs=10)
 
-
-            fi = get_score_importances(dt,X_test, y_test,'AUC',1)
-
+            fi = get_score_importances(dt, X_test, y_test, 'AUC', 1, mode='max')
             assert fi.shape == (16, 2)
+
+            fi2 = get_score_importances(dt, X_test, y_test, 'log_loss', 1, mode='min')
+            assert fi2.shape == (16, 2)
