@@ -27,7 +27,7 @@ class Test_Importances():
 
             config = deeptable.ModelConfig(nets=['dnn_nets'], auto_discrete=True, metrics=['AUC'])
             dt = deeptable.DeepTable(config=config)
-            dt.fit(X, y, epochs=10)
+            dt.fit(X, y, epochs=1)
 
             fi = get_score_importances(dt, X_test, y_test, 'AUC', 1, mode='max')
             assert fi.shape == (16, 2)

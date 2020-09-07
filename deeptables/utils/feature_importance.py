@@ -35,4 +35,11 @@ def get_score_importances(dt_model, X, y, metric, n_iter=5, mode='min'):
 
     base_score, score_decreases = eli5_importances(score, X.values, y, n_iter=n_iter)
     feature_importances = np.stack([columns, np.mean(score_decreases, axis=0)], axis=1)
+    feature_importances = np.array(sorted(feature_importances, key=lambda fi: fi[1], reverse=True))
     return feature_importances
+
+
+def select_features(feature_importances, threshold=0.):
+    selected_columns = [fi[0] for fi in feature_importances if float(fi[1]) > threshold]
+    discard_columns = [fi[0] for fi in feature_importances if float(fi[1]) <= threshold]
+    return selected_columns, discard_columns
