@@ -31,7 +31,7 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
                     score['auc'] = roc_auc_score(y_true, y_proba)
 
             elif metric == 'accuracy':
-                if y_proba is None:
+                if y_preds is None:
                     score['accuracy'] = 0
                 else:
                     score['accuracy'] = accuracy_score(y_true, y_preds)
