@@ -232,7 +232,7 @@ class DeepModel:
             optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         if loss == 'auto':
-            if task == consts.TASK_BINARY:
+            if task == consts.TASK_BINARY or task == consts.TASK_MULTILABEL:
                 loss = 'binary_crossentropy'
             elif task == consts.TASK_REGRESSION:
                 loss = 'mse'
@@ -317,6 +317,9 @@ class DeepModel:
                 output_dim = num_classes
             else:
                 raise ValueError('"config.multiclass_classes" value must be provided for multi-class task.')
+        elif task == consts.TASK_MULTILABEL:
+            activation = 'sigmoid'
+            output_dim = num_classes
         else:
             raise ValueError(f'Unknown task type:{task}')
 
