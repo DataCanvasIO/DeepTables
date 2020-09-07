@@ -27,3 +27,4 @@ class DeepTablesExplainer():
     def get_shap_values(self, X_to_explain, nsamples='auto'):
         shap_values = self.explainer.shap_values(X_to_explain, nsamples=nsamples)
         return shap_values
+
