@@ -66,7 +66,7 @@ conf = ModelConfig(
     metrics=['RootMeanSquaredError'], 
     nets=['dnn_nets'],
     dnn_params={
-        'dnn_units': ((256, 0.3, True), (256, 0.3, True)),
+        'hidden_units': ((256, 0.3, True), (256, 0.3, True)),
         'dnn_activation': 'relu',
     },
     earlystopping_patience=5,

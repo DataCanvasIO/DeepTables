@@ -23,7 +23,7 @@ class Test_HyperDT():
                       reward_metric='accuracy',
                       max_trails=3,
                       dnn_params={
-                          'dnn_units': ((256, 0, False), (256, 0, False)),
+                          'hidden_units': ((256, 0, False), (256, 0, False)),
                           'dnn_activation': 'relu',
                       },
                       )
@@ -49,13 +49,14 @@ class Test_HyperDT():
         space = default_dt_space()
         space.random_sample()
         assert space.Module_DnnModule_1.param_values['dnn_layers'] == len(
-            space.DT_Module.config.dnn_params['dnn_units'])
-        assert space.Module_DnnModule_1.param_values['dnn_units'] == space.DT_Module.config.dnn_params['dnn_units'][0][
-            0]
+            space.DT_Module.config.dnn_params['hidden_units'])
+        assert space.Module_DnnModule_1.param_values['hidden_units'] == \
+               space.DT_Module.config.dnn_params['hidden_units'][0][
+                   0]
         assert space.Module_DnnModule_1.param_values['dnn_dropout'] == \
-               space.DT_Module.config.dnn_params['dnn_units'][0][
+               space.DT_Module.config.dnn_params['hidden_units'][0][
                    1]
-        assert space.Module_DnnModule_1.param_values['use_bn'] == space.DT_Module.config.dnn_params['dnn_units'][0][
+        assert space.Module_DnnModule_1.param_values['use_bn'] == space.DT_Module.config.dnn_params['hidden_units'][0][
             2]
 
     def test_hyper_dt(self):
@@ -64,7 +65,7 @@ class Test_HyperDT():
                       callbacks=[SummaryCallback()],
                       reward_metric='accuracy',
                       dnn_params={
-                          'dnn_units': ((256, 0, False), (256, 0, False)),
+                          'hidden_units': ((256, 0, False), (256, 0, False)),
                           'dnn_activation': 'relu',
                       },
                       cache_preprocessed_data=True,
@@ -77,11 +78,11 @@ class Test_HyperDT():
 
         y = np.random.randint(0, 2, size=(100), dtype='int')
         df = pd.DataFrame({'x1': x1, 'x2': x2, 'x3': x3, 'x4': x4})
-        hdt.search(df, y, df, y, max_trails=3, )
+        hdt.search(df, y, df, y, max_trails=3, epochs=1)
         assert hdt.best_model
         best_trial = hdt.get_best_trail()
 
-        estimator = hdt.final_train(best_trial.space_sample, df, y, cross_validation=True, num_folds=3)
+        estimator = hdt.final_train(best_trial.space_sample, df, y, epochs=1)
         score = estimator.predict(df)
         result = estimator.evaluate(df, y)
         assert len(score) == 100

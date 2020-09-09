@@ -82,8 +82,8 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                 optimizer='auto',
                 loss='auto',
                 dnn_params={
-                    'dnn_units': ((128, 0, False), (64, 0, False)),
-                    'dnn_activation': 'relu',
+                    'hidden_units': ((128, 0, False), (64, 0, False)),
+                    'activation': 'relu',
                 },
                 autoint_params={
                     'num_attention': 3,

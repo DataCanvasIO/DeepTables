@@ -159,7 +159,7 @@ class DeepTable:
 
             loss: str or object, (default='auto')
 
-            dnn_params: dict, (default={'dnn_units': ((128, 0, False), (64, 0, False)),
+            dnn_params: dict, (default={'hidden_units': ((128, 0, False), (64, 0, False)),
                                         'dnn_activation': 'relu'})
 
             autoint_params:dict, (default={'num_attention': 3,'num_heads': 1,

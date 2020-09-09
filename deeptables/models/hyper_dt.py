@@ -29,14 +29,13 @@ class DTModuleSpace(ModuleSpace):
 
 
 class DTFit(ModuleSpace):
-    def __init__(self, batch_size=128, epochs=1000, space=None, name=None, **hyperparams):
+    def __init__(self, batch_size=128, epochs=None, space=None, name=None, **hyperparams):
         if batch_size is None:
             batch_size = Choice([128, 256, 512])
         hyperparams['batch_size'] = batch_size
 
-        if epochs is None:
-            epochs = 1000
-        hyperparams['epochs'] = epochs
+        if epochs is not None:
+            hyperparams['epochs'] = epochs
 
         ModuleSpace.__init__(self, space, name, **hyperparams)
         self.space.fit_params = self
@@ -52,11 +51,11 @@ class DTFit(ModuleSpace):
 
 
 class DnnModule(ModuleSpace):
-    def __init__(self, dnn_units=None, reduce_factor=None, dnn_dropout=None, use_bn=None, dnn_layers=None,
+    def __init__(self, hidden_units=None, reduce_factor=None, dnn_dropout=None, use_bn=None, dnn_layers=None,
                  activation=None, space=None, name=None, **hyperparams):
-        if dnn_units is None:
-            dnn_units = Choice([100, 200, 300, 500, 800, 1000])
-        hyperparams['dnn_units'] = dnn_units
+        if hidden_units is None:
+            hidden_units = Choice([100, 200, 300, 500, 800, 1000])
+        hyperparams['hidden_units'] = hidden_units
 
         if reduce_factor is None:
             reduce_factor = Choice([1, 0.8, 0.5])
@@ -82,15 +81,15 @@ class DnnModule(ModuleSpace):
 
     def _compile(self):
         dnn_layers = self.param_values['dnn_layers']
-        dnn_units = []
+        hidden_units = []
         for i in range(0, dnn_layers):
-            dnn_units.append(
-                (int(self.param_values['dnn_units'] * 1 if i == 0 else (
-                        self.param_values['dnn_units'] * (self.param_values['reduce_factor'] ** i))),
+            hidden_units.append(
+                (int(self.param_values['hidden_units'] * 1 if i == 0 else (
+                        self.param_values['hidden_units'] * (self.param_values['reduce_factor'] ** i))),
                  self.param_values['dnn_dropout'],
                  self.param_values['use_bn']))
         dnn_params = {
-            'dnn_units': dnn_units,
+            'hidden_units': hidden_units,
             'dnn_activation': self.param_values['activation'],
         }
         self.space.DT_Module.config = self.space.DT_Module.config._replace(dnn_params=dnn_params)
@@ -225,7 +224,7 @@ def mini_dt_space():
             apply_class_weight=Bool(),
             earlystopping_patience=Choice([1, 3, 5])
         )
-        dnn = DnnModule(dnn_units=Choice([100, 200]),
+        dnn = DnnModule(hidden_units=Choice([100, 200]),
                         reduce_factor=Choice([1, 0.8]),
                         dnn_dropout=Choice([0, 0.3]),
                         use_bn=Bool(),
@@ -261,7 +260,7 @@ def mini_dt_space():
     # optimizer='auto',
     # loss='auto',
     # dnn_params={
-    #     'dnn_units': ((128, 0, False), (64, 0, False)),
+    #     'hidden_units': ((128, 0, False), (64, 0, False)),
     #     'dnn_activation': 'relu',
     # },
     # autoint_params={

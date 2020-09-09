@@ -16,7 +16,7 @@ class Test_Batch_Trainer:
     def test_run_binary_heart_disease_CV(self):
         data = dsutils.load_heart_disease_uci()
         conf = deeptable.ModelConfig(
-            dnn_params={'dnn_units': ((256, 0, False), (256, 0, False)),
+            dnn_params={'hidden_units': ((256, 0, False), (256, 0, False)),
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -46,7 +46,7 @@ class Test_Batch_Trainer:
     def test_run_lgbm(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            dnn_params={'dnn_units': ((256, 0, False), (256, 0, False)),
+            dnn_params={'hidden_units': ((256, 0, False), (256, 0, False)),
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -72,7 +72,7 @@ class Test_Batch_Trainer:
     def test_run_catboost(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            dnn_params={'dnn_units': ((256, 0, False), (256, 0, False)),
+            dnn_params={'hidden_units': ((256, 0, False), (256, 0, False)),
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -97,7 +97,7 @@ class Test_Batch_Trainer:
     def test_run_binary(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            dnn_params={'dnn_units': ((256, 0, False), (256, 0, False)),
+            dnn_params={'hidden_units': ((256, 0, False), (256, 0, False)),
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -124,7 +124,7 @@ class Test_Batch_Trainer:
         df_train.insert(df_train.shape[1], 'target', boston_dataset.target)
 
         conf = deeptable.ModelConfig(
-            dnn_params={'dnn_units': ((256, 0, False), (256, 0, False)),
+            dnn_params={'hidden_units': ((256, 0, False), (256, 0, False)),
                         'dnn_activation': 'relu'},
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -154,7 +154,7 @@ class Test_Batch_Trainer:
     def test_run_multiclass(self):
         data = dsutils.load_glass_uci()
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -180,7 +180,7 @@ class Test_Batch_Trainer:
     def test_run_cross_validation(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -241,7 +241,7 @@ class Test_Batch_Trainer:
     def test_get_models_retian_single_model(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -278,7 +278,7 @@ class Test_Batch_Trainer:
     def test_ensemble_predict_proba(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -305,7 +305,7 @@ class Test_Batch_Trainer:
     def test_probe_evaluation(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -329,7 +329,7 @@ class Test_Batch_Trainer:
     def test_zero_testset(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -354,7 +354,7 @@ class Test_Batch_Trainer:
     def test_zero_testset_cross_validation(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
@@ -412,7 +412,7 @@ class Test_Batch_Trainer:
     def test_leaderboard(self):
         data = dsutils.load_adult().head(1000)
         conf = deeptable.ModelConfig(
-            # dnn_units=((256, 0, False), (128, 0, False)),
+            # hidden_units=((256, 0, False), (128, 0, False)),
             # dnn_activation='relu',
             fixed_embedding_dim=False,
             embeddings_output_dim=0,
