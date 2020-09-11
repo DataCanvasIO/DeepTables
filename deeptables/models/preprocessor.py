@@ -163,7 +163,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             raise ValueError(f'y cannot be none.')
         if len(X.shape) != 2:
             raise ValueError(f'X must be a 2D datasets.')
-        #if len(y.shape) != 1:
+        # if len(y.shape) != 1:
         #    raise ValueError(f'y must be a 1D datasets.')
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
@@ -293,6 +293,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
             nunique = X[c].nunique()
             dtype = str(X[c].dtype)
 
+            if nunique <= 1:
+                continue
+
             if c in self.config.exclude_columns:
                 excluded_vars.append((c, dtype, nunique))
                 continue
@@ -308,7 +311,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             else:
                 if dtype == 'object' or dtype == 'category' or dtype == 'bool':
                     cat_vars.append((c, dtype, nunique))
-                elif self.config.auto_categorize and X[c].nunique() < unique_upper_limit:
+                elif self.config.auto_categorize and nunique < unique_upper_limit:
                     convert2cat_vars.append((c, dtype, nunique))
                 else:
                     num_vars.append((c, dtype, nunique))

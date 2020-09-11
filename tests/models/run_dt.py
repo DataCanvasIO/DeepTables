@@ -6,7 +6,7 @@ import sys
 
 sys.path.append('../../../Hypernets-incubator')
 
-from contrib.deeptables.models import *
+from deeptables.models.hyper_dt import *
 from hypernets.searchers.random_searcher import RandomSearcher
 from hypernets.core.searcher import OptimizeDirection
 from hypernets.core.callbacks import SummaryCallback, FileLoggingCallback
