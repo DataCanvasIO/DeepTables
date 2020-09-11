@@ -52,6 +52,13 @@ pip install deeptables[gpu]
 python -c "from deeptables.utils.quicktest import test; test()”
 ```
 
+## Optional dependencies
+Following libraries are not hard dependencies and are not automatically installed when you install DeepTables. To use all functionalities of DT, these optional dependencies must be installed.
+
+```shell script
+pip install shap
+```
+
 ## Example：
 ``` python
 import numpy as np
