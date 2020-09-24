@@ -59,6 +59,7 @@ class AbstractPreprocessor:
 {self.config.categorical_columns}|
 {self.config.auto_categorize}|
 {self.config.cat_remain_numeric}|
+{self.config.auto_discard_unique}|
 {self.config.gbm_params}|
 {self.config.gbm_feature_type}|
 {self.config.fixed_embedding_dim}|
@@ -293,7 +294,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             nunique = X[c].nunique()
             dtype = str(X[c].dtype)
 
-            if nunique <= 1:
+            if nunique <= 1 and self.config.auto_discard_unique:
                 continue
 
             if c in self.config.exclude_columns:
