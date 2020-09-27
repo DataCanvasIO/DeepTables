@@ -89,7 +89,8 @@ preds = dt.predict(df_test)
 ```
 
 ### An example of winning 1st place in Kaggle Categorical Feature Encoding Challenge II
-[Notebook](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb).
+
+[Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
 
 ## DataCanvas
 
