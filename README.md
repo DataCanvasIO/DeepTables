@@ -88,7 +88,7 @@ print(result)
 preds = dt.predict(df_test)
 ```
 
-### An example of winning 1st place in Kaggle Categorical Feature Encoding Challenge II
+### A solution using DeepTables to win the 1st place in Kaggle Categorical Feature Encoding Challenge II
 
 [Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
 
