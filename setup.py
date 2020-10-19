@@ -18,7 +18,7 @@ requirements = [
     'scikit-optimize==0.7.1',
     'category_encoders==2.1.0',
     'tables==3.6.1',
-    'hypernets==0.1.2',
+    'hypernets>=0.1.2',
     'eli5',
 ]
 

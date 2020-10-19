@@ -199,7 +199,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if len(cont_cols) > 0:
             X[cont_cols] = X[cont_cols].astype('float')
 
-        print(f'fit_transform cost:{time.time() - start}')
+        logger.info(f'fit_transform taken {time.time() - start}s')
 
         if self.use_cache:
             logger.info('Put (X, y) into cache')
@@ -255,7 +255,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             y = copy.deepcopy(y)
         if self.y_lable_encoder is not None:
             y = self.y_lable_encoder.transform(y)
-        print(f'transform_y cost:{time.time() - start}')
+        logger.info(f'transform_y taken {time.time() - start}s')
         y = np.array(y)
         return y
 
@@ -268,7 +268,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         steps = [step for step in self.X_transformers.values()]
         pipeline = make_pipeline(*steps)
         X_t = pipeline.transform(X)
-        print(f'transform_X cost:{time.time() - start}')
+        logger.info(f'transform_X taken {time.time() - start}s')
         return X_t
 
     def inverse_transform_y(self, y_indicator):
@@ -332,7 +332,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         self.__append_categorical_cols([(c[0], c[2] + 2) for c in cat_vars])
         self.__append_continuous_cols([c[0] for c in num_vars], consts.INPUT_PREFIX_NUM + 'all')
-        print(f'Preparing features cost:{time.time() - start}')
+        print(f'Preparing features taken {time.time() - start}s')
         return X
 
     def _imputation(self, X):
@@ -348,7 +348,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
-        print(f'Imputation cost:{time.time() - start}')
+        print(f'Imputation taken {time.time() - start}s')
         return X
 
     def _categorical_encoding(self, X):
@@ -358,7 +358,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         mle = MultiLabelEncoder(vars)
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
-        print(f'Categorical encoding cost:{time.time() - start}')
+        print(f'Categorical encoding taken {time.time() - start}s')
         return X
 
     def _discretization(self, X):
@@ -369,7 +369,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         X = mkbd.fit_transform(X)
         self.__append_categorical_cols([(new_name, bins + 1) for name, new_name, bins in mkbd.new_columns])
         self.X_transformers['discreter'] = mkbd
-        print(f'Discretization cost:{time.time() - start}')
+        print(f'Discretization taken {time.time() - start}s')
         return X
 
     def _apply_gbm_features(self, X, y):
@@ -385,7 +385,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         else:
             self.__append_continuous_cols([name for name in gbmencoder.new_columns],
                                           consts.INPUT_PREFIX_NUM + 'gbm_leaves')
-        print(f'Extracting gbm features cost:{time.time() - start}')
+        print(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
     def __append_categorical_cols(self, cols):
