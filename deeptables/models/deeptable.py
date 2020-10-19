@@ -443,7 +443,7 @@ class DeepTable:
             test_proba_mean = test_proba_mean.reshape(-1)
             file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
             pd.DataFrame(test_proba_mean).to_csv(file, index=False)
-        print(f'fit_cross_validation cost:{time.time() - start}')
+        logger.info(f'fit_cross_validation taken {time.time() - start}s')
         return oof_proba, eval_proba_mean, test_proba_mean
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
@@ -469,14 +469,14 @@ class DeepTable:
                     proba_avg = np.zeros(proba.shape)
                 proba_avg += proba
             proba_avg /= len(models)
-            print(f'predict_proba cost:{time.time() - start}')
+            logger.info(f'predict_proba taken {time.time() - start}s')
             return proba_avg
         else:
             proba = self.__predict(self.get_model(model_selector),
                                    X, batch_size=batch_size,
                                    verbose=verbose,
                                    auto_transform_data=auto_transform_data)
-            print(f'predict_proba cost:{time.time() - start}')
+            logger.info(f'predict_proba taken {time.time() - start}s')
             return proba
 
     def predict_proba_all(self, X, batch_size=128, verbose=0, auto_transform_data=True, ):
@@ -526,7 +526,7 @@ class DeepTable:
         if auto_transform_data:
             X = self.preprocessor.transform_X(X)
         output = model.apply(X, output_layers, concat_outputs, batch_size, verbose, transformer)
-        print(f'apply cost:{time.time() - start}')
+        logger.info(f'apply taken {time.time() - start}s')
         return output
 
     def concat_emb_dense(self, flatten_emb_layer, dense_layer):
@@ -540,7 +540,7 @@ class DeepTable:
         else:
             raise ValueError('No input layer exists.')
         x = BatchNormalization(name='bn_concat_emb_dense')(x)
-        print(f'Concat embedding and dense layer shape:{x.shape}')
+        logger.info(f'Concat embedding and dense layer shape:{x.shape}')
         return x
 
     def get_model(self, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
