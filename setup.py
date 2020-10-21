@@ -5,23 +5,26 @@ from __future__ import absolute_import
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.9'
+version = '0.1.12'
 
 requirements = [
     'scipy>=1.3.1',
     'pandas>=0.25.3',
-    'scikit-learn>=0.22.1',
-    'tensorflow<=2.1.0,>=2.0.0',
+    'scikit-learn>=0.20.3',
+    'tensorflow>=2.0.0',
     'numpy>=1.17.4',
     'catboost==0.20.2',
     'lightgbm>=2.3.0',
     'scikit-optimize==0.7.1',
     'category_encoders==2.1.0',
+    'tables==3.6.1',
+    'hypernets>=0.1.2',
+    'eli5',
 ]
 
 MIN_PYTHON_VERSION = '>=3.6.*'
 
-long_description = open('README.md', encoding ='utf-8').read()
+long_description = open('README.md', encoding='utf-8').read()
 
 setup(
     name='deeptables',

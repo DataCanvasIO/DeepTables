@@ -3,7 +3,7 @@ __author__ = 'yangjian'
 
 import numpy as np
 from sklearn.metrics import roc_auc_score, mean_squared_log_error, accuracy_score, \
-    mean_squared_error, mean_absolute_error, r2_score, precision_score, recall_score, f1_score
+    mean_squared_error, mean_absolute_error, r2_score, precision_score, recall_score, f1_score, log_loss
 from ..utils import consts
 
 
@@ -25,22 +25,24 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
 
             if metric == 'auc':
                 if len(y_proba.shape) == 2:
+                    # ! When sklearn version > 0.22.0 support multi class
                     score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
                 else:
                     score['auc'] = roc_auc_score(y_true, y_proba)
 
             elif metric == 'accuracy':
-                if y_proba is None:
+                if y_preds is None:
                     score['accuracy'] = 0
                 else:
                     score['accuracy'] = accuracy_score(y_true, y_preds)
+            elif metric == 'log_loss':
+                score['log_loss'] = log_loss(y_true, y_proba)
             elif metric == 'recall':
                 score['recall'] = recall_score(y_true, y_preds, average=average, pos_label=pos_label)
             elif metric == 'precision':
                 score['precision'] = precision_score(y_true, y_preds, average=average, pos_label=pos_label)
             elif metric == 'f1':
                 score['f1'] = f1_score(y_true, y_preds, average=average, pos_label=pos_label)
-
             elif metric == 'mse':
                 score['mse'] = mean_squared_error(y_true, y_preds)
             elif metric == 'mae':

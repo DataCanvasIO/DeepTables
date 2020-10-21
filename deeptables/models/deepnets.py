@@ -3,8 +3,7 @@ import six
 from inspect import signature
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Concatenate, Flatten, BatchNormalization, Activation, Dropout
-from tensorflow.python.keras.utils.generic_utils import deserialize_keras_object
-from tensorflow.python.keras.utils.generic_utils import serialize_keras_object
+from tensorflow.python.keras.utils.generic_utils import deserialize_keras_object, serialize_keras_object
 
 from . import layers
 from ..utils import counter

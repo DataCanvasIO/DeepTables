@@ -16,7 +16,10 @@ from sklearn.model_selection import train_test_split
 from deeptables.models import deeptable, deepmodel
 from deeptables.utils import consts
 from deeptables.datasets import dsutils
+from deeptables.models.preprocessor import DefaultPreprocessor
 import pytest
+from deeptables.models.deepmodel import IgnoreCaseDict
+from .. import homedir
 
 
 class Test_DeepTable:
@@ -115,6 +118,19 @@ class Test_DeepTable:
         assert result['flatten_embeddings']['AUC'] > 0
         assert result['dnn_dense_2']['AUC'] > 0
 
+    def test_cache_preprocessed_data(self):
+        config = deeptable.ModelConfig(metrics=['AUC'], apply_gbm_features=False, apply_class_weight=True)
+        df_train = dsutils.load_adult().head(100)
+        y = df_train.pop(14).values
+        X = df_train
+        cache_home = homedir + '/cache'
+        preprocessor = DefaultPreprocessor(config, cache_home=cache_home, use_cache=True)
+        dt = deeptable.DeepTable(config=config, preprocessor=preprocessor)
+        dt.fit(X, y, epochs=1)
+
+        dt = deeptable.DeepTable(config=config, preprocessor=preprocessor)
+        dt.fit(X, y, epochs=1)
+
     # def test_gbm_params(self):
     #     df_train = dsutils.load_adult().head(1000)
     #     y = df_train.pop(14).values
@@ -160,7 +176,6 @@ class Test_DeepTable:
         # flatten_embeddings = model.get_layer('flatten_embeddings')
         assert dense_lgbm_input
         assert concat_continuous_inputs
-
 
     def test_predict_unseen_data(self):
         x1 = np.random.randint(0, 10, size=(100), dtype='int')
@@ -229,8 +244,23 @@ class Test_DeepTable:
         assert os.path.exists(f'{filepath}/dt.pkl')
         assert os.path.exists(f'{filepath}/dnn_nets.h5')
         newdt = deeptable.DeepTable.load(filepath)
+
+        print(newdt.config)
         preds = newdt.predict(self.X_test)
         assert preds.shape, (200,)
+
+    def test_ignore_case_dict(self):
+        metrics = {"AUC": 0.82, 'Accuracy': 0.9}
+        _dict = IgnoreCaseDict(metrics)
+
+        assert _dict['auc'] == 0.82
+        assert _dict['Auc'] == 0.82
+        assert _dict['AUC'] == 0.82
+
+        assert _dict.get('AUC') == 0.82
+
+        assert _dict['Accuracy'] == 0.9
+        assert _dict['accuracy'] == 0.9
 
 
 if __name__ == "__main__":

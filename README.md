@@ -52,7 +52,16 @@ pip install deeptables[gpu]
 python -c "from deeptables.utils.quicktest import test; test()”
 ```
 
+## Optional dependencies
+Following libraries are not hard dependencies and are not automatically installed when you install DeepTables. To use all functionalities of DT, these optional dependencies must be installed.
+
+```shell script
+pip install shap
+```
+
 ## Example：
+
+### A simple binary classification example
 ``` python
 import numpy as np
 from deeptables.models import deeptable, deepnets
@@ -78,6 +87,10 @@ print(result)
 #scoring
 preds = dt.predict(df_test)
 ```
+
+### A solution using DeepTables to win the 1st place in Kaggle Categorical Feature Encoding Challenge II
+
+[Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
 
 ## DataCanvas
 

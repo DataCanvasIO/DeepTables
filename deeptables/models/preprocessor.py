@@ -5,12 +5,17 @@ import collections
 import numpy as np
 import pandas as pd
 import copy
+import hashlib
+import os
+import shutil
+import pickle
+
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-
+from deeptables.preprocessing.transformer import PassThroughEstimator
 from .metainfo import CategoricalColumn, ContinuousColumn
 from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameWrapper, LgbmLeavesEncoder, \
     CategorizeEncoder
@@ -42,6 +47,48 @@ class AbstractPreprocessor:
     def task(self):
         return self.task_
 
+    @property
+    def signature(self):
+        repr = f'''{self.config.auto_imputation}|
+{self.config.auto_encode_label}|
+{self.config.auto_discrete}|
+{self.config.apply_gbm_features}|
+{self.config.task}|
+{self.config.cat_exponent}|
+{self.config.exclude_columns}|
+{self.config.categorical_columns}|
+{self.config.auto_categorize}|
+{self.config.cat_remain_numeric}|
+{self.config.auto_discard_unique}|
+{self.config.gbm_params}|
+{self.config.gbm_feature_type}|
+{self.config.fixed_embedding_dim}|
+{self.config.embeddings_output_dim}'''
+        sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        return sign
+
+    def get_X_y_signature(self, X, y):
+        repr = ''
+        if X is not None:
+            if isinstance(X, list):
+                repr += f'X len({len(X)})|'
+            if hasattr(X, 'shape'):
+                repr += f'X shape{X.shape}|'
+            if hasattr(X, 'dtypes'):
+                repr += f'x.dtypes({list(X.dtypes)})|'
+
+        if y is not None:
+            if isinstance(y, list):
+                repr += f'y len({len(y)})|'
+            if hasattr(y, 'shape'):
+                repr += f'y shape{y.shape}|'
+
+            if hasattr(y, 'dtype'):
+                repr += f'y.dtype({y.dtype})|'
+
+        sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        return sign
+
     def fit_transform(self, X, y, copy_data=True):
         raise NotImplementedError
 
@@ -72,12 +119,13 @@ class AbstractPreprocessor:
 
 
 class DefaultPreprocessor(AbstractPreprocessor):
-    def __init__(self, config: ModelConfig):
+    def __init__(self, config: ModelConfig, cache_home=None, use_cache=False):
         super().__init__(config)
         self.reset()
         self.X_types = None
         self.y_type = None
-        # self.classes_ = None
+        self.cache_dir = self._prepare_cache_dir(cache_home)
+        self.use_cache = use_cache
 
     def reset(self):
         self.metainfo = None
@@ -98,6 +146,16 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return X
 
     def fit_transform(self, X, y, copy_data=True):
+        sign = self.get_X_y_signature(X, y)
+        if self.use_cache:
+            logger.info('Try to load (X, y) from cache')
+            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
+            if X_t is not None and y_t is not None:
+                if self.load_transformers_from_cache():
+                    return X_t, y_t
+            else:
+                logger.info('Load failed')
+
         start = time.time()
         self.reset()
         if X is None:
@@ -106,16 +164,14 @@ class DefaultPreprocessor(AbstractPreprocessor):
             raise ValueError(f'y cannot be none.')
         if len(X.shape) != 2:
             raise ValueError(f'X must be a 2D datasets.')
-        if len(y.shape) != 1:
-            raise ValueError(f'y must be a 1D datasets.')
+        # if len(y.shape) != 1:
+        #    raise ValueError(f'y must be a 1D datasets.')
         if X.shape[0] != y.shape[0]:
             raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
-        y_series = pd.Series(y)
-        if y_series.isnull().sum() > 0:
-            raise ValueError("Missing values in y.")
 
-        self.X_types = X.dtypes
-        self.y_type = y_series.dtype
+        y_df = pd.DataFrame(y)
+        if y_df.isnull().sum().sum() > 0:
+            raise ValueError("Missing values in y.")
 
         if copy:
             X = copy.deepcopy(X)
@@ -133,9 +189,22 @@ class DefaultPreprocessor(AbstractPreprocessor):
             X = self._discretization(X)
         if self.config.apply_gbm_features and y is not None:
             X = self._apply_gbm_features(X, y)
-        self.X_transformers['last'] = 'passthrough'
 
-        print(f'fit_transform cost:{time.time() - start}')
+        self.X_transformers['last'] = PassThroughEstimator()
+
+        cat_cols = self.get_categorical_columns()
+        cont_cols = self.get_continuous_columns()
+        if len(cat_cols) > 0:
+            X[cat_cols] = X[cat_cols].astype('category')
+        if len(cont_cols) > 0:
+            X[cont_cols] = X[cont_cols].astype('float')
+
+        logger.info(f'fit_transform taken {time.time() - start}s')
+
+        if self.use_cache:
+            logger.info('Put (X, y) into cache')
+            self.save_transformed_X_y_to_cache(sign, X, y)
+            self.save_transformers_to_cache()
         return X, y
 
     def fit_transform_y(self, y):
@@ -143,18 +212,40 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.task_, self.labels_ = deeptable.infer_task_type(y)
         else:
             self.task_ = self.config.task
-
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
             self.y_lable_encoder = LabelEncoder()
             y = self.y_lable_encoder.fit_transform(y)
             self.labels_ = self.y_lable_encoder.classes_
+        elif self.task_ == consts.TASK_MULTILABEL:
+            self.labels_ = list(range(y.shape[-1]))
         else:
             self.labels_ = []
         return y
 
     def transform(self, X, y, copy_data=True):
+        sign = self.get_X_y_signature(X, y)
+        if self.use_cache:
+            logger.info('Try to load (X, y) from cache')
+            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
+            if X_t is not None and y_t is not None:
+                return X_t, y_t
+            else:
+                logger.info('Load failed')
+
         X_t = self.transform_X(X, copy_data)
         y_t = self.transform_y(y, copy_data)
+
+        cat_cols = self.get_categorical_columns()
+        cont_cols = self.get_continuous_columns()
+        if len(cat_cols) > 0:
+            X_t[cat_cols] = X_t[cat_cols].astype('category')
+        if len(cont_cols) > 0:
+            X_t[cont_cols] = X_t[cont_cols].astype('float')
+
+        if self.use_cache:
+            logger.info('Put (X, y) into cache')
+            self.save_transformed_X_y_to_cache(sign, X_t, y_t)
+
         return X_t, y_t
 
     def transform_y(self, y, copy_data=True):
@@ -164,7 +255,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             y = copy.deepcopy(y)
         if self.y_lable_encoder is not None:
             y = self.y_lable_encoder.transform(y)
-        print(f'transform_y cost:{time.time() - start}')
+        logger.info(f'transform_y taken {time.time() - start}s')
         y = np.array(y)
         return y
 
@@ -174,10 +265,10 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if copy_data:
             X = copy.deepcopy(X)
         X = self.prepare_X(X)
-        steps = (step for step in self.X_transformers.values())
+        steps = [step for step in self.X_transformers.values()]
         pipeline = make_pipeline(*steps)
         X_t = pipeline.transform(X)
-        print(f'transform_X cost:{time.time() - start}')
+        logger.info(f'transform_X taken {time.time() - start}s')
         return X_t
 
     def inverse_transform_y(self, y_indicator):
@@ -203,6 +294,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
             nunique = X[c].nunique()
             dtype = str(X[c].dtype)
 
+            if nunique <= 1 and self.config.auto_discard_unique:
+                continue
+
             if c in self.config.exclude_columns:
                 excluded_vars.append((c, dtype, nunique))
                 continue
@@ -218,7 +312,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             else:
                 if dtype == 'object' or dtype == 'category' or dtype == 'bool':
                     cat_vars.append((c, dtype, nunique))
-                elif self.config.auto_categorize and X[c].nunique() < unique_upper_limit:
+                elif self.config.auto_categorize and nunique < unique_upper_limit:
                     convert2cat_vars.append((c, dtype, nunique))
                 else:
                     num_vars.append((c, dtype, nunique))
@@ -238,7 +332,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         self.__append_categorical_cols([(c[0], c[2] + 2) for c in cat_vars])
         self.__append_continuous_cols([c[0] for c in num_vars], consts.INPUT_PREFIX_NUM + 'all')
-        print(f'Preparing features cost:{time.time() - start}')
+        print(f'Preparing features taken {time.time() - start}s')
         return X
 
     def _imputation(self, X):
@@ -254,7 +348,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
-        print(f'Imputation cost:{time.time() - start}')
+        print(f'Imputation taken {time.time() - start}s')
         return X
 
     def _categorical_encoding(self, X):
@@ -264,7 +358,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         mle = MultiLabelEncoder(vars)
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
-        print(f'Categorical encoding cost:{time.time() - start}')
+        print(f'Categorical encoding taken {time.time() - start}s')
         return X
 
     def _discretization(self, X):
@@ -275,7 +369,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         X = mkbd.fit_transform(X)
         self.__append_categorical_cols([(new_name, bins + 1) for name, new_name, bins in mkbd.new_columns])
         self.X_transformers['discreter'] = mkbd
-        print(f'Discretization cost:{time.time() - start}')
+        print(f'Discretization taken {time.time() - start}s')
         return X
 
     def _apply_gbm_features(self, X, y):
@@ -291,7 +385,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         else:
             self.__append_continuous_cols([name for name in gbmencoder.new_columns],
                                           consts.INPUT_PREFIX_NUM + 'gbm_leaves')
-        print(f'Extracting gbm features cost:{time.time() - start}')
+        print(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
     def __append_categorical_cols(self, cols):
@@ -327,3 +421,72 @@ class DefaultPreprocessor(AbstractPreprocessor):
         for c in self.continuous_columns:
             cont_vars = cont_vars + c.column_names
         return cont_vars
+
+    def _prepare_cache_dir(self, cache_home, clear_cache=False):
+        if cache_home is None:
+            cache_home = 'cache'
+        if cache_home[-1] == '/':
+            cache_home = cache_home[:-1]
+
+        cache_home = os.path.expanduser(f'{cache_home}')
+        if not os.path.exists(cache_home):
+            os.makedirs(cache_home)
+        else:
+            if clear_cache:
+                shutil.rmtree(cache_home)
+                os.makedirs(cache_home)
+        cache_dir = f'{cache_home}/{self.signature}'
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        return cache_dir
+
+    def get_transformed_X_y_from_cache(self, sign):
+        file_x_y = f'{self.cache_dir}/X_y_{sign}.h5'
+        X_t, y_t = None, None
+        if os.path.exists(file_x_y):
+            global h5
+            try:
+                h5 = pd.HDFStore(file_x_y)
+                df = h5['data']
+                y_t = df.pop('saved__y__')
+                X_t = df
+            except Exception as e:
+                logger.error(e)
+                h5.close()
+                os.remove(file_x_y)
+        return X_t, y_t
+
+    def save_transformed_X_y_to_cache(self, sign, X, y):
+        filepath = f'{self.cache_dir}/X_y_{sign}.h5'
+        try:
+            # x_t = X.copy(deep=True)
+            X.insert(0, 'saved__y__', y)
+            X.to_hdf(filepath, key='data', mode='w', format='t')
+            return True
+        except Exception as e:
+            logger.error(e)
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        return False
+
+    def load_transformers_from_cache(self):
+        transformer_path = f'{self.cache_dir}/transformers.pkl'
+        if os.path.exists(transformer_path):
+            try:
+                with open(transformer_path, 'rb') as input:
+                    preprocessor = pickle.load(input)
+                    self.__dict__.update(preprocessor.__dict__)
+                    return True
+            except Exception as e:
+                logger.error(e)
+                os.remove(transformer_path)
+        return False
+
+    def save_transformers_to_cache(self):
+        transformer_path = f'{self.cache_dir}/transformers.pkl'
+        with open(transformer_path, 'wb') as output:
+            pickle.dump(self, output, protocol=2)
+
+    def clear_cache(self):
+        shutil.rmtree(self.cache_dir)
+        os.makedirs(self.cache_dir)

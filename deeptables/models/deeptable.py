@@ -8,8 +8,10 @@ import numpy as np
 import time
 import pandas as pd
 import pickle
+import shutil
 from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
+from sklearn.utils.validation import check_array
 from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
@@ -157,7 +159,7 @@ class DeepTable:
 
             loss: str or object, (default='auto')
 
-            dnn_params: dict, (default={'dnn_units': ((128, 0, False), (64, 0, False)),
+            dnn_params: dict, (default={'hidden_units': ((128, 0, False), (64, 0, False)),
                                         'dnn_activation': 'relu'})
 
             autoint_params:dict, (default={'num_attention': 3,'num_heads': 1,
@@ -275,15 +277,17 @@ class DeepTable:
     >>>preds = dt.predict(X_eval)
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, preprocessor=None):
         if config is None:
             config = ModelConfig()
         self.config = config
         self.nets = config.nets
         self.output_path = self._prepare_output_dir(config.home_dir, self.nets)
-        self.preprocessor = DefaultPreprocessor(config)
+
+        self.preprocessor = preprocessor if preprocessor is not None else DefaultPreprocessor(config)
         self.__current_model = None
-        self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name, best_mode=consts.MODEL_SELECT_MODE_AUTO)
+        self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name,
+                                            best_mode=consts.MODEL_SELECT_MODE_AUTO)
 
     @property
     def task(self):
@@ -292,6 +296,10 @@ class DeepTable:
     @property
     def num_classes(self):
         return len(self.preprocessor.labels)
+
+    @property
+    def classes_(self):
+        return self.preprocessor.labels
 
     @property
     def pos_label(self):
@@ -331,13 +339,9 @@ class DeepTable:
 
         X, y = self.preprocessor.fit_transform(X, y)
         if validation_data is not None:
-            if len(validation_data) != 2:
-                raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
-            X_val, y_val = validation_data
-            X_val, y_val = self.preprocessor.transform(X_val, y_val)
-            validation_data = (X_val, y_val)
+            validation_data = self.preprocessor.transform(*validation_data)
 
-        logger.info(f'training...')
+        logger.info(f'Training...')
         if class_weight is None and self.config.apply_class_weight and self.task != consts.TASK_REGRESSION:
             class_weight = self.get_class_weight(y)
 
@@ -439,7 +443,7 @@ class DeepTable:
             test_proba_mean = test_proba_mean.reshape(-1)
             file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
             pd.DataFrame(test_proba_mean).to_csv(file, index=False)
-        print(f'fit_cross_validation cost:{time.time() - start}')
+        logger.info(f'fit_cross_validation taken {time.time() - start}s')
         return oof_proba, eval_proba_mean, test_proba_mean
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
@@ -465,14 +469,14 @@ class DeepTable:
                     proba_avg = np.zeros(proba.shape)
                 proba_avg += proba
             proba_avg /= len(models)
-            print(f'predict_proba cost:{time.time() - start}')
+            logger.info(f'predict_proba taken {time.time() - start}s')
             return proba_avg
         else:
             proba = self.__predict(self.get_model(model_selector),
                                    X, batch_size=batch_size,
                                    verbose=verbose,
                                    auto_transform_data=auto_transform_data)
-            print(f'predict_proba cost:{time.time() - start}')
+            logger.info(f'predict_proba taken {time.time() - start}s')
             return proba
 
     def predict_proba_all(self, X, batch_size=128, verbose=0, auto_transform_data=True, ):
@@ -522,7 +526,7 @@ class DeepTable:
         if auto_transform_data:
             X = self.preprocessor.transform_X(X)
         output = model.apply(X, output_layers, concat_outputs, batch_size, verbose, transformer)
-        print(f'apply cost:{time.time() - start}')
+        logger.info(f'apply taken {time.time() - start}s')
         return output
 
     def concat_emb_dense(self, flatten_emb_layer, dense_layer):
@@ -536,7 +540,7 @@ class DeepTable:
         else:
             raise ValueError('No input layer exists.')
         x = BatchNormalization(name='bn_concat_emb_dense')(x)
-        print(f'Concat embedding and dense layer shape:{x.shape}')
+        logger.info(f'Concat embedding and dense layer shape:{x.shape}')
         return x
 
     def get_model(self, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
@@ -644,7 +648,7 @@ class DeepTable:
                                restore_best_weights=True,
                                patience=self.config.earlystopping_patience,
                                verbose=1,
-                               min_delta=0.001,
+                               #min_delta=0.0001,
                                mode=mode,
                                baseline=None,
                                )
@@ -652,19 +656,23 @@ class DeepTable:
             print(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, patience:{es.patience}, mode:{mode}')
         return callbacks
 
-    def save(self, filepath):
+    def save(self, filepath, deepmodel_basename=None):
         if filepath[-1] != '/':
             filepath = filepath + '/'
 
         if not os.path.exists(filepath):
             os.makedir(filepath)
-
+        num_model = len(self.__modelset.get_modelinfos())
         for mi in self.__modelset.get_modelinfos():
             if isinstance(mi.model, str):
                 dm = self.load_deepmodel(mi.model)
                 mi.model = dm
             if not isinstance(mi.model, DeepModel):
                 raise ValueError(f'Currently does not support saving non-DeepModel models.')
+
+            if num_model == 1 and deepmodel_basename is not None:
+                mi.name = deepmodel_basename
+                self.__current_model = deepmodel_basename
             modelfile = f'{filepath}{mi.name}.h5'
             mi.model.save(modelfile)
             mi.model = modelfile
@@ -734,6 +742,11 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
 
 
 def infer_task_type(y):
+    if len(y.shape) > 1 and y.shape[-1] > 1:
+        labels = list(range(y.shape[-1]))
+        task = consts.TASK_MULTILABEL
+        return task, labels
+
     uniques = set(y)
     n_unique = len(uniques)
     labels = []

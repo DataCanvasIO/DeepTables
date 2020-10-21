@@ -9,6 +9,7 @@ TASK_AUTO = 'auto'
 TASK_BINARY = 'binary'
 TASK_MULTICLASS = 'multiclass'
 TASK_REGRESSION = 'regression'
+TASK_MULTILABEL = 'multilabel'
 
 INPUT_PREFIX_CAT = 'cat_'
 INPUT_PREFIX_NUM = 'input_continuous_'

@@ -9,13 +9,19 @@ from tensorflow.keras import layers
 
 from tensorflow.keras import backend as K
 import tensorflow as tf
-
+import multiprocessing
 import tempfile, os, uuid
+from multiprocessing import Manager
 
 
 class Test_DeepTable:
 
-    def run_nets(self, nets):
+    def run_load_model(self, p, X_test, y_test):
+        model = deeptable.DeepTable.load(p)
+        result_dt_loaded = model.evaluate(X_test, y_test)
+        assert result_dt_loaded['AUC'] >= 0.0
+
+    def run_nets(self, nets, **kwargs):
         df_train = dsutils.load_adult().head(100)
         y = df_train.pop(14).values
         X = df_train
@@ -25,29 +31,32 @@ class Test_DeepTable:
                                      fixed_embedding_dim=True,
                                      embeddings_output_dim=2,
                                      apply_gbm_features=False,
-                                     apply_class_weight=True)
+                                     apply_class_weight=True,
+                                     **kwargs)
+
         dt = deeptable.DeepTable(config=conf)
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         model, history = dt.fit(X_train, y_train, epochs=1)
 
-
-
         result = dt.evaluate(X_test, y_test)
         assert result['AUC'] >= 0.0
 
         # test reload from disk
-        model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
-        dt.save(model_path)
-        dt_loaded = deeptable.DeepTable.load(model_path)
-
-        result_dt_loaded = dt_loaded.evaluate(X_test, y_test)
-        assert result_dt_loaded['AUC'] >= 0.0
+        # model_path = os.path.join("/tmp/dt_model", str(uuid.uuid4()))
+        # dt.save(model_path)
+        #
+        # p = multiprocessing.Process(target=self.run_load_model, args=(model_path, X_test, y_test, ))
+        # p.start()
+        # p.join()
 
         return dt, result
 
     def test_all_nets(self):
-        self.run_nets(nets=['dnn_nets','linear','cin_nets','fm_nets','afm_nets','opnn_nets','ipnn_nets','pnn_nets','cross_nets','cross_dnn_nets','dcn_nets','autoint_nets','fg_nets','fgcnn_cin_nets','fgcnn_fm_nets','fgcnn_ipnn_nets','fgcnn_dnn_nets','fibi_nets','fibi_dnn_nets'])
+        self.run_nets(
+            nets=['dnn_nets', 'linear', 'cin_nets', 'fm_nets', 'afm_nets', 'opnn_nets', 'ipnn_nets', 'pnn_nets',
+                  'cross_nets', 'cross_dnn_nets', 'dcn_nets', 'autoint_nets', 'fg_nets', 'fgcnn_cin_nets',
+                  'fgcnn_fm_nets', 'fgcnn_ipnn_nets', 'fgcnn_dnn_nets', 'fibi_nets', 'fibi_dnn_nets'])
 
     def test_DeepFM(self):
         self.run_nets(nets=deepnets.DeepFM)
@@ -81,7 +90,13 @@ class Test_DeepTable:
         self.run_nets(nets=['opnn_nets', 'ipnn_nets', 'pnn_nets'])
 
     def test_autoint_nets(self):
-        self.run_nets(nets=['autoint_nets'])
+        self.run_nets(nets=['autoint_nets'],
+                      autoint_params={
+                          'num_attention': 3,
+                          'num_heads': 2,
+                          'dropout_rate': 0,
+                          'use_residual': True,
+                      }, )
 
     def test_fgcnn_nets(self):
         self.run_nets(nets=['fg_nets'])
@@ -141,13 +156,12 @@ class Test_DeepTable:
 
         filepath = tempfile.mkdtemp()
         dt.save(filepath)
-        #assert os.path.exists(f'{filepath}/dt.pkl')
-        #assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')
-
-
+        # assert os.path.exists(f'{filepath}/dt.pkl')
+        # assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')
 
         newdt = deeptable.DeepTable.load(filepath)
         assert newdt.best_model
+
 
 class CustomFM(layers.Layer):
 

@@ -7,6 +7,10 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import column_or_1d
 from ..utils import dt_logging, consts
 
+from sklearn.pipeline import Pipeline
+from sklearn.base import BaseEstimator,TransformerMixin
+from sklearn.pipeline import FeatureUnion
+
 logger = dt_logging.get_logger()
 
 
@@ -218,3 +222,16 @@ class GaussRankScaler:
         transformed = erfinv(transformed)
 
         return transformed
+
+
+class PassThroughEstimator(object):
+
+    def fit(self, X):
+        return self
+
+    def transform(self, X):
+        return X
+
+    def fit_transform(self, X):
+        self.fit(X)
+        return self.transform(X)

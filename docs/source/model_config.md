@@ -215,6 +215,12 @@ str, (default=`'add'`)
 ### output_use_bias
 bool, (default=`True`)
 
+### apply_class_weight
+bool, (default='False')
+
+Whether to calculate the weight of each class automatically. This can be useful to tell the model to "pay more attention" to samples from an under-represented class.
+
+
 ### optimizer
 str(name of optimizer) or optimizer instance or 'auto', (default=`'auto'`)
 
@@ -259,7 +265,7 @@ dictionary
 Only usable when 'dnn_nets' or a component using 'dnn' like 'pnn_nets','dcn_nets' included in [nets].
 ```
 {
-    'dnn_units': ((128, 0, False), (64, 0, False)),
+    'hidden_units': ((128, 0, False), (64, 0, False)),
     'dnn_activation': 'relu'}
 )
 ```

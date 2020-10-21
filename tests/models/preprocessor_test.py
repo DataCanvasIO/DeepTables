@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from deeptables.models import deeptable
 from deeptables.models.preprocessor import DefaultPreprocessor
 from deeptables.datasets import dsutils
+from .. import homedir
 
 
 class Test_Preprocessor:
@@ -69,3 +70,41 @@ class Test_Preprocessor:
                    set(['x_1', 'x_2', 'x_3', 'x_0', 'x_4', 'x_10', 'x_11', 'x_12',
                         'x_0_discrete', 'x_4_discrete', 'x_10_discrete', 'x_11_discrete',
                         'x_12_discrete'])) == 0
+
+    def test_use_cache(self):
+        config = deeptable.ModelConfig(metrics=['AUC'], apply_gbm_features=False, apply_class_weight=True)
+        df_train = dsutils.load_adult().head(1000)
+        y = df_train.pop(14).values
+        X = df_train
+
+        X, X_val, y, y_val = train_test_split(X, y, test_size=0.2)
+        cache_home = homedir + '/preprocessor_cache'
+        preprocessor = DefaultPreprocessor(config, cache_home=cache_home, use_cache=True)
+        preprocessor.clear_cache()
+
+        sign = preprocessor.get_X_y_signature(X, y)
+        sign_val = preprocessor.get_X_y_signature(X_val, y_val)
+        X_t, y_t = preprocessor.get_transformed_X_y_from_cache(sign)
+
+        assert X_t is None and y_t is None
+
+        preprocessor.fit_transform(X, y)
+        preprocessor.transform(X_val, y_val)
+        X_t2, y_t2 = preprocessor.get_transformed_X_y_from_cache(sign)
+        assert X_t2 is not None and y_t2 is not None
+
+        preprocessor = DefaultPreprocessor(config, cache_home=cache_home, use_cache=True)
+
+        assert len(preprocessor.X_transformers) == 0
+        assert preprocessor.y_lable_encoder is None
+
+        assert preprocessor.load_transformers_from_cache() == True
+
+        assert len(preprocessor.X_transformers) == 3
+        assert preprocessor.y_lable_encoder is not None
+
+        X_t, y_t = preprocessor.get_transformed_X_y_from_cache(sign)
+        assert X_t is not None and y_t is not None
+
+        X_val_t, y_val_t = preprocessor.get_transformed_X_y_from_cache(sign_val)
+        assert X_val_t is not None and y_val_t is not None

@@ -133,9 +133,10 @@ dmypy.json
 .pyre/
 
 /examples/.ipynb_checkpoints/
-/dt_output/
+**/dt_output/
 catboost_info/
 
 **/**/.DS_Store
 docs/**/*.mo
 deeptables.datasets.mo
+
