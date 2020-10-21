@@ -390,7 +390,7 @@ class DeepTable:
 
         test_proba_mean = None
         eval_proba_mean = None
-        if self.task == consts.TASK_MULTICLASS:
+        if self.task in (consts.TASK_MULTICLASS, consts.TASK_MULTILABEL):
             oof_proba = np.zeros((y.shape[0], self.num_classes))
         else:
             oof_proba = np.zeros((y.shape[0], 1))
