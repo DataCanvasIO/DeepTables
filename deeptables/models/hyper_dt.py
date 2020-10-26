@@ -106,6 +106,7 @@ class DTEstimator(Estimator):
         self.config_kwargs = config_kwargs
         self.cache_preprocessed_data = cache_preprocessed_data
         self.cache_home = cache_home
+        self.model = self._build_model(space_sample)
         Estimator.__init__(self, space_sample=space_sample)
 
     def _build_model(self, space_sample):
