@@ -144,6 +144,16 @@ class DTEstimator(Estimator):
         result = self.model.evaluate(X, y, **kwargs)
         return result
 
+    def predict_proba(self, X, **kwargs):
+        result = self.model.predict_proba(X, **kwargs)
+        return result
+
+    def save(self, model_file):
+        self.model.save(model_file)
+
+    @staticmethod
+    def load(model_file):
+        return DeepTable.load(model_file)
 
 class HyperDT(HyperModel):
     def __init__(self, searcher, dispatcher=None, callbacks=[], reward_metric=None, max_model_size=0,
