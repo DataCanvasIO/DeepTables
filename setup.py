@@ -19,6 +19,7 @@ requirements = [
     'category_encoders==2.1.0',
     'tables==3.6.1',
     'hypernets>=0.1.2',
+    'h5py==2.10.0',
     'eli5',
 ]
 
