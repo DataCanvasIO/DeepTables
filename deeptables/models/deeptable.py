@@ -644,7 +644,7 @@ class DeepTable:
         #    callbacks.append(mcp)
         #    print(f'Injected a callback [ModelCheckpoint].\nfilepath:{mcp.filepath}\nmonitor:{mcp.monitor}')
         if es is None:
-            es = EarlyStopping(monitor=self.monitor,
+            es = EarlyStopping(monitor=self.monitor.lower(),
                                restore_best_weights=True,
                                patience=self.config.earlystopping_patience,
                                verbose=1,
