@@ -1,4 +1,4 @@
-# Exapmles
+# Examples
 
 ## Binary Classification
 

@@ -22,6 +22,7 @@ from .config import ModelConfig
 from .deepmodel import DeepModel
 from .preprocessor import DefaultPreprocessor
 from ..utils import dt_logging, consts
+from ..utils.tf_version import tf_less_than
 
 logger = dt_logging.get_logger()
 
@@ -648,11 +649,11 @@ class DeepTable:
         #    callbacks.append(mcp)
         #    print(f'Injected a callback [ModelCheckpoint].\nfilepath:{mcp.filepath}\nmonitor:{mcp.monitor}')
         if es is None:
-            es = EarlyStopping(monitor=self.monitor,
+            es = EarlyStopping(monitor=self.monitor if tf_less_than('2.2') else self.monitor.lower(),
                                restore_best_weights=True,
                                patience=self.config.earlystopping_patience,
                                verbose=1,
-                               #min_delta=0.0001,
+                               # min_delta=0.0001,
                                mode=mode,
                                baseline=None,
                                )
