@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import column_or_1d
 from ..utils import dt_logging, consts
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator,TransformerMixin
@@ -230,6 +231,70 @@ class PassThroughEstimator(object):
         return self
 
     def transform(self, X):
+        return X
+
+    def fit_transform(self, X):
+        self.fit(X)
+        return self.transform(X)
+
+
+class VarLenFeatureEncoder:
+
+    def __init__(self, sep='|'):
+        self.sep = sep
+        self.encoder: SafeLabelEncoder = None
+        self._max_element_length = 0
+
+    def fit(self, X: pd.Series):
+        self._max_element_length = 0  # reset
+        if not isinstance(X, pd.Series):
+            X = pd.Series(X)
+        key_set = set()
+        # flat map
+        for keys in X.map(lambda _: _.split(self.sep)):
+            if len(keys) > self._max_element_length:
+                self._max_element_length = len(keys)
+
+            for key in keys:
+                key_set.add(key)
+        lb = SafeLabelEncoder()  # fix unseen values
+        lb.fit(np.array(list(key_set)))
+        self.encoder = lb
+        return self
+
+    def transform(self, X: pd.Series):
+        if self.encoder is None:
+            raise RuntimeError("Not fit yet .")
+
+        if not isinstance(X, pd.Series):
+            X = pd.Series(X)
+        # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
+        data = X.map(lambda _: (self.encoder.transform(_.split(self.sep)) + 1).tolist())
+
+        return pad_sequences(data, maxlen=self._max_element_length, padding='post', truncating='post').tolist()  # cut last elements
+
+    @property
+    def n_classes(self):
+        return len(self.encoder.classes_)
+
+    @property
+    def max_element_length(self):
+        return self._max_element_length
+
+
+class MultiVarLenFeatureEncoder:
+
+    def __init__(self, features):
+        self._encoders = {feature[0]: VarLenFeatureEncoder(feature[1]) for feature in features}
+
+    def fit(self, X):
+        for k, v in self._encoders.items():
+            v.fit(X[k])
+        return self
+
+    def transform(self, X):
+        for k, v in self._encoders.items():
+            X[k] = v.transform(X[k])
         return X
 
     def fit_transform(self, X):

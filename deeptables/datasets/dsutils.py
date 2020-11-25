@@ -41,3 +41,10 @@ def load_bank():
     data = pd.read_csv(f'{basedir}/bank-uci.csv')
     logger.info(f'data shape:{data.shape}')
     return data
+
+
+def load_movielens():
+    logger.info(f'Base dir:{os.getcwd()}')
+    data = pd.read_csv(f'{basedir}/movielens_sample.txt')
+    logger.info(f'data shape:{data.shape}')
+    return data

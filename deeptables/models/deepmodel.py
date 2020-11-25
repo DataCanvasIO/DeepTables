@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+from typing import List
 from collections import OrderedDict
 import collections
 import numpy as np
@@ -9,8 +9,11 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
 from tensorflow.keras.models import Model, load_model, save_model
 from tensorflow.keras.utils import to_categorical
+
+from deeptables.models.metainfo import CategoricalColumn
 from . import deepnets
-from .layers import MultiColumnEmbedding, dt_custom_objects
+from .layers import MultiColumnEmbedding, dt_custom_objects, VarLenColumnEmbedding
+from .metainfo import VarLenCategoricalColumn
 from ..utils import dt_logging, consts, gpu
 
 logger = dt_logging.get_logger()
@@ -25,6 +28,7 @@ class DeepModel:
                  config,
                  categorical_columns,
                  continuous_columns,
+                 var_categorical_len_columns=None,  # Compatible persisted model
                  model_file=None):
 
         # set gpu usage strategy before build model
@@ -33,6 +37,7 @@ class DeepModel:
         self.model_desc = ModelDesc()
         self.categorical_columns = categorical_columns
         self.continuous_columns = continuous_columns
+        self.var_len_categorical_columns = var_categorical_len_columns
         self.task = task
         self.num_classes = num_classes
         self.config = config
@@ -73,6 +78,7 @@ class DeepModel:
                                                 nets=self.config.nets,
                                                 categorical_columns=self.categorical_columns,
                                                 continuous_columns=self.continuous_columns,
+                                                var_len_categorical_columns=self.var_len_categorical_columns,
                                                 config=self.config)
         else:
             self.model = self.__build_model(task=self.task,
@@ -80,6 +86,7 @@ class DeepModel:
                                             nets=self.config.nets,
                                             categorical_columns=self.categorical_columns,
                                             continuous_columns=self.continuous_columns,
+                                            var_len_categorical_columns=self.var_len_categorical_columns,
                                             config=self.config)
 
         logger.info(f'training...')
@@ -154,9 +161,22 @@ class DeepModel:
         K.clear_session()
 
     def __get_model_input(self, X):
-        input = [X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)] + \
-                [X[c.column_names].values.astype(consts.DATATYPE_TENSOR_FLOAT) for c in self.continuous_columns]
-        return input
+        train_data = {}
+        # add categorical data
+        if self.categorical_columns is not None and len(self.categorical_columns) > 0:
+            train_data['input_categorical_vars_all'] = X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+
+        # add continuous data
+        if self.continuous_columns is not None and len(self.continuous_columns) > 0:
+            for c in self.continuous_columns:
+                train_data[c.name] = X[c.column_names].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+
+        # add var len categorical data
+        if self.var_len_categorical_columns is not None and len(self.var_len_categorical_columns) > 0:
+            for col in self.var_len_categorical_columns:
+                train_data[col.name] = np.array(X[col.name].tolist())
+
+        return train_data
 
     def __buld_proxy_model(self, model, output_layers=[], concat_output=False):
         model.trainable = False
@@ -172,11 +192,11 @@ class DeepModel:
         proxy.compile(optimizer=model.optimizer, loss=model.loss)
         return proxy
 
-    def __build_model(self, task, num_classes, nets, categorical_columns, continuous_columns, config):
+    def __build_model(self, task, num_classes, nets, categorical_columns, continuous_columns, var_len_categorical_columns, config):
         logger.info(f'Building model...')
         self.model_desc = ModelDesc()
-        categorical_inputs, continuous_inputs = self.__build_inputs(categorical_columns, continuous_columns)
-        embeddings = self.__build_embeddings(categorical_columns, categorical_inputs, config.embedding_dropout)
+        categorical_inputs, continuous_inputs, var_len_categorical_inputs = self.__build_inputs(categorical_columns, continuous_columns, var_len_categorical_columns)
+        embeddings = self.__build_embeddings(categorical_columns, categorical_inputs, var_len_categorical_columns, var_len_categorical_inputs,  config.embedding_dropout)
         dense_layer = self.__build_denses(continuous_columns, continuous_inputs, config.dense_dropout)
 
         flatten_emb_layer = None
@@ -190,6 +210,7 @@ class DeepModel:
         self.model_desc.nets = nets
         self.model_desc.stacking = config.stacking_op
         concat_emb_dense = self.__concat_emb_dense(flatten_emb_layer, dense_layer)
+        # concat_emb_dense = flatten_emb_layer
         outs = {}
         for net in nets:
             logit = deepnets.get(net)
@@ -220,7 +241,7 @@ class DeepModel:
             x = out
         else:
             raise ValueError(f'Unexcepted logit output.{outs}')
-        all_inputs = list(categorical_inputs.values()) + list(continuous_inputs.values())
+        all_inputs = list(categorical_inputs.values()) + list(var_len_categorical_inputs.values()) + list(continuous_inputs.values())
         output = self.__output_layer(x, task, num_classes, use_bias=self.config.output_use_bias)
         model = Model(inputs=all_inputs, outputs=output)
         model = self.__compile_model(model, task, num_classes, config.optimizer, config.loss, config.metrics)
@@ -261,33 +282,64 @@ class DeepModel:
         self.model_desc.set_concat_embed_dense(x.shape)
         return x
 
-    def __build_inputs(self, categorical_columns, continuous_columns):
+    def __build_inputs(self, categorical_columns: List[CategoricalColumn],  continuous_columns, var_len_categorical_columns: List[VarLenCategoricalColumn]=None):
         categorical_inputs = OrderedDict()
+        var_len_categorical_inputs = OrderedDict()
         continuous_inputs = OrderedDict()
 
-        categorical_inputs['all_categorical_vars'] = Input(shape=(len(categorical_columns),),
-                                                           name='input_categorical_vars_all')
-        self.model_desc.add_input('all_categorical_vars', len(categorical_columns))
-        # for column in categorical_columns:
+        if categorical_columns is not None and  len(categorical_columns) > 0:
+            categorical_inputs['all_categorical_vars'] = Input(shape=(len(categorical_columns),),
+                                                               name='input_categorical_vars_all')
+            self.model_desc.add_input('all_categorical_vars', len(categorical_columns))
+
+        # make input for var len feature
+        if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
+            for col in var_len_categorical_columns:
+                var_len_categorical_inputs[col.name] = Input(shape=(col.max_elements_length, ), name=col.name)
+                self.model_desc.add_input(col.name, col.max_elements_length)
+
         for column in continuous_columns:
             continuous_inputs[column.name] = Input(shape=(column.input_dim,), name=column.name,
                                                    dtype=column.dtype)
             self.model_desc.add_input(column.name, column.input_dim)
 
-        return categorical_inputs, continuous_inputs
+        return categorical_inputs, continuous_inputs, var_len_categorical_inputs
 
-    def __build_embeddings(self, categorical_columns, categorical_inputs, embedding_dropout):
-        input_layer = categorical_inputs['all_categorical_vars']
-        input_dims = [column.vocabulary_size for column in categorical_columns]
-        output_dims = [column.embeddings_output_dim for column in categorical_columns]
-        embeddings = MultiColumnEmbedding(input_dims, output_dims, embedding_dropout,
-                                          name=consts.LAYER_PREFIX_EMBEDDING + 'categorical_vars_all',
-                                          embeddings_initializer=self.config.embeddings_initializer,
-                                          embeddings_regularizer=self.config.embeddings_regularizer,
-                                          activity_regularizer=self.config.embeddings_activity_regularizer,
-                                          )(input_layer)
+    def __construct_var_len_embedding(self, column: VarLenCategoricalColumn, var_len_inputs, embedding_dropout):
+        input_layer = var_len_inputs[column.name]
+        var_len_embeddings = VarLenColumnEmbedding(pooling_strategy=column.pooling_strategy,
+                                                   input_dim=column.vocabulary_size,
+                                                   output_dim=column.embeddings_output_dim,
+                                                   dropout_rate=embedding_dropout,
+                                                   name=consts.LAYER_PREFIX_EMBEDDING + column.name,
+                                                   embeddings_initializer=self.config.embeddings_initializer,
+                                                   embeddings_regularizer=self.config.embeddings_regularizer,
+                                                   activity_regularizer=self.config.embeddings_activity_regularizer
+                                                   )(input_layer)
+        return var_len_embeddings
 
-        self.model_desc.set_embeddings(input_dims, output_dims, embedding_dropout)
+    def __build_embeddings(self, categorical_columns, categorical_inputs, var_len_categorical_columns: List[VarLenCategoricalColumn], var_len_inputs, embedding_dropout):
+        if 'all_categorical_vars' in categorical_inputs:
+            input_layer = categorical_inputs['all_categorical_vars']
+            input_dims = [column.vocabulary_size for column in categorical_columns]
+            output_dims = [column.embeddings_output_dim for column in categorical_columns]
+            embeddings = MultiColumnEmbedding(input_dims, output_dims, embedding_dropout,
+                                              name=consts.LAYER_PREFIX_EMBEDDING + 'categorical_vars_all',
+                                              embeddings_initializer=self.config.embeddings_initializer,
+                                              embeddings_regularizer=self.config.embeddings_regularizer,
+                                              activity_regularizer=self.config.embeddings_activity_regularizer,
+                                              )(input_layer)
+            self.model_desc.set_embeddings(input_dims, output_dims, embedding_dropout)
+        else:
+            embeddings = []
+
+        # do embedding for var len feature
+        if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
+            for c in var_len_categorical_columns:
+                # todo add var len embedding description
+                var_len_embedding = self.__construct_var_len_embedding(c, var_len_inputs, embedding_dropout)
+                embeddings.append(var_len_embedding)
+
         return embeddings
 
     def __build_denses(self, continuous_columns, continuous_inputs, dense_dropout, use_batchnormalization=False):
