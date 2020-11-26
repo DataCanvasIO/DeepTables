@@ -49,6 +49,7 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                                           'earlystopping_patience',
                                           'gpu_usage_strategy',
                                           'distribute_strategy',
+                                          'var_len_categorical_columns',
                                           ])):
     def __hash__(self):
         return self.name.__hash__()
@@ -126,7 +127,22 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                 earlystopping_patience=1,
                 gpu_usage_strategy=consts.GPU_USAGE_STRATEGY_GROWTH,
                 distribute_strategy=None,
+                var_len_categorical_columns=None,  # a tuple3, format is (column_name, separator, pool_strategy), pool_strategy is one of max,avg;  e.g. [('genres', '|', 'avg' )]
                 ):
+
+        if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
+            # check items
+            for v in var_len_categorical_columns:
+                _name = v[0]
+                if not isinstance(v, (tuple, list)) or len(v) != 3:
+                    raise ValueError("Var len column config should be a tuple 3.")
+                if exclude_columns is not None:
+                    if _name in exclude_columns:
+                        raise ValueError(f"Var len column {_name} can not put in 'exclude_columns' ")
+                if categorical_columns is not None and isinstance(categorical_columns, list):
+                    if _name in categorical_columns:
+                        raise ValueError(f"Var len column {_name} can not put in 'categorical_columns' ")
+
         nets = deepnets.get_nets(nets)
 
         if home_dir is None and os.environ.get(consts.ENV_DEEPTABLES_HOME) is not None:
@@ -175,6 +191,7 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                                                earlystopping_patience,
                                                gpu_usage_strategy,
                                                distribute_strategy,
+                                               var_len_categorical_columns,
                                                )
     @property
     def first_metric_name(self):

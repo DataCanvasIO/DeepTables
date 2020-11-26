@@ -913,6 +913,57 @@ class MultiColumnEmbedding(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
+class VarLenColumnEmbedding(Embedding):
+    def __init__(self, pooling_strategy='max', dropout_rate=0.,  **kwargs):
+        if pooling_strategy not in ['mean', 'max']:
+            raise ValueError("Param strategy should is one of mean, max")
+        self.pooling_strategy = pooling_strategy
+        self.dropout_rate = dropout_rate  # 支持dropout
+        super(VarLenColumnEmbedding, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        super(VarLenColumnEmbedding, self).build(input_shape)  # Be sure to call this somewhere!
+        height = input_shape[1]
+        if self.pooling_strategy == "mean":
+            self._pooling_layer = tf.keras.layers.AveragePooling2D(pool_size=(height, 1))
+        else:
+            self._pooling_layer = tf.keras.layers.MaxPooling2D(pool_size=(height, 1))
+
+        if self.dropout_rate > 0:
+            self._dropout = SpatialDropout1D(self.dropout_rate)
+        else:
+            self._dropout = None
+
+        self.built = True
+
+    def call(self, inputs):
+        # 1. do embedding
+        embedding_output = super(VarLenColumnEmbedding, self).call(inputs)
+
+        # 2. add dropout
+        if self._dropout is not None:
+            dropout_output = self._dropout(embedding_output)
+        else:
+            dropout_output = embedding_output
+
+        # 3. expand dim for polling
+        inputs_4d = tf.expand_dims(dropout_output, 3)  # add channels dim
+
+        # 4. polling
+        tensor_pooling = self._pooling_layer(inputs_4d)
+
+        # 5. format output
+        return tf.squeeze(tensor_pooling, 3)
+
+    def compute_mask(self, inputs, mask):
+        return None
+
+    def get_config(self, ):
+        config = {'pooling_strategy': self.pooling_strategy}
+        base_config = super(VarLenColumnEmbedding, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+
 class BinaryFocalLoss(losses.Loss):
     """
     Binary form of focal loss.

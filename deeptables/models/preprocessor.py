@@ -15,8 +15,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from deeptables.preprocessing.transformer import PassThroughEstimator
-from .metainfo import CategoricalColumn, ContinuousColumn
+from deeptables.preprocessing.transformer import PassThroughEstimator, VarLenFeatureEncoder, MultiVarLenFeatureEncoder
+from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
 from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameWrapper, LgbmLeavesEncoder, \
     CategorizeEncoder
 from ..utils import dt_logging, consts
@@ -130,6 +130,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def reset(self):
         self.metainfo = None
         self.categorical_columns = None
+        self.var_len_categorical_columns = None
         self.continuous_columns = None
         self.y_lable_encoder = None
         self.X_transformers = collections.OrderedDict()
@@ -189,6 +190,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
             X = self._discretization(X)
         if self.config.apply_gbm_features and y is not None:
             X = self._apply_gbm_features(X, y)
+        var_len_categorical_columns = self.config.var_len_categorical_columns
+        if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
+            X = self._var_len_encoder(X, var_len_categorical_columns)
 
         self.X_transformers['last'] = PassThroughEstimator()
 
@@ -289,6 +293,21 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if self.config.cat_exponent >= 1:
             raise ValueError(f'"cat_expoent" must be less than 1, not {self.config.cat_exponent} .')
 
+        var_len_categorical_columns = self.config.var_len_categorical_columns
+        var_len_column_names = []
+        if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
+            # check items
+            for v in var_len_categorical_columns:
+                if not isinstance(v, (tuple, list)) or len(v) != 3:
+                    raise ValueError("Var len column config should be a tuple 3.")
+                else:
+                    var_len_column_names.append(v[0])
+            var_len_col_sep_dict = {v[0]: v[1] for v in var_len_categorical_columns}
+            var_len_col_pooling_strategy_dict = {v[0]: v[2] for v in var_len_categorical_columns}
+        else:
+            var_len_col_sep_dict = {}
+            var_len_col_pooling_strategy_dict = {}
+
         unique_upper_limit = round(X.shape[0] ** self.config.cat_exponent)
         for c in X.columns:
             nunique = X[c].nunique()
@@ -300,6 +319,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             if c in self.config.exclude_columns:
                 excluded_vars.append((c, dtype, nunique))
                 continue
+
+            # handle var len feature
+            if c in var_len_column_names:
+                self.__append_var_len_categorical_col(c, nunique, var_len_col_sep_dict[c], var_len_col_pooling_strategy_dict[c])
+                continue
+
             if self.config.categorical_columns is not None and isinstance(self.config.categorical_columns, list):
                 if c in self.config.categorical_columns:
                     cat_vars.append((c, dtype, nunique))
@@ -340,12 +365,19 @@ class DefaultPreprocessor(AbstractPreprocessor):
         logger.info('Data imputation...')
         continuous_vars = self.get_continuous_columns()
         categorical_vars = self.get_categorical_columns()
-        ct = ColumnTransformer([
+        var_len_categorical_vars = self.get_var_len_categorical_columns()
+
+        transformers = [
             ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
              categorical_vars),
             ('continuous', SimpleImputer(missing_values=np.nan, strategy='mean'), continuous_vars),
-        ])
-        dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars)
+        ]
+
+        if len(var_len_categorical_vars) > 0:
+            transformers.append(('var_len_categorical', SimpleImputer(missing_values=np.nan, strategy='constant'), var_len_categorical_vars),)
+
+        ct = ColumnTransformer(transformers)
+        dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars + var_len_categorical_vars)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
         print(f'Imputation taken {time.time() - start}s')
@@ -372,6 +404,21 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Discretization taken {time.time() - start}s')
         return X
 
+    def _var_len_encoder(self, X, var_len_categorical_columns):
+        start = time.time()
+        logger.info('Encoder var length feature...')
+        transformer = MultiVarLenFeatureEncoder(var_len_categorical_columns)
+        X = transformer.fit_transform(X)
+
+        # update var_len_categorical_columns
+        for c in self.var_len_categorical_columns:
+            _encoder: VarLenFeatureEncoder = transformer._encoders[c.name]
+            c.max_elements_length = _encoder.max_element_length
+
+        self.X_transformers['var_len_encoder'] = transformer
+        print(f'Encoder taken {time.time() - start}s')
+        return X
+
     def _apply_gbm_features(self, X, y):
         start = time.time()
         logger.info('Extracting GBM features...')
@@ -388,6 +435,26 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
+    def __append_var_len_categorical_col(self, name, voc_size, sep, pooling_strategy):
+        logger.debug(f'Var len categorical variables {name} appended.')
+
+        if self.config.fixed_embedding_dim:
+            embedding_output_dim = self.config.embeddings_output_dim if self.config.embeddings_output_dim > 0 else consts.EMBEDDING_OUT_DIM_DEFAULT
+        else:
+            embedding_output_dim = 0
+
+        if self.var_len_categorical_columns is None:
+            self.var_len_categorical_columns = []
+
+        vc = \
+            VarLenCategoricalColumn(name,
+                                    voc_size,
+                                    embedding_output_dim if embedding_output_dim > 0 else min(4 * int(pow(voc_size, 0.25)), 20),
+                                    sep=sep,
+                                    pooling_strategy=pooling_strategy)
+
+        self.var_len_categorical_columns.append(vc)
+
     def __append_categorical_cols(self, cols):
         logger.debug(f'{len(cols)} categorical variables appended.')
 
@@ -399,22 +466,31 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         if self.categorical_columns is None:
             self.categorical_columns = []
-        self.categorical_columns = self.categorical_columns + \
-                                   [CategoricalColumn(name,
-                                                      voc_size,
-                                                      embedding_output_dim
-                                                      if embedding_output_dim > 0
-                                                      else min(4 * int(pow(voc_size, 0.25)), 20))
-                                    for name, voc_size in cols]
+
+        if cols is not None and len(cols) > 0:
+            self.categorical_columns = self.categorical_columns + \
+                                       [CategoricalColumn(name,
+                                                          voc_size,
+                                                          embedding_output_dim
+                                                          if embedding_output_dim > 0
+                                                          else min(4 * int(pow(voc_size, 0.25)), 20))
+                                        for name, voc_size in cols]
 
     def __append_continuous_cols(self, cols, input_name):
         if self.continuous_columns is None:
             self.continuous_columns = []
-        self.continuous_columns = self.continuous_columns + [ContinuousColumn(name=input_name,
-                                                                              column_names=[c for c in cols])]
+        if cols is not None and len(cols) > 0:
+            self.continuous_columns = self.continuous_columns + [ContinuousColumn(name=input_name,
+                                                                                  column_names=[c for c in cols])]
 
     def get_categorical_columns(self):
         return [c.name for c in self.categorical_columns]
+
+    def get_var_len_categorical_columns(self):
+        if self.var_len_categorical_columns is not None:
+            return [c.name for c in self.var_len_categorical_columns]
+        else:
+            return []
 
     def get_continuous_columns(self):
         cont_vars = []

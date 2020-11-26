@@ -336,6 +336,11 @@ class DeepTable:
             max_queue_size=10, workers=1, use_multiprocessing=False):
         logger.info(f'X.Shape={np.shape(X)}, y.Shape={np.shape(y)}, batch_size={batch_size}, config={self.config}')
         logger.info(f'metrics:{self.config.metrics}')
+        if np.ndim(X) != 2:
+            raise ValueError("Input train data should be 2d .")
+        X_shape = np.shape(X)
+        if X_shape[1] < 1:
+            raise ValueError("Input train data should has 1 feature at least.")
         self.__modelset.clear()
 
         X, y = self.preprocessor.fit_transform(X, y)
@@ -349,7 +354,8 @@ class DeepTable:
         callbacks = self.__inject_callbacks(callbacks)
         model = DeepModel(self.task, self.num_classes, self.config,
                           self.preprocessor.categorical_columns,
-                          self.preprocessor.continuous_columns)
+                          self.preprocessor.continuous_columns,
+                          var_categorical_len_columns=self.preprocessor.var_len_categorical_columns)
         history = model.fit(X, y, batch_size=batch_size, epochs=epochs, verbose=verbose, shuffle=shuffle,
                             validation_split=validation_split, validation_data=validation_data,
                             validation_steps=validation_steps, validation_freq=validation_freq,
@@ -702,7 +708,8 @@ class DeepTable:
         if os.path.exists(filepath):
             print(f'Load model from disk:{filepath}.')
             dm = DeepModel(self.task, self.num_classes, self.config,
-                           self.preprocessor.categorical_columns, self.preprocessor.continuous_columns, filepath)
+                           self.preprocessor.categorical_columns,
+                           self.preprocessor.continuous_columns, model_file=filepath)
             return dm
         else:
             raise ValueError(f'Invalid model filename:{filepath}.')
