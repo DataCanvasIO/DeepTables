@@ -28,8 +28,8 @@ class DeepModel:
                  config,
                  categorical_columns,
                  continuous_columns,
-                 var_categorical_len_columns=None,  # Compatible persisted model
-                 model_file=None):
+                 model_file=None,
+                 var_categorical_len_columns=None, ):
 
         # set gpu usage strategy before build model
         if config.gpu_usage_strategy == consts.GPU_USAGE_STRATEGY_GROWTH:
