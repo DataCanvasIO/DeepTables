@@ -24,6 +24,18 @@ AFM = ['afm_nets']
 #         'autoint_nets', 'fg_nets', 'fgcnn_cin_nets', 'fgcnn_fm_nets', 'fgcnn_ipnn_nets',
 #         'fgcnn_dnn_nets', 'fibi_nets', 'fibi_dnn_nets']
 
+def _concat_embeddings(embeddings, concat_layer_name):
+    if embeddings is not None:
+        len_embeddings = len(embeddings)
+        if len_embeddings > 1:
+            return Concatenate(axis=1, name=concat_layer_name)(embeddings)
+        elif len_embeddings == 1:
+            return embeddings[0]
+        else:
+            return None
+    else:
+        return None
+
 
 def linear(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc):
     """
@@ -31,9 +43,11 @@ def linear(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config,
     """
     x = None
     x_emb = None
-    if embeddings is not None and len(embeddings) > 1:
-        concat_embeddings = Concatenate(axis=1, name='concat_linear_embedding')(embeddings)
+    concat_embeddings = _concat_embeddings(embeddings, 'concat_linear_embedding')
+    if concat_embeddings is not None :
         x_emb = tf.reduce_sum(concat_embeddings, axis=-1, name='linear_reduce_sum')
+    else:
+        return None
 
     if x_emb is not None and dense_layer is not None:
         x = Concatenate(name='concat_linear_emb_dense')([x_emb, dense_layer])
@@ -56,10 +70,10 @@ def cin_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, confi
     is measured explicitly; (3) the complexity of network will not grow exponentially with the degree
     of interactions.
     """
-    if embeddings is None or len(embeddings) <= 1:
+    cin_concat = _concat_embeddings(embeddings, 'concat_cin_embedding')
+    if cin_concat is None:
         model_desc.add_net('cin', (None), (None))
         return None
-    cin_concat = Concatenate(axis=1, name='concat_cin_embedding')(embeddings)
     cin_output = layers.CIN(params=config.cin_params)(cin_concat)
     model_desc.add_net('cin', cin_concat.shape, cin_output.shape)
     return cin_output
@@ -69,12 +83,14 @@ def fm_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config
     """
     FM models pairwise(order-2) feature interactions
     """
-    if embeddings is None or len(embeddings) <= 1:
+    concat_embeddings_layer = _concat_embeddings(embeddings, 'concat_fm_embedding')
+
+    if concat_embeddings_layer is None :
         model_desc.add_net('fm', (None), (None))
         return None
-    fm_concat = Concatenate(axis=1, name='concat_fm_embedding')(embeddings)
-    fm_output = layers.FM(name='fm_layer')(fm_concat)
-    model_desc.add_net('fm', fm_concat.shape, fm_output.shape)
+    # fm_concat = Concatenate(axis=1, name='concat_fm_embedding')(embeddings)
+    fm_output = layers.FM(name='fm_layer')(concat_embeddings_layer)
+    model_desc.add_net('fm', concat_embeddings_layer.shape, fm_output.shape)
     return fm_output
 
 
@@ -82,7 +98,7 @@ def afm_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, confi
     """Attentional Factorization Machine (AFM), which learns the importance of each feature interaction
     from datasets via a neural attention network.
     """
-    if embeddings is None or len(embeddings) <= 1:
+    if embeddings is None or len(embeddings) < 2:  # Need at last 2 embedding
         return None
     afm_output = layers.AFM(params=config.afm_params, name='afm_layer')(embeddings)
     model_desc.add_net('afm', f'list({len(embeddings)})', afm_output.shape)
@@ -94,7 +110,7 @@ def opnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, conf
     Outer Product-based Neural Network
     OuterProduct+DNN
     """
-    if embeddings is None or len(embeddings) <= 1:
+    if embeddings is None or len(embeddings) < 2:  # at least 2 embedding to build `layers.InnerProduct`
         return None
 
     op = layers.OuterProduct(config.pnn_params, name='outer_product_layer')(embeddings)
@@ -111,7 +127,7 @@ def ipnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, conf
     Inner Product-based Neural Network
     InnerProduct+DNN
     """
-    if embeddings is None or len(embeddings) <= 1:
+    if embeddings is None or len(embeddings) < 2:  # at least 2 embedding to build `layers.InnerProduct`
         return None
 
     ip = layers.InnerProduct(name='inner_product_layer')(embeddings)
@@ -127,7 +143,7 @@ def pnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, confi
     """
     Concatenation of inner product and outer product + DNN
     """
-    if embeddings is None or len(embeddings) <= 1:
+    if embeddings is None or len(embeddings) < 2: # at least 2 embedding to build `layers.InnerProduct`
         return None
 
     ip = layers.InnerProduct(name='pnn_inner_product_layer')(embeddings)
@@ -193,15 +209,16 @@ def autoint_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, c
     """
     AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural Networks.
     """
-    if embeddings is None or len(embeddings) <= 1:
+    concat_embeddings_layer = _concat_embeddings(embeddings, 'concat_autoint_embedding')
+    if concat_embeddings_layer is None:
         model_desc.add_net('autoint', (None), (None))
         return None
-    autoint_emb_concat = Concatenate(axis=1, name='concat_autoint_embedding')(embeddings)
-    output = autoint_emb_concat
+    # autoint_emb_concat = Concatenate(axis=1, name='concat_autoint_embedding')(embeddings)
+    output = concat_embeddings_layer
     for i in range(config.autoint_params['num_attention']):
         output = layers.MultiheadAttention(params=config.autoint_params)(output)
     output = Flatten()(output)
-    model_desc.add_net('autoint', autoint_emb_concat.shape, output.shape)
+    model_desc.add_net('autoint', concat_embeddings_layer.shape, output.shape)
     return output
 
 
@@ -215,12 +232,13 @@ def fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config
         .. [1] `Liu B, Tang R, Chen Y, et al. Feature generation by convolutional neural network
         for click-through rate prediction[C]//The World Wide Web Conference. 2019: 1119-1129.`
     """
-    if embeddings is None or len(embeddings) <= 1:
+    fgcnn_emb_concat_index = counter.next_num('concat_fgcnn_embedding')
+    fgcnn_emb_concat = _concat_embeddings(embeddings, f'concat_fgcnn_embedding_{fgcnn_emb_concat_index}')
+
+    if fgcnn_emb_concat is None:
         model_desc.add_net('fgcnn', (None), (None))
         return None
-
-    fgcnn_emb_concat_index = counter.next_num('concat_fgcnn_embedding')
-    fgcnn_emb_concat = Concatenate(axis=1, name=f'concat_fgcnn_embedding_{fgcnn_emb_concat_index}')(embeddings)
+    # fgcnn_emb_concat = Concatenate(axis=1, name=f'concat_fgcnn_embedding_{fgcnn_emb_concat_index}')(embeddings)
     fg_inputs = tf.expand_dims(fgcnn_emb_concat, axis=-1)
     fg_filters = config.fgcnn_params.get('fg_filters', (14, 16))
     fg_heights = config.fgcnn_params.get('fg_heights', (7, 7))
@@ -244,10 +262,11 @@ def fgcnn_cin_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense,
     """
     FGCNN with CIN as deep classifier
     """
-    if embeddings is None or len(embeddings) <= 1:
+    fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
+
+    if fg_output is None:
         return None
 
-    fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
     cin_output = layers.CIN(params=config.cin_params)(fg_output)
     model_desc.add_net('fgcnn-cin', fg_output.shape, cin_output.shape)
     return cin_output
@@ -257,10 +276,11 @@ def fgcnn_fm_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, 
     """
     FGCNN with FM as deep classifier
     """
-    if embeddings is None or len(embeddings) <= 1:
-        return None
 
     fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
+    if fg_output is None:
+        return None
+
     fm_output = layers.FM(name='fm_fgcnn_layer')(fg_output)
     model_desc.add_net('fgcnn-fm', fg_output.shape, fm_output.shape)
     return fm_output
@@ -271,6 +291,9 @@ def fgcnn_afm_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense,
     FGCNN with AFM as deep classifier
     """
     fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
+    if fg_output is None:
+        return None
+
     split_features = tf.split(fg_output, fg_output.shape[1], axis=1)
     afm_output = layers.AFM(params=config.afm_params)(split_features)
     model_desc.add_net('fgcnn-afm', fg_output.shape, afm_output.shape)
@@ -281,14 +304,16 @@ def fgcnn_ipnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense
     """
     FGCNN with IPNN as deep classifier
     """
-    if embeddings is None or len(embeddings) <= 1:
-        return None
-
     fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
+    if fg_output is None:
+        return None
     split_features = tf.split(fg_output, fg_output.shape[1], axis=1)
     inner_product = layers.InnerProduct()(split_features)
     # dnn_input = Flatten()(concat_all_features)
-    dnn_input = Concatenate()([Flatten()(fg_output), inner_product, dense_layer])
+    dnn_input_layers = [Flatten()(fg_output), inner_product]
+    if dense_layer is not None:
+        dnn_input_layers.append(dense_layer)
+    dnn_input = Concatenate()(dnn_input_layers)
     dnn_out = dnn(dnn_input, config.dnn_params, cellname='fgcnn_ipnn')
     model_desc.add_net('fgcnn-ipnn', fg_output.shape, dnn_out.shape)
     return dnn_out
@@ -298,11 +323,15 @@ def fgcnn_dnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense,
     """
     FGCNN with DNN as deep classifier
     """
-    if embeddings is None or len(embeddings) <= 1:
+    fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
+    if fg_output is None:
         return None
 
-    fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
-    dnn_input = Concatenate()([Flatten()(fg_output), dense_layer])
+    if dense_layer is not None:
+        dnn_input = Concatenate()([Flatten()(fg_output), dense_layer])
+    else:
+        dnn_input = Flatten()(fg_output)
+
     dnn_out = dnn(dnn_input, config.dnn_params, cellname='fgcnn_dnn')
     model_desc.add_net('fgcnn-ipnn', fg_output.shape, dnn_out.shape)
     return dnn_out
@@ -316,13 +345,11 @@ def fibi_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, conf
     these cross features are concatenated by a combination layer which merges the outputs of
     Bilinear-Interaction layer.
     """
-    if embeddings is None or len(embeddings) <= 1:
+    senet_index = counter.next_num('senet_layer')
+    senet_emb_concat = _concat_embeddings(embeddings, f'concat_senet_embedding_{senet_index}')
+    if senet_emb_concat is None:
         model_desc.add_net('fibi', (None), (None))
         return None
-
-    senet_index = counter.next_num('senet_layer')
-
-    senet_emb_concat = Concatenate(axis=1, name=f'concat_senet_embedding_{senet_index}')(embeddings)
 
     senet_pooling_op = config.fibinet_params.get('senet_pooling_op', 'mean')
     senet_reduction_ratio = config.fibinet_params.get('senet_reduction_ratio', 3)

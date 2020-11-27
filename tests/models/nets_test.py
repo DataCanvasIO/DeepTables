@@ -12,6 +12,10 @@ import tensorflow as tf
 import multiprocessing
 import tempfile, os, uuid
 from multiprocessing import Manager
+import pytest
+from deeptables.datasets import dsutils
+from deeptables.models import deeptable
+from deeptables.utils import consts
 
 
 class Test_DeepTable:
@@ -161,6 +165,31 @@ class Test_DeepTable:
 
         newdt = deeptable.DeepTable.load(filepath)
         assert newdt.best_model
+
+    @pytest.mark.parametrize("net", ['linear', 'cin_nets', 'fm_nets', 'cross_nets', 'autoint_nets',   'fg_nets', 'fgcnn_cin_nets', 'fgcnn_fm_nets', 'fgcnn_afm_nets', 'fgcnn_ipnn_nets', 'fgcnn_dnn_nets'])
+    def test_only_1_categorical(self, net):
+        # Note: afm_nets needs embedding array, and at least 2 elements
+        # Note: opnn_nets,ipnn_nets,pnn_nets, needs at least 2 embedding to build `layers.InnerProduct`
+        # Note: dnn_nets,cross_dnn_nets,cross_nets,dcn_nets, does not using embedding
+        # Note: fibi_nets,fibi_dnn_nets  needs at least 2 embedding because of `BilinearInteraction`
+        df = dsutils.load_movielens()
+        y = df['rating'].values.astype('float32')
+        X = df[['movie_id']]
+
+        conf = deeptable.ModelConfig(nets=[net],
+                                     task=consts.TASK_REGRESSION,
+                                     categorical_columns=["movie_id"],
+                                     metrics=['mse'],
+                                     fixed_embedding_dim=True,
+                                     embeddings_output_dim=4,
+                                     apply_gbm_features=False,
+                                     apply_class_weight=True,
+                                     earlystopping_patience=5)
+
+        dt = deeptable.DeepTable(config=conf)
+
+        model, history = dt.fit(X, y, validation_split=0.2, epochs=10, batch_size=32)
+        assert model
 
 
 class CustomFM(layers.Layer):
