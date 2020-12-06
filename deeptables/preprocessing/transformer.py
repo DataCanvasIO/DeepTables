@@ -195,8 +195,14 @@ class SafeLabelEncoder(LabelEncoder):
         y = column_or_1d(y, warn=True)
 
         unseen = len(self.classes_)
-        y = np.array([np.searchsorted(self.classes_, x) if x in self.classes_ else unseen for x in y])
-        return y
+        lookup_table = dict(zip(self.classes_, list(range(0, unseen))))
+        out = np.full(len(y), unseen)
+        ind_id = 0
+        for cell_value in y:
+            if cell_value in lookup_table:
+                out[ind_id] = lookup_table[cell_value]
+            ind_id += 1
+        return out
 
 
 class GaussRankScaler:
