@@ -4,13 +4,11 @@ __author__ = 'yangjian'
 
 """
 
-import numpy as np
-import pandas as pd
 import itertools
+
+import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
-from matplotlib_venn import venn2
-
 
 
 def columns_info(dataframe, topN=10):
@@ -99,6 +97,8 @@ def hist_continuous(df, continuous_features, bins=30, df2=None):
 
 
 def venn_diagram(train, test, category_features, names=('train', 'test'), figsize=(18, 13)):
+    from matplotlib_venn import venn2
+
     """
     category_features: max==6
     """

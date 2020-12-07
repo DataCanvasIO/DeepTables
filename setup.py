@@ -5,23 +5,42 @@ from __future__ import absolute_import
 from setuptools import find_packages
 from setuptools import setup
 
-version = '0.1.12'
 
-requirements = [
-    'scipy>=1.3.1',
-    'pandas>=0.25.3',
-    'scikit-learn>=0.20.3',
-    'tensorflow>=2.0.0',
-    'numpy>=1.17.4',
-    'catboost==0.20.2',
-    'lightgbm>=2.3.0',
-    'scikit-optimize==0.7.1',
-    'category_encoders==2.1.0',
-    'tables==3.6.1',
-    'hypernets>=0.1.2',
-    'h5py==2.10.0',
-    'eli5',
-]
+def read_requirements(file_path='requirements.txt'):
+    import os
+
+    if not os.path.exists(file_path):
+        return []
+
+    with open(file_path, 'r')as f:
+        lines = f.readlines()
+
+    lines = [x.strip('\n').strip(' ') for x in lines]
+    lines = list(filter(lambda x: len(x) > 0 and not x.startswith('#'), lines))
+
+    return lines
+
+
+def read_extra_requirements():
+    import glob
+    import re
+
+    extra = {}
+
+    for file_name in glob.glob('requirements-*.txt'):
+        key = re.search('requirements-(.+).txt', file_name).group(1)
+        req = read_requirements(file_name)
+        if req:
+            extra[key] = req
+
+    if extra and 'all' not in extra.keys():
+        extra['all'] = sorted({v for req in extra.values() for v in req})
+
+    return extra
+
+
+version = '0.1.12'
+requirements = read_requirements()
 
 MIN_PYTHON_VERSION = '>=3.6.*'
 

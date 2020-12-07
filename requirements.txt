@@ -3,11 +3,11 @@ pandas>=0.25.3
 tensorflow>=2.0.0
 scikit-learn>=0.20.3
 numpy>=1.17.4
-catboost==0.20.2
+catboost>=0.20.2
 lightgbm>=2.3.0
 scikit-optimize==0.7.1
-tables==3.6.1
-category_encoders==2.1.0
-hypernets>=0.1.2
-h5py==2.10.0
+tables>=3.6.1
+category_encoders>=2.1.0
+hypernets>=0.1.5
+h5py>=2.10.0
 eli5
