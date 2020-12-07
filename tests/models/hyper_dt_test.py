@@ -81,7 +81,6 @@ class Test_HyperDT():
         y = np.random.randint(0, 2, size=(100), dtype='int')
         df = pd.DataFrame({'x1': x1, 'x2': x2, 'x3': x3, 'x4': x4})
         hdt.search(df, y, df, y, max_trails=3, epochs=1)
-        assert hdt.best_model
         best_trial = hdt.get_best_trail()
 
         estimator = hdt.final_train(best_trial.space_sample, df, y, epochs=1)
