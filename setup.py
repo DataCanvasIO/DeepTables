@@ -38,7 +38,7 @@ def read_extra_requirements():
 
     return extra
 
-version = '0.1.12'
+version = '0.1.13'
 requirements = read_requirements()
 
 MIN_PYTHON_VERSION = '>=3.6.*'
