@@ -38,7 +38,6 @@ def read_extra_requirements():
 
     return extra
 
-
 version = '0.1.12'
 requirements = read_requirements()
 
