@@ -1,9 +1,9 @@
 packaging
 scipy>=1.3.1
 pandas>=0.25.3
+numpy<1.19.0,>=1.16.0
 tensorflow>=2.0.0
 scikit-learn>=0.20.3
-numpy<1.19.0,>=1.16.0
 catboost>=0.20.2
 lightgbm>=2.3.0
 scikit-optimize==0.7.1
