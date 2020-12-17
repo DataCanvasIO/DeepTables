@@ -24,11 +24,14 @@ def calc_score(y_true, y_proba, y_preds, metrics, task, pos_label=1):
                 average = 'binary'
 
             if metric == 'auc':
-                if len(y_proba.shape) == 2:
-                    # ! When sklearn version > 0.22.0 support multi class
-                    score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
+                if task == consts.TASK_BINARY:
+                    score['auc'] = roc_auc_score(y_true, y_proba[:, 1])
                 else:
-                    score['auc'] = roc_auc_score(y_true, y_proba)
+                    if len(y_proba.shape) == 2:
+                        # ! When sklearn version > 0.22.0 support multi class
+                        score['auc'] = roc_auc_score(y_true, y_proba, multi_class='ovo')
+                    else:
+                        score['auc'] = roc_auc_score(y_true, y_proba)
 
             elif metric == 'accuracy':
                 if y_preds is None:

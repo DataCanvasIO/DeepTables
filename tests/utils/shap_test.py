@@ -32,4 +32,4 @@ class Test_SHAP():
             dt_explainer = DeepTablesExplainer(dt, X, num_samples=10)
 
             shap_values = dt_explainer.get_shap_values(X[:1], nsamples='auto')
-            assert shap_values[0].shape == (1, 16)
+            assert shap_values[0].shape == (16, )
