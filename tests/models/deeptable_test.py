@@ -68,7 +68,7 @@ class Test_DeepTable:
 
     def test_predict_proba(self):
         proba = self.dt.predict_proba(self.X_test)
-        assert proba.shape, (6513, 1)
+        assert proba.shape, (6513, 2)
 
     def test_proba2predict(self):
         proba = self.dt.predict_proba(self.X_test)

@@ -330,7 +330,7 @@ class BatchTrainer:
             elif self.task == consts.TASK_MULTICLASS:
                 proba = model.predict_proba(X_eval)
             else:
-                proba = model.predict_proba(X_eval)[:, 1]
+                proba = model.predict_proba(X_eval)
 
             print('Scoring...')
             score = calc_score(self.y_eval, proba, preds, self.eval_metrics, self.task, pos_label)
@@ -379,7 +379,7 @@ class BatchTrainer:
         elif self.task == consts.TASK_MULTICLASS:
             proba = model.predict_proba(X)
         else:
-            proba = model.predict_proba(X)[:, 1]
+            proba = model.predict_proba(X)
         return proba
 
     @staticmethod

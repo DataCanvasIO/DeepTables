@@ -377,6 +377,7 @@ class DeepTable:
         start = time.time()
         logger.info(f'X.Shape={np.shape(X)}, y.Shape={np.shape(y)}, batch_size={batch_size}, config={self.config}')
         logger.info(f'metrics:{self.config.metrics}')
+        n_rows = np.shape(X)[0]
         self.__modelset.clear()
 
         X, y = self.preprocessor.fit_transform(X, y)
@@ -442,16 +443,45 @@ class DeepTable:
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
                                   f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5', history)
 
-        if oof_proba.shape[-1] == 1:
-            oof_proba = oof_proba.reshape(-1)
-        if eval_proba_mean is not None and eval_proba_mean.shape[-1] == 1:
-            eval_proba_mean = eval_proba_mean.reshape(-1)
-        if test_proba_mean is not None and test_proba_mean.shape[-1] == 1:
-            test_proba_mean = test_proba_mean.reshape(-1)
-            file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
-            pd.DataFrame(test_proba_mean).to_csv(file, index=False)
+        oof_proba_origin = oof_proba.copy()
+
+        if self.task == consts.TASK_BINARY:
+            oof_proba_fixed = self._fix_softmax_proba(X.shape[0], oof_proba_origin.copy())
+        else:
+            oof_proba_fixed = oof_proba
+
+        if eval_proba_mean is not None:
+            if self.task == consts.TASK_BINARY:
+                eval_proba_mean_fixed = self._fix_softmax_proba(X_eval.shape[0], eval_proba_mean.copy())
+            else:
+                eval_proba_mean_fixed = eval_proba_mean
+        else:
+            eval_proba_mean_fixed = eval_proba_mean
+
+        if test_proba_mean is not None :
+            if self.task == consts.TASK_BINARY:
+                test_proba_mean_fixed = self._fix_softmax_proba(X_test.shape[0], test_proba_mean.copy())
+                file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
+                pd.DataFrame(test_proba_mean.reshape(-1)).to_csv(file, index=False)
+
+            else:
+                test_proba_mean_fixed = test_proba_mean
+        else:
+            test_proba_mean_fixed = test_proba_mean
+
+
         logger.info(f'fit_cross_validation taken {time.time() - start}s')
-        return oof_proba, eval_proba_mean, test_proba_mean
+
+        return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed
+
+    def _fix_softmax_proba(self, n_rows, proba):
+        # proba shape should be (n, 1) if output layer is softmax
+        if proba is None:
+            return None
+        else:
+            assert proba.shape == (n_rows, 1)
+            return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
+
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
         X_t, y_t = self.preprocessor.transform(X_test, y_test)
@@ -464,6 +494,7 @@ class DeepTable:
 
     def predict_proba(self, X, batch_size=128, verbose=0,
                       model_selector=consts.MODEL_SELECTOR_CURRENT, auto_transform_data=True, ):
+        n_rows = X.shape[0]
         start = time.time()
         if model_selector == consts.MODEL_SELECTOR_ALL:
             models = self.get_model(model_selector)
@@ -476,15 +507,20 @@ class DeepTable:
                     proba_avg = np.zeros(proba.shape)
                 proba_avg += proba
             proba_avg /= len(models)
-            logger.info(f'predict_proba taken {time.time() - start}s')
-            return proba_avg
+            proba = proba_avg
         else:
             proba = self.__predict(self.get_model(model_selector),
                                    X, batch_size=batch_size,
                                    verbose=verbose,
                                    auto_transform_data=auto_transform_data)
-            logger.info(f'predict_proba taken {time.time() - start}s')
+        logger.info(f'predict_proba taken {time.time() - start}s')
+        if self.task == consts.TASK_BINARY:
+            # proba shape should be (n, 1) if output layer is softmax
+            assert proba.shape == (n_rows, 1)
+            return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
+        else:
             return proba
+
 
     def predict_proba_all(self, X, batch_size=128, verbose=0, auto_transform_data=True, ):
         mis = self.__modelset.get_modelinfos()
@@ -607,7 +643,11 @@ class DeepTable:
         logger.info("Perform prediction...")
         if auto_transform_data:
             X = self.preprocessor.transform_X(X)
-        return model.predict(X, batch_size=batch_size, verbose=verbose)
+        proba = model.predict(X, batch_size=batch_size, verbose=verbose)
+        if self.task == consts.TASK_BINARY:
+            return self._fix_softmax_proba(X.shape[0], proba)
+        else:
+            return proba
 
     def __set_model(self, type, name, model, history):
         self.__modelset.clear()
