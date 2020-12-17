@@ -514,12 +514,7 @@ class DeepTable:
                                    verbose=verbose,
                                    auto_transform_data=auto_transform_data)
         logger.info(f'predict_proba taken {time.time() - start}s')
-        if self.task == consts.TASK_BINARY:
-            # proba shape should be (n, 1) if output layer is softmax
-            assert proba.shape == (n_rows, 1)
-            return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
-        else:
-            return proba
+        return proba
 
 
     def predict_proba_all(self, X, batch_size=128, verbose=0, auto_transform_data=True, ):
