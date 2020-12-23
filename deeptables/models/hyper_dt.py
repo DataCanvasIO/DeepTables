@@ -141,7 +141,10 @@ class DTEstimator(Estimator):
         return self.model.predict(X, **kwargs)
 
     def evaluate(self, X, y, metrics=None, **kwargs):
-        result = self.model.evaluate(X, y, **kwargs)
+        eval_args = {}
+        if kwargs.get('batch_size') is not None:
+            eval_args['batch_size'] = kwargs.get('batch_size')
+        result = self.model.evaluate(X, y, **eval_args)
         return result
 
     def predict_proba(self, X, **kwargs):

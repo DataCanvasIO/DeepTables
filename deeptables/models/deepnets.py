@@ -46,8 +46,6 @@ def linear(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config,
     concat_embeddings = _concat_embeddings(embeddings, 'concat_linear_embedding')
     if concat_embeddings is not None :
         x_emb = tf.reduce_sum(concat_embeddings, axis=-1, name='linear_reduce_sum')
-    else:
-        return None
 
     if x_emb is not None and dense_layer is not None:
         x = Concatenate(name='concat_linear_emb_dense')([x_emb, dense_layer])
