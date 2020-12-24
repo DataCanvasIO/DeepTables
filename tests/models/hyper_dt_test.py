@@ -82,6 +82,13 @@ class Test_HyperDT():
         df = pd.DataFrame({'x1': x1, 'x2': x2, 'x3': x3, 'x4': x4})
         hdt.search(df, y, df, y, max_trails=3, epochs=1)
         best_trial = hdt.get_best_trail()
+        model = hdt.load_estimator(best_trial.model_file)
+        assert model
+        score = model.predict(df)
+        result = model.evaluate(df, y)
+        assert len(score) == 100
+        assert result
+        assert isinstance(model, DeepTable)
 
         estimator = hdt.final_train(best_trial.space_sample, df, y, epochs=1)
         score = estimator.predict(df)
@@ -89,4 +96,3 @@ class Test_HyperDT():
         assert len(score) == 100
         assert result
         assert isinstance(estimator.model, DeepTable)
-

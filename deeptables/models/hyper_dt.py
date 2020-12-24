@@ -141,10 +141,7 @@ class DTEstimator(Estimator):
         return self.model.predict(X, **kwargs)
 
     def evaluate(self, X, y, metrics=None, **kwargs):
-        eval_args = {}
-        if kwargs.get('batch_size') is not None:
-            eval_args['batch_size'] = kwargs.get('batch_size')
-        result = self.model.evaluate(X, y, **eval_args)
+        result = self.model.evaluate(X, y, batch_size=256)
         return result
 
     def predict_proba(self, X, **kwargs):
@@ -157,6 +154,7 @@ class DTEstimator(Estimator):
     @staticmethod
     def load(model_file):
         return DeepTable.load(model_file)
+
 
 class HyperDT(HyperModel):
     def __init__(self, searcher, dispatcher=None, callbacks=[], reward_metric=None, max_model_size=0,
@@ -176,6 +174,10 @@ class HyperDT(HyperModel):
         self.cache_preprocessed_data = cache_preprocessed_data
         self.cache_home = cache_home
         HyperModel.__init__(self, searcher, dispatcher=dispatcher, callbacks=callbacks, reward_metric=reward_metric)
+
+    def load_estimator(self, model_file):
+        assert model_file is not None
+        return DTEstimator.load(model_file)
 
     def _get_estimator(self, space_sample):
         estimator = DTEstimator(space_sample, self.cache_preprocessed_data, self.cache_home, **self.config_kwargs)
