@@ -483,13 +483,13 @@ class DeepTable:
             return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
 
 
-    def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, ):
+    def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, return_dict=True):
         X_t, y_t = self.preprocessor.transform(X_test, y_test)
         y_t = np.array(y_t)
         model = self.get_model(model_selector)
         if not isinstance(model, DeepModel):
             raise ValueError(f'Wrong model_selector:{model_selector}')
-        result = model.evaluate(X_t, y_t, batch_size=batch_size, verbose=verbose)
+        result = model.evaluate(X_t, y_t, batch_size=batch_size, verbose=verbose, return_dict=return_dict)
         return result
 
     def predict_proba(self, X, batch_size=128, verbose=0,

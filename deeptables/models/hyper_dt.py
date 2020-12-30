@@ -141,7 +141,25 @@ class DTEstimator(Estimator):
         return self.model.predict(X, **kwargs)
 
     def evaluate(self, X, y, metrics=None, **kwargs):
-        result = self.model.evaluate(X, y, batch_size=256)
+        # scores = self.model.evaluate(X, y, batch_size=256, return_dict=False)
+        scores = self.model.evaluate(X, y, batch_size=256, return_dict=False)
+        dt_model = self.model.get_model()
+
+        tf_metrics_names = dt_model.model.metrics_names
+
+        user_metrics = dt_model.config.metrics
+        if len(scores) != (len(user_metrics) + 1):
+            raise ValueError(f"Evaluate result has {len(scores)} items with loss score," +
+                             f" not match with user specified metrics {user_metrics}; tf metrics names {tf_metrics_names}")
+
+        loss_name = tf_metrics_names[0]
+        ret_metrics = [loss_name]
+        ret_metrics.extend(dt_model.config.metrics)
+
+        print(f"TF metrics names is {tf_metrics_names} and user's is {user_metrics}")
+
+        result = dict(zip(ret_metrics, scores))
+
         return result
 
     def predict_proba(self, X, **kwargs):

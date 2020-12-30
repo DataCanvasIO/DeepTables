@@ -141,16 +141,20 @@ class DeepModel:
             else:
                 return transformer.fit_transform(output)
 
-    def evaluate(self, X_test, y_test, batch_size=256, verbose=0):
+    def evaluate(self, X_test, y_test, batch_size=256, verbose=0, return_dict=True):
         logger.info("Performing evaluation...")
         X_input = self.__get_model_input(X_test)
         y_t = np.array(y_test)
+
         if self.task == consts.TASK_MULTICLASS:
             y_t = to_categorical(y_t, num_classes=self.num_classes)
+        # tf2.0 has no return_dict param
         result = self.model.evaluate(X_input, y_t, batch_size=batch_size, verbose=verbose)
-        result = {k: v for k, v in zip(self.model.metrics_names, result)}
-
-        return IgnoreCaseDict(result)
+        if return_dict:
+            result = {k: v for k, v in zip(self.model.metrics_names, result)}
+            return IgnoreCaseDict(result)
+        else:
+            return result
 
     def save(self, filepath):
         save_model(self.model, filepath, save_format='h5')
