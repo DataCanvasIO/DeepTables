@@ -10,6 +10,8 @@ env:
   - TF_VERSION=2.2.0
   - TF_VERSION=2.3.0
   - TF_VERSION=2.3.1
+  - TF_VERSION=2.4.0
+
 cache: pip
 
 # command to install dependencies

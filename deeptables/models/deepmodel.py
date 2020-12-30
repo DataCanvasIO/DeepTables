@@ -148,7 +148,7 @@ class DeepModel:
         if self.task == consts.TASK_MULTICLASS:
             y_t = to_categorical(y_t, num_classes=self.num_classes)
         result = self.model.evaluate(X_input, y_t, batch_size=batch_size, verbose=verbose)
-        result = {k: v for k, v in zip(self.model.metrics_names, result)}
+        result = {k.__class__.__name__: v for k, v in zip(self.model.metrics, result)}
 
         return IgnoreCaseDict(result)
 
