@@ -42,9 +42,9 @@ class Test_HyperDT_Regression():
                           'dnn_activation': 'relu',
                       },
                       )
-        hdt.search(self.X_train, self.y_train, self.X_test, self.y_test, max_trails=3)
+        hdt.search(self.X_train, self.y_train, self.X_test, self.y_test, max_trials=3)
 
-        best_trial = hdt.get_best_trail()
+        best_trial = hdt.get_best_trial()
 
         estimator = hdt.final_train(best_trial.space_sample, self.X, self.y)
         score = estimator.predict(self.X_test)

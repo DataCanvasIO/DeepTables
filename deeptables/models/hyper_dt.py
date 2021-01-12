@@ -201,14 +201,14 @@ class HyperDT(HyperModel):
         estimator = DTEstimator(space_sample, self.cache_preprocessed_data, self.cache_home, **self.config_kwargs)
         return estimator
 
-    def export_trail_configuration(self, trail):
+    def export_trial_configuration(self, trial):
         default_conf = ModelConfig()
-        new_conf = trail.space_sample.DT_Module.config
+        new_conf = trial.space_sample.DT_Module.config
         conf_set = []
         for f in default_conf._fields:
             if new_conf.__getattribute__(f) != default_conf.__getattribute__(f):
                 conf_set.append(f'\n\t{f}={new_conf.__getattribute__(f)}')
-        str = f'ModelConfig({",".join(conf_set)})\n\nfit params:{trail.space_sample.fit_params.param_values}'
+        str = f'ModelConfig({",".join(conf_set)})\n\nfit params:{trial.space_sample.fit_params.param_values}'
         return str
 
 

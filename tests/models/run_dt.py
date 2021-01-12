@@ -12,12 +12,12 @@ from hypernets.core.searcher import OptimizeDirection
 from hypernets.core.callbacks import SummaryCallback, FileLoggingCallback
 from hypernets.searchers.mcts_searcher import MCTSSearcher
 from hypernets.searchers.evolution_searcher import EvolutionSearcher
-from hypernets.core.trial import DiskTrailStore
+from hypernets.core.trial import DiskTrialStore
 from deeptables.datasets import dsutils
 from sklearn.model_selection import train_test_split
 from .. import homedir
 
-disk_trail_store = DiskTrailStore(f'{homedir}/trail_store')
+disk_trial_store = DiskTrialStore(f'{homedir}/trial_store')
 
 # searcher = MCTSSearcher(mini_dt_space, max_node_space=0,optimize_direction=OptimizeDirection.Maximize)
 # searcher = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize)
@@ -41,9 +41,9 @@ X = df_train
 y = df_train.pop(14)
 y_test = df_test.pop(14)
 # dataset_id='adult_whole_data',
-hdt.search(df_train, y, df_test, y_test, max_trails=2000, batch_size=256, epochs=10, verbose=1, )
-assert hdt.best_model
-best_trial = hdt.get_best_trail()
+hdt.search(df_train, y, df_test, y_test, max_trials=2000, batch_size=256, epochs=10, verbose=1, )
+best_trial = hdt.get_best_trial()
+assert best_trial
 
 estimator = hdt.final_train(best_trial.space_sample, df_train, y)
 score = estimator.predict(df_test)
