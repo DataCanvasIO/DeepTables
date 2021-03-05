@@ -23,7 +23,7 @@ class Test_HyperDT():
         hdt = HyperDT(rs,
                       callbacks=[SummaryCallback(), FileLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
                       reward_metric='accuracy',
-                      max_trails=3,
+                      max_trials=3,
                       dnn_params={
                           'hidden_units': ((256, 0, False), (256, 0, False)),
                           'dnn_activation': 'relu',
@@ -37,8 +37,8 @@ class Test_HyperDT():
         y_test = df_test.pop('y')
 
         hdt.search(df_train, y, df_test, y_test)
-        assert hdt.best_model
-        best_trial = hdt.get_best_trail()
+        best_trial = hdt.get_best_trial()
+        assert best_trial
 
         estimator = hdt.final_train(best_trial.space_sample, df_train, y)
         score = estimator.predict(df)
@@ -80,8 +80,8 @@ class Test_HyperDT():
 
         y = np.random.randint(0, 2, size=(100), dtype='int')
         df = pd.DataFrame({'x1': x1, 'x2': x2, 'x3': x3, 'x4': x4})
-        hdt.search(df, y, df, y, max_trails=3, epochs=1)
-        best_trial = hdt.get_best_trail()
+        hdt.search(df, y, df, y, max_trials=3, epochs=1)
+        best_trial = hdt.get_best_trial()
         model = hdt.load_estimator(best_trial.model_file)
         assert model
         score = model.predict(df)
