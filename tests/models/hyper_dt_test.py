@@ -18,32 +18,32 @@ from .. import homedir
 
 
 class Test_HyperDT():
-    def bankdata(self):
+    def test_bankdata(self):
         rs = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize, )
         hdt = HyperDT(rs,
                       callbacks=[SummaryCallback(), FileLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
-                      reward_metric='accuracy',
-                      max_trials=3,
+                      # reward_metric='accuracy',
+                      reward_metric='AUC',
                       dnn_params={
                           'hidden_units': ((256, 0, False), (256, 0, False)),
                           'dnn_activation': 'relu',
                       },
                       )
 
-        df = dsutils.load_bank()
+        df = dsutils.load_bank().sample(frac=0.1, random_state=9527)
         df.drop(['id'], axis=1, inplace=True)
         df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
         y = df_train.pop('y')
         y_test = df_test.pop('y')
 
-        hdt.search(df_train, y, df_test, y_test)
+        hdt.search(df_train, y, df_test, y_test, max_trials=3, )
         best_trial = hdt.get_best_trial()
         assert best_trial
 
         estimator = hdt.final_train(best_trial.space_sample, df_train, y)
-        score = estimator.predict(df)
-        result = estimator.evaluate(df, y)
-        assert len(score) == 100
+        score = estimator.predict(df_test)
+        result = estimator.evaluate(df_test, y_test)
+        assert len(score) == len(y_test)
         assert result
         assert isinstance(estimator.model, DeepTable)
 
