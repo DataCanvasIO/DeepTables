@@ -2,13 +2,13 @@
 
 from __future__ import absolute_import
 
+import os
+
 from setuptools import find_packages
 from setuptools import setup
 
 
 def read_requirements(file_path='requirements.txt'):
-    import os
-
     if not os.path.exists(file_path):
         return []
 
@@ -38,7 +38,26 @@ def read_extra_requirements():
 
     return extra
 
-version = '0.1.13'
+
+def read_version(py_file, var_name='__version__'):
+    try:
+        execfile
+    except NameError:
+        def execfile(fname, globs, locs=None):
+            locs = locs or globs
+            exec(compile(open(fname).read(), fname, "exec"), globs, locs)
+
+    version_ns = {}
+
+    base_dir = os.path.dirname((os.path.abspath(__file__)))
+    execfile(os.path.join(base_dir, py_file), version_ns)
+    version = version_ns[var_name]
+
+    return version
+
+
+name = 'deeptables'
+version = read_version(os.path.join(name, '_version.py'))
 requirements = read_requirements()
 
 MIN_PYTHON_VERSION = '>=3.6.*'
@@ -46,7 +65,7 @@ MIN_PYTHON_VERSION = '>=3.6.*'
 long_description = open('README.md', encoding='utf-8').read()
 
 setup(
-    name='deeptables',
+    name=name,
     version=version,
     description='Deep-learning Toolkit for Tabular datasets',
     long_description=long_description,

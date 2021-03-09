@@ -291,7 +291,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         excluded_vars = []
 
         if self.config.cat_exponent >= 1:
-            raise ValueError(f'"cat_expoent" must be less than 1, not {self.config.cat_exponent} .')
+            raise ValueError(f'"cat_exponent" must be less than 1, not {self.config.cat_exponent} .')
 
         var_len_categorical_columns = self.config.var_len_categorical_columns
         var_len_column_names = []
