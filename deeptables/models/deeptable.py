@@ -3,16 +3,14 @@
 
 import datetime
 import os
+import pickle
+import time
 
 import numpy as np
-import time
 import pandas as pd
-import pickle
-import shutil
 from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
-from sklearn.utils.validation import check_array
-from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
+from sklearn.model_selection import KFold, StratifiedKFold
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 from tensorflow.keras.utils import to_categorical
@@ -458,7 +456,7 @@ class DeepTable:
         else:
             eval_proba_mean_fixed = eval_proba_mean
 
-        if test_proba_mean is not None :
+        if test_proba_mean is not None:
             if self.task == consts.TASK_BINARY:
                 test_proba_mean_fixed = self._fix_softmax_proba(X_test.shape[0], test_proba_mean.copy())
                 file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
@@ -468,7 +466,6 @@ class DeepTable:
                 test_proba_mean_fixed = test_proba_mean
         else:
             test_proba_mean_fixed = test_proba_mean
-
 
         logger.info(f'fit_cross_validation taken {time.time() - start}s')
 
@@ -482,8 +479,8 @@ class DeepTable:
             assert proba.shape == (n_rows, 1)
             return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
 
-
-    def evaluate(self, X_test, y_test, batch_size=256, verbose=0, model_selector=consts.MODEL_SELECTOR_CURRENT, return_dict=True):
+    def evaluate(self, X_test, y_test, batch_size=256, verbose=0,
+                 model_selector=consts.MODEL_SELECTOR_CURRENT, return_dict=True):
         X_t, y_t = self.preprocessor.transform(X_test, y_test)
         y_t = np.array(y_t)
         model = self.get_model(model_selector)
@@ -515,7 +512,6 @@ class DeepTable:
                                    auto_transform_data=auto_transform_data)
         logger.info(f'predict_proba taken {time.time() - start}s')
         return proba
-
 
     def predict_proba_all(self, X, batch_size=128, verbose=0, auto_transform_data=True, ):
         mis = self.__modelset.get_modelinfos()
@@ -631,7 +627,7 @@ class DeepTable:
         running_dir = f'dt_{datetime.datetime.now().__format__("%Y%m%d %H%M%S")}_{"_".join(nets)}'
         output_path = os.path.expanduser(f'{home_dir}/{running_dir}/')
         if not os.path.exists(output_path):
-            os.makedirs(output_path)
+            os.makedirs(output_path, exist_ok=True)
         return output_path
 
     def __predict(self, model, X, batch_size=128, verbose=0, auto_transform_data=True, ):
@@ -698,6 +694,23 @@ class DeepTable:
             print(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, patience:{es.patience}, mode:{mode}')
         return callbacks
 
+    def __getstate__(self):
+        import copy
+
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            state = self.__dict__.copy()
+
+        if self.config.distribute_strategy is not None:
+            tmp_conf = self.config._replace(distribute_strategy=None)
+            tmp_preprocessor = copy.deepcopy(self.preprocessor)
+            tmp_preprocessor.config = self.preprocessor.config._replace(distribute_strategy=None)
+            state['config'] = tmp_conf
+            state['preprocessor'] = tmp_preprocessor
+
+        return state
+
     def save(self, filepath, deepmodel_basename=None):
         if filepath[-1] != '/':
             filepath = filepath + '/'
@@ -720,7 +733,7 @@ class DeepTable:
             mi.model = modelfile
 
         with open(f'{filepath}dt.pkl', 'wb') as output:
-            pickle.dump(self, output, protocol=2)
+            pickle.dump(self, output, protocol=4)
 
     @staticmethod
     def load(filepath):

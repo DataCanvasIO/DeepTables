@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-from typing import List
-from collections import OrderedDict
 import collections
+from collections import OrderedDict
+from typing import List
+
 import numpy as np
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
 from tensorflow.keras.models import Model, load_model, save_model
@@ -59,6 +60,9 @@ class DeepModel:
                 raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
             X_val, y_val = validation_data[0], validation_data[1]
 
+        if batch_size is None:
+            batch_size = 128
+
         X_train_input = self.__get_model_input(X)
         X_val_input = self.__get_model_input(X_val)
         y = np.array(y)
@@ -90,12 +94,26 @@ class DeepModel:
                                             config=self.config)
 
         logger.info(f'training...')
-        history = self.model.fit(X_train_input,
-                                 y,
-                                 batch_size=batch_size,
+
+        train_data = tf.data.Dataset.from_tensor_slices((X_train_input, y))
+        validation_data = tf.data.Dataset.from_tensor_slices((X_val_input, y_val))
+        if self.config.distribute_strategy is not None:
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+            train_data = train_data.repeat().batch(batch_size).with_options(options=options)
+            validation_data = validation_data.repeat().batch(batch_size).with_options(options=options)
+            if steps_per_epoch is None:
+                steps_per_epoch = X.shape[0] // batch_size
+            if validation_steps is None:
+                validation_steps = X_val.shape[0] // batch_size
+        else:
+            train_data = train_data.batch(batch_size)
+            validation_data = validation_data.batch(batch_size)
+
+        history = self.model.fit(train_data,
                                  epochs=epochs,
                                  verbose=verbose,
-                                 validation_data=(X_val_input, y_val),
+                                 validation_data=validation_data,
                                  shuffle=shuffle,
                                  callbacks=callbacks,
                                  class_weight=class_weight,
@@ -168,7 +186,8 @@ class DeepModel:
         train_data = {}
         # add categorical data
         if self.categorical_columns is not None and len(self.categorical_columns) > 0:
-            train_data['input_categorical_vars_all'] = X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+            train_data['input_categorical_vars_all'] = \
+                X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)
 
         # add continuous data
         if self.continuous_columns is not None and len(self.continuous_columns) > 0:
@@ -196,11 +215,14 @@ class DeepModel:
         proxy.compile(optimizer=model.optimizer, loss=model.loss)
         return proxy
 
-    def __build_model(self, task, num_classes, nets, categorical_columns, continuous_columns, var_len_categorical_columns, config):
+    def __build_model(self, task, num_classes, nets, categorical_columns, continuous_columns,
+                      var_len_categorical_columns, config):
         logger.info(f'Building model...')
         self.model_desc = ModelDesc()
-        categorical_inputs, continuous_inputs, var_len_categorical_inputs = self.__build_inputs(categorical_columns, continuous_columns, var_len_categorical_columns)
-        embeddings = self.__build_embeddings(categorical_columns, categorical_inputs, var_len_categorical_columns, var_len_categorical_inputs,  config.embedding_dropout)
+        categorical_inputs, continuous_inputs, var_len_categorical_inputs = \
+            self.__build_inputs(categorical_columns, continuous_columns, var_len_categorical_columns)
+        embeddings = self.__build_embeddings(categorical_columns, categorical_inputs, var_len_categorical_columns,
+                                             var_len_categorical_inputs, config.embedding_dropout)
         dense_layer = self.__build_denses(continuous_columns, continuous_inputs, config.dense_dropout)
 
         flatten_emb_layer = None
@@ -245,7 +267,8 @@ class DeepModel:
             x = out
         else:
             raise ValueError(f'Unexcepted logit output.{outs}')
-        all_inputs = list(categorical_inputs.values()) + list(var_len_categorical_inputs.values()) + list(continuous_inputs.values())
+        all_inputs = list(categorical_inputs.values()) + list(var_len_categorical_inputs.values()) + \
+                     list(continuous_inputs.values())
         output = self.__output_layer(x, task, num_classes, use_bias=self.config.output_use_bias)
         model = Model(inputs=all_inputs, outputs=output)
         model = self.__compile_model(model, task, num_classes, config.optimizer, config.loss, config.metrics)
@@ -286,12 +309,13 @@ class DeepModel:
         self.model_desc.set_concat_embed_dense(x.shape)
         return x
 
-    def __build_inputs(self, categorical_columns: List[CategoricalColumn],  continuous_columns, var_len_categorical_columns: List[VarLenCategoricalColumn]=None):
+    def __build_inputs(self, categorical_columns: List[CategoricalColumn], continuous_columns,
+                       var_len_categorical_columns: List[VarLenCategoricalColumn] = None):
         categorical_inputs = OrderedDict()
         var_len_categorical_inputs = OrderedDict()
         continuous_inputs = OrderedDict()
 
-        if categorical_columns is not None and  len(categorical_columns) > 0:
+        if categorical_columns is not None and len(categorical_columns) > 0:
             categorical_inputs['all_categorical_vars'] = Input(shape=(len(categorical_columns),),
                                                                name='input_categorical_vars_all')
             self.model_desc.add_input('all_categorical_vars', len(categorical_columns))
@@ -299,7 +323,7 @@ class DeepModel:
         # make input for var len feature
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
             for col in var_len_categorical_columns:
-                var_len_categorical_inputs[col.name] = Input(shape=(col.max_elements_length, ), name=col.name)
+                var_len_categorical_inputs[col.name] = Input(shape=(col.max_elements_length,), name=col.name)
                 self.model_desc.add_input(col.name, col.max_elements_length)
 
         for column in continuous_columns:
@@ -322,7 +346,9 @@ class DeepModel:
                                                    )(input_layer)
         return var_len_embeddings
 
-    def __build_embeddings(self, categorical_columns, categorical_inputs, var_len_categorical_columns: List[VarLenCategoricalColumn], var_len_inputs, embedding_dropout):
+    def __build_embeddings(self, categorical_columns, categorical_inputs,
+                           var_len_categorical_columns: List[VarLenCategoricalColumn], var_len_inputs,
+                           embedding_dropout):
         if 'all_categorical_vars' in categorical_inputs:
             input_layer = categorical_inputs['all_categorical_vars']
             input_dims = [column.vocabulary_size for column in categorical_columns]
