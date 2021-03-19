@@ -513,7 +513,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 os.makedirs(cache_home)
         cache_dir = f'{cache_home}/{self.signature}'
         if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
+            os.makedirs(cache_dir, exist_ok=True)
         return cache_dir
 
     def get_transformed_X_y_from_cache(self, sign):
