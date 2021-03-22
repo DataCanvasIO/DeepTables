@@ -398,9 +398,9 @@ class DeepTable:
         test_proba_mean = None
         eval_proba_mean = None
         if self.task in (consts.TASK_MULTICLASS, consts.TASK_MULTILABEL):
-            oof_proba = np.zeros((y.shape[0], self.num_classes))
+            oof_proba = np.full((y.shape[0], self.num_classes), np.nan)
         else:
-            oof_proba = np.zeros((y.shape[0], 1))
+            oof_proba = np.full((y.shape[0], 1), np.nan)
 
         y = np.array(y)
         if class_weight is None and self.config.apply_class_weight and self.task == consts.TASK_BINARY:
@@ -441,13 +441,15 @@ class DeepTable:
                         test_proba_mean += fold_test_proba / num_folds
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
                                   f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5', history)
-
         oof_proba_origin = oof_proba.copy()
-
+        nan_idx = np.argwhere(np.isnan(oof_proba).any(1)).ravel()
         if self.task == consts.TASK_BINARY:
             oof_proba_fixed = self._fix_softmax_proba(X.shape[0], oof_proba_origin.copy())
         else:
             oof_proba_fixed = oof_proba
+
+        if len(nan_idx) > 0:
+            oof_proba_fixed[nan_idx] = np.nan
 
         if eval_proba_mean is not None:
             if self.task == consts.TASK_BINARY:
