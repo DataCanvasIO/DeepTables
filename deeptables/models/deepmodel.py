@@ -97,6 +97,9 @@ class DeepModel:
 
         train_data = tf.data.Dataset.from_tensor_slices((X_train_input, y))
         validation_data = tf.data.Dataset.from_tensor_slices((X_val_input, y_val))
+        if shuffle:
+            train_data = train_data.shuffle(buffer_size=X.shape[0])
+            validation_data = validation_data.shuffle(buffer_size=X_val.shape[0])
         if self.config.distribute_strategy is not None:
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
