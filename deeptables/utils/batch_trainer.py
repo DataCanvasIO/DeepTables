@@ -22,7 +22,7 @@ from ..models import deeptable, modelset
 from ..models.evaluation import calc_score
 
 warnings.filterwarnings("ignore")
-logger = dt_logging.get_logger()
+logger = dt_logging.get_logger(__name__)
 
 
 @contextmanager

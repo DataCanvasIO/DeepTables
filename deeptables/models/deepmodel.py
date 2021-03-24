@@ -17,7 +17,7 @@ from .layers import MultiColumnEmbedding, dt_custom_objects, VarLenColumnEmbeddi
 from .metainfo import VarLenCategoricalColumn
 from ..utils import dt_logging, consts, gpu
 
-logger = dt_logging.get_logger()
+logger = dt_logging.get_logger(__name__)
 
 
 class DeepModel:
