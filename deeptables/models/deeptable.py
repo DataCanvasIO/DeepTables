@@ -670,10 +670,14 @@ class DeepTable:
         else:
             callbacks = []
 
-        if 'auc' in self.monitor.lower() or 'acc' in self.monitor.lower():
-            mode = 'max'
+        if self.config.earlystopping_mode == 'auto':
+            if self.monitor.lower() in ['auc', 'acc', 'accuracy', 'precision', 'recall','f1',
+                                        'val_auc', 'val_acc', 'val_accuracy', 'val_precision', 'val_recall','val_f1']:
+                mode = 'max'
+            else:
+                mode = 'min'
         else:
-            mode = 'min'
+            mode = self.config.earlystopping_mode
         # if mcp is None:
         #    mcp = ModelCheckpoint(self.model_filepath,
         #                          monitor=self.monitor,

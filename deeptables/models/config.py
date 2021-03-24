@@ -47,6 +47,7 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                                           'home_dir',
                                           'monitor_metric',
                                           'earlystopping_patience',
+                                          'earlystopping_mode',
                                           'gpu_usage_strategy',
                                           'distribute_strategy',
                                           'var_len_categorical_columns',
@@ -68,7 +69,7 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                 auto_encode_label=True,
                 auto_imputation=True,
                 auto_discrete=False,
-                auto_discard_unique = True,
+                auto_discard_unique=True,
                 apply_gbm_features=False,
                 gbm_params={},
                 gbm_feature_type=consts.GBM_FEATURE_TYPE_EMB,  # embedding/dense
@@ -125,9 +126,11 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                 home_dir=None,
                 monitor_metric=None,
                 earlystopping_patience=1,
+                earlystopping_mode='auto',  # auto,min,max
                 gpu_usage_strategy=consts.GPU_USAGE_STRATEGY_GROWTH,
                 distribute_strategy=None,
-                var_len_categorical_columns=None,  # a tuple3, format is (column_name, separator, pool_strategy), pool_strategy is one of max,avg;  e.g. [('genres', '|', 'avg' )]
+                var_len_categorical_columns=None,
+                # a tuple3, format is (column_name, separator, pool_strategy), pool_strategy is one of max,avg;  e.g. [('genres', '|', 'avg' )]
                 ):
 
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
@@ -189,13 +192,15 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                                                home_dir,
                                                monitor_metric,
                                                earlystopping_patience,
+                                               earlystopping_mode,
                                                gpu_usage_strategy,
                                                distribute_strategy,
                                                var_len_categorical_columns,
                                                )
+
     @property
     def first_metric_name(self):
-        if self.metrics is None or len(self.metrics)<=0:
+        if self.metrics is None or len(self.metrics) <= 0:
             raise ValueError('`metrics` is none or empty.')
         first_metric = self.metrics[0]
         if isinstance(first_metric, str):
