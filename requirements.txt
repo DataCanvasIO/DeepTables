@@ -10,6 +10,7 @@ scikit-optimize==0.7.1
 tables>=3.6.1
 category_encoders>=2.1.0
 hypernets>=0.1.8
+tabular-toolbox>=0.1.4
 h5py==2.10.0
 eli5
 emcee
