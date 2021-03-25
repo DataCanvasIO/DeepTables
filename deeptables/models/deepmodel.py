@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import collections
+import io
 from collections import OrderedDict
 from typing import List
 
@@ -45,8 +46,9 @@ class DeepModel:
         self.model_file = model_file
         self.model = None
         if model_file is not None:
-            self.model = load_model(model_file,
-                                    dt_custom_objects)  # fixme `load_model` executed multiple times in a process, resulting in a metric name rename to like auc_1, auc_2
+            # fixme: `load_model` executed multiple times in a process,
+            #  resulting in a metric name rename to like auc_1, auc_2
+            self.model = self._load_model(model_file, dt_custom_objects)
 
     def fit(self, X=None, y=None, batch_size=128, epochs=1, verbose=1, callbacks=None,
             validation_split=0.2, validation_data=None, shuffle=True,
@@ -177,8 +179,30 @@ class DeepModel:
         else:
             return result
 
+    @staticmethod
+    def _load_model(filepath, custom_objects):
+        import h5py
+        from hypernets.utils import fs
+
+        with fs.open(filepath, 'rb') as f:
+            data = f.read()
+
+        buf = io.BytesIO(data)
+        del data
+        with h5py.File(buf, 'r') as h:
+            return load_model(h, custom_objects)
+
     def save(self, filepath):
-        save_model(self.model, filepath, save_format='h5')
+        import h5py
+        from hypernets.utils import fs
+
+        with fs.open(filepath, 'wb') as f:
+            buf = io.BytesIO()
+            with h5py.File(buf, 'w') as h:
+                save_model(self.model, h, save_format='h5')
+            data = buf.getvalue()
+            buf.close()
+            f.write(data)
 
     def release(self):
         del self.model

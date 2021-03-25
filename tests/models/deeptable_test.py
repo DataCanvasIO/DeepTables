@@ -4,21 +4,19 @@ __author__ = 'yangjian'
 
 """
 import random
+
 import numpy as np
 import pandas as pd
-import os
-import tempfile
-
+import pytest
 from sklearn import manifold
 from sklearn.metrics import roc_auc_score, mean_squared_error, f1_score
 from sklearn.model_selection import train_test_split
 
-from deeptables.models import deeptable, deepmodel
-from deeptables.utils import consts
 from deeptables.datasets import dsutils
-from deeptables.models.preprocessor import DefaultPreprocessor
-import pytest
+from deeptables.models import deeptable, deepmodel
 from deeptables.models.deepmodel import IgnoreCaseDict
+from deeptables.models.preprocessor import DefaultPreprocessor
+from deeptables.utils import consts
 from .. import homedir
 
 
@@ -239,10 +237,13 @@ class Test_DeepTable:
         assert excinfo.type == ValueError
 
     def test_save_load(self):
-        filepath = tempfile.mkdtemp()
+        import time
+        from hypernets.utils import fs
+
+        filepath = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         self.dt.save(filepath)
-        assert os.path.exists(f'{filepath}/dt.pkl')
-        assert os.path.exists(f'{filepath}/dnn_nets.h5')
+        assert fs.exists(f'{filepath}/dt.pkl')
+        assert fs.exists(f'{filepath}/dnn_nets.h5')
         newdt = deeptable.DeepTable.load(filepath)
 
         print(newdt.config)

@@ -1,20 +1,17 @@
 # -*- coding:utf-8 -*-
 
-from sklearn.model_selection import train_test_split
+import time
 
-from deeptables.models import deeptable, deepnets
-from deeptables.datasets import dsutils
-from deeptables.models.layers import register_custom_objects
+import pytest
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from tensorflow.keras import backend as K
 from tensorflow.keras import layers
 
-from tensorflow.keras import backend as K
-import tensorflow as tf
-import multiprocessing
-import tempfile, os, uuid
-from multiprocessing import Manager
-import pytest
 from deeptables.datasets import dsutils
+from deeptables.models import deepnets
 from deeptables.models import deeptable
+from deeptables.models.layers import register_custom_objects
 from deeptables.utils import consts
 
 
@@ -158,7 +155,7 @@ class Test_DeepTable:
 
         dt, result = self.run_nets(nets=[custom_net, 'dnn_nets'])
 
-        filepath = tempfile.mkdtemp()
+        filepath = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         dt.save(filepath)
         # assert os.path.exists(f'{filepath}/dt.pkl')
         # assert os.path.exists(f'{filepath}/custom_net+dnn_nets.h5')

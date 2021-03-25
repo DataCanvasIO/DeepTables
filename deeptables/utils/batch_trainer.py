@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 
+import copy
 import datetime
 import gc
 import os
 import pprint
 import time
 import warnings
-import copy
 from contextlib import contextmanager
 
 import numpy as np
@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from skopt import BayesSearchCV
 from skopt.callbacks import DeadlineStopper, VerboseCallback
 
+from hypernets.utils import fs
 from . import dt_logging, consts, dart_early_stopping
 from ..models import deeptable, modelset
 from ..models.evaluation import calc_score
@@ -280,7 +281,8 @@ class BatchTrainer:
                 test_proba = dt.predict_proba(self.X_test)
                 score = str(round(history.history[self.first_metric_name][-1], 5))
                 file = f'{dt.output_path}{score}_{"_".join(nets)}.csv'
-                pd.DataFrame(test_proba).to_csv(file, index=False)
+                with fs.open(file, 'w', encoding='utf-8') as f:
+                    pd.DataFrame(test_proba).to_csv(f, index=False)
 
         print(f'DT finished.')
         return dt
@@ -419,8 +421,8 @@ class BatchTrainer:
         if preds_filepath is None:
             preds_filepath = f'./preds_{estimator_type}_{datetime.datetime.now().__format__("%Y_%m_%d %H:%M:%S")}/'
 
-        if not os.path.exists(preds_filepath):
-            os.makedirs(preds_filepath)
+        if not fs.exists(preds_filepath):
+            fs.makedirs(preds_filepath, exist_ok=True)
 
         for n_fold, (train_idx, valid_idx) in enumerate(iterators.split(X, y)):
             print(f'\nFold:{n_fold + 1}\n')
@@ -443,7 +445,8 @@ class BatchTrainer:
             test_fold_proba = model.predict_proba(X_test)
             score = round(score_fn(y_val_fold, proba), 5)
             file = f'{preds_filepath}{score}_fold{n_fold + 1}.csv'
-            pd.DataFrame(test_fold_proba).to_csv(file, index=False)
+            with fs.open(file, 'w', encoding='utf-8') as f:
+                pd.DataFrame(test_fold_proba).to_csv(f, index=False)
             print(f'Fold {n_fold + 1} Score:{score}')
 
         if oof_proba.shape[-1] == 1:

@@ -5,11 +5,11 @@ __author__ = 'yangjian'
 """
 
 from sklearn.model_selection import train_test_split
-from deeptables.utils import consts
-from deeptables.models import deeptable
+
 from deeptables.datasets import dsutils
-import tempfile
-import os
+from deeptables.models import deeptable
+from deeptables.utils import consts
+
 
 class Test_DeepTable_CV:
     def setup_class(self):
@@ -88,12 +88,15 @@ class Test_DeepTable_CV:
         assert byname
 
     def test_save_load(self):
-        filepath = tempfile.mkdtemp()
+        import time
+        from hypernets.utils import fs
+
+        filepath = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         self.dt.save(filepath)
-        assert os.path.exists(f'{filepath}/dt.pkl')
-        assert os.path.exists(f'{filepath}/dnn_nets-kfold-1.h5')
-        assert os.path.exists(f'{filepath}/dnn_nets-kfold-2.h5')
-        assert os.path.exists(f'{filepath}/dnn_nets-kfold-3.h5')
+        assert fs.exists(f'{filepath}/dt.pkl')
+        assert fs.exists(f'{filepath}/dnn_nets-kfold-1.h5')
+        assert fs.exists(f'{filepath}/dnn_nets-kfold-2.h5')
+        assert fs.exists(f'{filepath}/dnn_nets-kfold-3.h5')
         newdt = deeptable.DeepTable.load(filepath)
         preds = newdt.predict(self.X_eval)
         assert preds.shape, (200,)

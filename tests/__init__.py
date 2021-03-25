@@ -3,10 +3,11 @@ __author__ = 'yangjian'
 """
 
 """
-import tempfile
 import os
-from deeptables.utils import consts
-import tests.misc
+import time
 
-homedir = tempfile.mkdtemp()
+import tests.misc
+from deeptables.utils import consts
+
+homedir = f'{consts.PROJECT_NAME}_test_{time.strftime("%Y%m%d%H%M%S")}'
 os.environ[consts.ENV_DEEPTABLES_HOME] = homedir

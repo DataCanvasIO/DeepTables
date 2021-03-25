@@ -15,6 +15,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 
+from hypernets.utils import fs
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel
@@ -460,7 +461,8 @@ class DeepTable:
             if self.task == consts.TASK_BINARY:
                 test_proba_mean_fixed = self._fix_softmax_proba(X_test.shape[0], test_proba_mean.copy())
                 file = f'{self.output_path}{"_".join(self.nets)}-cv-{num_folds}.csv'
-                pd.DataFrame(test_proba_mean.reshape(-1)).to_csv(file, index=False)
+                with fs.open(file, 'w', encoding='utf-8') as f:
+                    pd.DataFrame(test_proba_mean.reshape(-1)).to_csv(f, index=False)
 
             else:
                 test_proba_mean_fixed = test_proba_mean
@@ -626,8 +628,8 @@ class DeepTable:
 
         running_dir = f'dt_{datetime.datetime.now().__format__("%Y%m%d %H%M%S")}_{"_".join(nets)}'
         output_path = os.path.expanduser(f'{home_dir}/{running_dir}/')
-        if not os.path.exists(output_path):
-            os.makedirs(output_path, exist_ok=True)
+        if not fs.exists(output_path):
+            fs.makedirs(output_path, exist_ok=True)
         return output_path
 
     def __predict(self, model, X, batch_size=128, verbose=0, auto_transform_data=True, ):
@@ -715,8 +717,8 @@ class DeepTable:
         if filepath[-1] != '/':
             filepath = filepath + '/'
 
-        if not os.path.exists(filepath):
-            os.makedirs(filepath)
+        if not fs.exists(filepath):
+            fs.makedirs(filepath, exist_ok=True)
         num_model = len(self.__modelset.get_modelinfos())
         for mi in self.__modelset.get_modelinfos():
             if isinstance(mi.model, str):
@@ -732,14 +734,14 @@ class DeepTable:
             mi.model.save(modelfile)
             mi.model = modelfile
 
-        with open(f'{filepath}dt.pkl', 'wb') as output:
+        with fs.open(f'{filepath}dt.pkl', 'wb') as output:
             pickle.dump(self, output, protocol=4)
 
     @staticmethod
     def load(filepath):
         if filepath[-1] != '/':
             filepath = filepath + '/'
-        with open(f'{filepath}dt.pkl', 'rb') as input:
+        with fs.open(f'{filepath}dt.pkl', 'rb') as input:
             dt = pickle.load(input)
             dt.restore_modelset(filepath)
             return dt
@@ -753,8 +755,8 @@ class DeepTable:
                 mi.model = dm
 
     def load_deepmodel(self, filepath):
-        if os.path.exists(filepath):
-            print(f'Load model from disk:{filepath}.')
+        if fs.exists(filepath):
+            print(f'Load model from: {filepath}.')
             dm = DeepModel(self.task, self.num_classes, self.config,
                            self.preprocessor.categorical_columns,
                            self.preprocessor.continuous_columns, model_file=filepath)
@@ -788,7 +790,8 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
         test_proba = model.predict(X_test)
         if model_file is not None:
             file = f'{model_file}.test_proba.csv'
-            pd.DataFrame(test_proba).to_csv(file, index=False)
+            with fs.open(file, 'w', encoding='utf-8') as f:
+                pd.DataFrame(test_proba).to_csv(f, index=False)
     print(f'Fold {n_fold + 1} scoring over.')
     if model_file is not None:
         model.save(model_file)
