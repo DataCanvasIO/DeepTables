@@ -1,29 +1,29 @@
 # -*- coding:utf-8 -*-
 
-import time
 import collections
-import numpy as np
-import pandas as pd
 import copy
 import hashlib
 import os
-import shutil
 import pickle
+import time
 
+import numpy as np
+import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.keras.utils import to_categorical
+
 from deeptables.preprocessing.transformer import PassThroughEstimator, VarLenFeatureEncoder, MultiVarLenFeatureEncoder
+from hypernets.utils import fs
+from . import deeptable
+from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
 from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameWrapper, LgbmLeavesEncoder, \
     CategorizeEncoder
 from ..utils import dt_logging, consts
-from . import deeptable
 
 logger = dt_logging.get_logger(__name__)
-from .config import ModelConfig
 
 
 class AbstractPreprocessor:
@@ -322,7 +322,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
             # handle var len feature
             if c in var_len_column_names:
-                self.__append_var_len_categorical_col(c, nunique, var_len_col_sep_dict[c], var_len_col_pooling_strategy_dict[c])
+                self.__append_var_len_categorical_col(c, nunique, var_len_col_sep_dict[c],
+                                                      var_len_col_pooling_strategy_dict[c])
                 continue
 
             if self.config.categorical_columns is not None and isinstance(self.config.categorical_columns, list):
@@ -374,7 +375,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
         ]
 
         if len(var_len_categorical_vars) > 0:
-            transformers.append(('var_len_categorical', SimpleImputer(missing_values=np.nan, strategy='constant'), var_len_categorical_vars),)
+            transformers.append(('var_len_categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
+                                 var_len_categorical_vars), )
 
         ct = ColumnTransformer(transformers)
         dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars + var_len_categorical_vars)
@@ -505,64 +507,63 @@ class DefaultPreprocessor(AbstractPreprocessor):
             cache_home = cache_home[:-1]
 
         cache_home = os.path.expanduser(f'{cache_home}')
-        if not os.path.exists(cache_home):
-            os.makedirs(cache_home)
+        if not fs.exists(cache_home):
+            fs.makedirs(cache_home, exist_ok=True)
         else:
             if clear_cache:
-                shutil.rmtree(cache_home)
-                os.makedirs(cache_home)
+                fs.rm(cache_home, recursive=True)
+                fs.mkdirs(cache_home, exist_ok=True)
         cache_dir = f'{cache_home}/{self.signature}'
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir, exist_ok=True)
+        if not fs.exists(cache_dir):
+            fs.makedirs(cache_dir, exist_ok=True)
         return cache_dir
 
     def get_transformed_X_y_from_cache(self, sign):
-        file_x_y = f'{self.cache_dir}/X_y_{sign}.h5'
+        file_x_y = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         X_t, y_t = None, None
-        if os.path.exists(file_x_y):
-            global h5
+        if fs.exists(file_x_y):
             try:
-                h5 = pd.HDFStore(file_x_y)
-                df = h5['data']
+                with fs.open(file_x_y, mode='rb') as f:
+                    df = pd.read_pickle(f, compression='gzip')
                 y_t = df.pop('saved__y__')
                 X_t = df
             except Exception as e:
                 logger.error(e)
-                h5.close()
-                os.remove(file_x_y)
+                fs.rm(file_x_y)
         return X_t, y_t
 
     def save_transformed_X_y_to_cache(self, sign, X, y):
-        filepath = f'{self.cache_dir}/X_y_{sign}.h5'
+        filepath = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         try:
             # x_t = X.copy(deep=True)
             X.insert(0, 'saved__y__', y)
-            X.to_hdf(filepath, key='data', mode='w', format='t')
+            with fs.open(filepath, mode='wb') as f:
+                X.to_pickle(f, compression='gzip')
             return True
         except Exception as e:
             logger.error(e)
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            if fs.exists(filepath):
+                fs.rm(filepath)
         return False
 
     def load_transformers_from_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
-        if os.path.exists(transformer_path):
+        if fs.exists(transformer_path):
             try:
-                with open(transformer_path, 'rb') as input:
+                with fs.open(transformer_path, 'rb') as input:
                     preprocessor = pickle.load(input)
                     self.__dict__.update(preprocessor.__dict__)
                     return True
             except Exception as e:
                 logger.error(e)
-                os.remove(transformer_path)
+                fs.rm(transformer_path)
         return False
 
     def save_transformers_to_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
-        with open(transformer_path, 'wb') as output:
-            pickle.dump(self, output, protocol=2)
+        with fs.open(transformer_path, 'wb') as output:
+            pickle.dump(self, output, protocol=4)
 
     def clear_cache(self):
-        shutil.rmtree(self.cache_dir)
-        os.makedirs(self.cache_dir)
+        fs.rm(self.cache_dir, recursive=True)
+        fs.makedirs(self.cache_dir, exist_ok=True)

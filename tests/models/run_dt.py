@@ -2,21 +2,23 @@
 """
 
 """
-import sys
+# import sys
+#
+# # sys.path.append('../../../Hypernets-incubator')
 
-sys.path.append('../../../Hypernets-incubator')
+import time
 
-from deeptables.models.hyper_dt import *
-from hypernets.searchers.random_searcher import RandomSearcher
-from hypernets.core.searcher import OptimizeDirection
-from hypernets.core.callbacks import SummaryCallback, FileLoggingCallback
-from hypernets.searchers.mcts_searcher import MCTSSearcher
-from hypernets.searchers.evolution_searcher import EvolutionSearcher
-from hypernets.core.trial import DiskTrialStore
-from deeptables.datasets import dsutils
 from sklearn.model_selection import train_test_split
-from .. import homedir
 
+from deeptables.datasets import dsutils
+from deeptables.models.hyper_dt import *
+from deeptables.utils import consts
+from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
+from hypernets.core.searcher import OptimizeDirection
+from hypernets.core.trial import DiskTrialStore
+from hypernets.searchers.evolution_searcher import EvolutionSearcher
+
+homedir = f'{consts.PROJECT_NAME}_run_dt_{time.strftime("%Y%m%d%H%M%S")}'
 disk_trial_store = DiskTrialStore(f'{homedir}/trial_store')
 
 # searcher = MCTSSearcher(mini_dt_space, max_node_space=0,optimize_direction=OptimizeDirection.Maximize)
@@ -25,7 +27,7 @@ searcher = EvolutionSearcher(mini_dt_space, 200, 100, regularized=True, candidat
                              optimize_direction=OptimizeDirection.Maximize)
 
 hdt = HyperDT(searcher,
-              callbacks=[SummaryCallback(), FileLoggingCallback(searcher, output_dir=f'{homedir}/hyn_logs')],
+              callbacks=[SummaryCallback(), FileStorageLoggingCallback(searcher, output_dir=f'{homedir}/hyn_logs')],
               reward_metric='AUC',
               earlystopping_patience=1)
 

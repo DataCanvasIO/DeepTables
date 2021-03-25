@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from deeptables.models.deeptable import DeepTable
 from deeptables.models.hyper_dt import HyperDT
 from deeptables.models.hyper_dt import mini_dt_space
-from hypernets.core.callbacks import SummaryCallback, FileLoggingCallback
+from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
 from hypernets.core.searcher import OptimizeDirection
 from hypernets.searchers.random_searcher import RandomSearcher
 from .. import homedir
@@ -35,7 +35,7 @@ class Test_HyperDT_Regression():
 
         rs = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize, )
         hdt = HyperDT(rs,
-                      callbacks=[SummaryCallback(), FileLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
+                      callbacks=[SummaryCallback(), FileStorageLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
                       reward_metric='RootMeanSquaredError',
                       dnn_params={
                           'hidden_units': ((256, 0, False), (256, 0, False)),

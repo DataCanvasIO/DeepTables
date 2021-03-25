@@ -5,7 +5,7 @@ __author__ = 'yangjian'
 """
 import numpy as np
 import pandas as pd
-from hypernets.core.callbacks import SummaryCallback, FileLoggingCallback
+from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
 from hypernets.core.searcher import OptimizeDirection
 from hypernets.searchers.random_searcher import RandomSearcher
 from sklearn.model_selection import train_test_split
@@ -21,7 +21,7 @@ class Test_HyperDT():
     def test_bankdata(self):
         rs = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize, )
         hdt = HyperDT(rs,
-                      callbacks=[SummaryCallback(), FileLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
+                      callbacks=[SummaryCallback(), FileStorageLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
                       # reward_metric='accuracy',
                       reward_metric='AUC',
                       dnn_params={

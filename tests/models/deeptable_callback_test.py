@@ -3,12 +3,14 @@ __author__ = 'yangjian'
 """
 
 """
+import os
+import time
+
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.callbacks import ModelCheckpoint
-from deeptables.models import deeptable
+
 from deeptables.datasets import dsutils
-import os
-import tempfile
+from deeptables.models import deeptable
 
 
 class Test_DeepTable_Callback:
@@ -17,7 +19,7 @@ class Test_DeepTable_Callback:
         df_train = dsutils.load_adult()
         self.y = df_train.pop(14).values
         self.X = df_train
-        path = tempfile.mkdtemp()
+        path = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=False,
                                      auto_discrete=False,
