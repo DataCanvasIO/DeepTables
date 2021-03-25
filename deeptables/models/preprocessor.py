@@ -22,7 +22,7 @@ from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameW
 from ..utils import dt_logging, consts
 from . import deeptable
 
-logger = dt_logging.get_logger()
+logger = dt_logging.get_logger(__name__)
 from .config import ModelConfig
 
 

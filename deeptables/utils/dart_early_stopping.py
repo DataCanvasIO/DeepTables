@@ -1,8 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from operator import gt, lt
-from sklearn.base import clone
-from lightgbm.compat import range_
+
 from lightgbm.callback import EarlyStopException
 
 
@@ -88,7 +87,7 @@ def dart_early_stopping(stopping_rounds, first_metric_only=False, verbose=True):
         if not enabled[0]:
             return
         # print(f'iteration:{env.iteration}')
-        for i in range_(len(env.evaluation_result_list)):
+        for i in range(len(env.evaluation_result_list)):
             score = env.evaluation_result_list[i][2]
             # print(f'score:{score}')
             if best_score_list[i] is None or cmp_op[i](score, best_score[i]):

@@ -22,7 +22,7 @@ from .preprocessor import DefaultPreprocessor
 from ..utils import dt_logging, consts
 from ..utils.tf_version import tf_less_than
 
-logger = dt_logging.get_logger()
+logger = dt_logging.get_logger(__name__)
 
 
 class DeepTable:

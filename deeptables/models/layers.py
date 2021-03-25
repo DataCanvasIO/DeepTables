@@ -15,7 +15,7 @@ import itertools
 
 from ..utils import dt_logging, consts, gpu
 
-logger = dt_logging.get_logger()
+logger = dt_logging.get_logger(__name__)
 
 class FM(Layer):
     """Factorization Machine to model order-2 feature interactions
