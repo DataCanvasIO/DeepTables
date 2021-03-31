@@ -18,6 +18,7 @@ cache: pip
 install:
   - pip install -q tensorflow==$TF_VERSION
   - pip install git+https://github.com/DataCanvasIO/Hypernets
+  - pip install -r "dask[complete]"
   - pip install -r requirements.txt
   - pip install -q pytest-cov==2.4.0
   - pip install -q python-coveralls
