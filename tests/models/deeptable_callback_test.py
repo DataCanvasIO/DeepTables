@@ -11,6 +11,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
+import tempfile
 
 
 class Test_DeepTable_Callback:
@@ -19,7 +20,7 @@ class Test_DeepTable_Callback:
         df_train = dsutils.load_adult()
         self.y = df_train.pop(14).values
         self.X = df_train
-        path = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
+        path = f'{tempfile.tempdir}/{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=False,
                                      auto_discrete=False,
