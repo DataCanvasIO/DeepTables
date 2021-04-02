@@ -14,13 +14,11 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 
-from deeptables.preprocessing.transformer import PassThroughEstimator, VarLenFeatureEncoder, MultiVarLenFeatureEncoder
+from hypernets.tabular import sklearn_ex as skex
 from hypernets.utils import fs
 from . import deeptable
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
-from ..preprocessing import MultiLabelEncoder, MultiKBinsDiscretizer, DataFrameWrapper, LgbmLeavesEncoder, \
-    CategorizeEncoder
 from ..utils import dt_logging, consts
 
 logger = dt_logging.get_logger(__name__)
@@ -194,7 +192,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
             X = self._var_len_encoder(X, var_len_categorical_columns)
 
-        self.X_transformers['last'] = PassThroughEstimator()
+        self.X_transformers['last'] = skex.PassThroughEstimator()
 
         cat_cols = self.get_categorical_columns()
         cont_cols = self.get_continuous_columns()
@@ -344,7 +342,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                     num_vars.append((c, dtype, nunique))
 
         if len(convert2cat_vars) > 0:
-            ce = CategorizeEncoder([c for c, d, n in convert2cat_vars], self.config.cat_remain_numeric)
+            ce = skex.CategorizeEncoder([c for c, d, n in convert2cat_vars], self.config.cat_remain_numeric)
             X = ce.fit_transform(X)
             self.X_transformers['categorize'] = ce
             if self.config.cat_remain_numeric:
@@ -379,7 +377,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                                  var_len_categorical_vars), )
 
         ct = ColumnTransformer(transformers)
-        dfwrapper = DataFrameWrapper(ct, categorical_vars + continuous_vars + var_len_categorical_vars)
+        dfwrapper = skex.DataFrameWrapper(ct, categorical_vars + continuous_vars + var_len_categorical_vars)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
         print(f'Imputation taken {time.time() - start}s')
@@ -389,7 +387,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         start = time.time()
         logger.info('Categorical encoding...')
         vars = self.get_categorical_columns()
-        mle = MultiLabelEncoder(vars)
+        mle = skex.MultiLabelEncoder(vars)
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
         print(f'Categorical encoding taken {time.time() - start}s')
@@ -399,7 +397,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         start = time.time()
         logger.info('Data discretization...')
         vars = self.get_continuous_columns()
-        mkbd = MultiKBinsDiscretizer(vars)
+        mkbd = skex.MultiKBinsDiscretizer(vars)
         X = mkbd.fit_transform(X)
         self.__append_categorical_cols([(new_name, bins + 1) for name, new_name, bins in mkbd.new_columns])
         self.X_transformers['discreter'] = mkbd
@@ -409,12 +407,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def _var_len_encoder(self, X, var_len_categorical_columns):
         start = time.time()
         logger.info('Encoder var length feature...')
-        transformer = MultiVarLenFeatureEncoder(var_len_categorical_columns)
+        transformer = skex.MultiVarLenFeatureEncoder(var_len_categorical_columns)
         X = transformer.fit_transform(X)
 
         # update var_len_categorical_columns
         for c in self.var_len_categorical_columns:
-            _encoder: VarLenFeatureEncoder = transformer._encoders[c.name]
+            _encoder: skex.VarLenFeatureEncoder = transformer._encoders[c.name]
             c.max_elements_length = _encoder.max_element_length
 
         self.X_transformers['var_len_encoder'] = transformer
@@ -426,7 +424,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         logger.info('Extracting GBM features...')
         cont_vars = self.get_continuous_columns()
         cat_vars = self.get_categorical_columns()
-        gbmencoder = LgbmLeavesEncoder(cat_vars, cont_vars, self.task_, **self.config.gbm_params)
+        gbmencoder = skex.LgbmLeavesEncoder(cat_vars, cont_vars, self.task_, **self.config.gbm_params)
         X = gbmencoder.fit_transform(X, y)
         self.X_transformers['gbm_features'] = gbmencoder
         if self.config.gbm_feature_type == consts.GBM_FEATURE_TYPE_EMB:

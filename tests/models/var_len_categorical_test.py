@@ -2,7 +2,7 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 from deeptables.models import deeptable
-from deeptables.preprocessing.transformer import MultiVarLenFeatureEncoder
+from hypernets.tabular.sklearn_ex import MultiVarLenFeatureEncoder
 from deeptables.utils import consts
 from deeptables.datasets import dsutils
 
