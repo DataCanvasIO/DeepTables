@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from skopt import BayesSearchCV
 from skopt.callbacks import DeadlineStopper, VerboseCallback
 
-from hypernets.utils import fs
+from deeptables.utils import fs
 from . import dt_logging, consts, dart_early_stopping
 from ..models import deeptable, modelset
 from ..models.evaluation import calc_score

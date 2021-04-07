@@ -89,7 +89,7 @@ class Test_DeepTable_CV:
 
     def test_save_load(self):
         import time
-        from hypernets.utils import fs
+        from deeptables.utils import fs
 
         filepath = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         self.dt.save(filepath)
@@ -100,6 +100,7 @@ class Test_DeepTable_CV:
         newdt = deeptable.DeepTable.load(filepath)
         preds = newdt.predict(self.X_eval)
         assert preds.shape, (200,)
+
 
 if __name__ == "__main__":
     pass

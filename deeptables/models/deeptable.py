@@ -15,7 +15,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 
-from hypernets.utils import fs
+from deeptables.utils import fs
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel

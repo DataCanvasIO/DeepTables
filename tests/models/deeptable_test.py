@@ -238,7 +238,7 @@ class Test_DeepTable:
 
     def test_save_load(self):
         import time
-        from hypernets.utils import fs
+        from deeptables.utils import fs
 
         filepath = f'{type(self).__name__}_{time.strftime("%Y%m%d%H%M%S")}'
         self.dt.save(filepath)

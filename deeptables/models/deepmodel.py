@@ -182,7 +182,7 @@ class DeepModel:
     @staticmethod
     def _load_model(filepath, custom_objects):
         import h5py
-        from hypernets.utils import fs
+        from deeptables.utils import fs
 
         with fs.open(filepath, 'rb') as f:
             data = f.read()
@@ -194,7 +194,7 @@ class DeepModel:
 
     def save(self, filepath):
         import h5py
-        from hypernets.utils import fs
+        from deeptables.utils import fs
 
         with fs.open(filepath, 'wb') as f:
             buf = io.BytesIO()

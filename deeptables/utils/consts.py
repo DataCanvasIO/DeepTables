@@ -3,25 +3,27 @@
 DeepTables constants module.
 """
 
+from hypernets.utils.const import *
+
 PROJECT_NAME = 'deeptables'
 
-TASK_AUTO = 'auto'
-TASK_BINARY = 'binary'
-TASK_MULTICLASS = 'multiclass'
-TASK_REGRESSION = 'regression'
-TASK_MULTILABEL = 'multilabel'
+# TASK_AUTO = 'auto'
+# TASK_BINARY = 'binary'
+# TASK_MULTICLASS = 'multiclass'
+# TASK_REGRESSION = 'regression'
+# TASK_MULTILABEL = 'multilabel'
 
 INPUT_PREFIX_CAT = 'cat_'
 INPUT_PREFIX_NUM = 'input_continuous_'
 INPUT_PREFIX_SEQ = 'seq_'
 LAYER_PREFIX_EMBEDDING = 'emb_'
 
-COLUMNNAME_POSTFIX_DISCRETE = '_discrete'
-COLUMNNAME_POSTFIX_CATEGORIZE = '_cat'
+# COLUMNNAME_POSTFIX_DISCRETE = '_discrete'
+# COLUMNNAME_POSTFIX_CATEGORIZE = '_cat'
 
 DATATYPE_TENSOR_FLOAT = 'float32'
 DATATYPE_PREDICT_CLASS = 'int32'
-DATATYPE_LABEL = 'int16'
+# DATATYPE_LABEL = 'int16'
 
 LAYER_NAME_BN_DENSE_ALL = 'bn_dense_all'
 LAYER_NAME_CONCAT_CONT_INPUTS = 'concat_continuous_inputs'

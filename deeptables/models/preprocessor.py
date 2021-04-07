@@ -15,7 +15,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 
 from hypernets.tabular import sklearn_ex as skex
-from hypernets.utils import fs
+from deeptables.utils import fs
 from . import deeptable
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
