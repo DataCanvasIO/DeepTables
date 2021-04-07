@@ -17,10 +17,9 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from skopt import BayesSearchCV
 from skopt.callbacks import DeadlineStopper, VerboseCallback
 
-from deeptables.utils import fs
+from deeptables.utils import fs, calc_score
 from . import dt_logging, consts, dart_early_stopping
 from ..models import deeptable, modelset
-from ..models.evaluation import calc_score
 
 warnings.filterwarnings("ignore")
 logger = dt_logging.get_logger(__name__)
@@ -105,7 +104,7 @@ class BatchTrainer:
 
     @property
     def first_metric_name(self):
-        if self.eval_metrics is None or len(self.eval_metrics)<=0:
+        if self.eval_metrics is None or len(self.eval_metrics) <= 0:
             raise ValueError('`metrics` is none or empty.')
         first_metric = self.eval_metrics[0]
         if isinstance(first_metric, str):
