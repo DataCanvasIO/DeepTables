@@ -15,12 +15,11 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 
-from deeptables.utils import fs
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel
 from .preprocessor import DefaultPreprocessor
-from ..utils import dt_logging, consts
+from ..utils import dt_logging, consts, fs, calc_score
 from ..utils.tf_version import tf_less_than
 
 logger = dt_logging.get_logger(__name__)
@@ -370,7 +369,8 @@ class DeepTable:
                              batch_size=None, epochs=1, verbose=1, callbacks=None, n_jobs=1, random_state=9527,
                              shuffle=True, class_weight=None, sample_weight=None,
                              initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1,
-                             max_queue_size=10, workers=1, use_multiprocessing=False
+                             max_queue_size=10, workers=1, use_multiprocessing=False,
+                             oof_metrics=None,
                              ):
         print("Start cross validation")
         start = time.time()
@@ -417,6 +417,8 @@ class DeepTable:
             initial_epoch=initial_epoch, steps_per_epoch=steps_per_epoch,
             max_queue_size=max_queue_size, workers=workers, use_multiprocessing=use_multiprocessing
         )
+        oof_scores = [] if oof_metrics is not None else None
+
         with parallel:
             out = parallel(delayed(_fit_and_score)(
                 self.task, self.num_classes, self.config,
@@ -439,6 +441,16 @@ class DeepTable:
                         test_proba_mean = fold_test_proba / num_folds
                     else:
                         test_proba_mean += fold_test_proba / num_folds
+                if oof_metrics is not None:
+                    fold_y_true = y[idx]
+                    if self.task == consts.TASK_BINARY:
+                        fold_y_proba = self._fix_softmax_proba(fold_oof_proba.shape[0], fold_oof_proba.copy())
+                    else:
+                        fold_y_proba = fold_oof_proba.copy()
+                    fold_y_pred = self.proba2predict(fold_y_proba)
+                    oof_scores.append(calc_score(fold_y_true, fold_y_proba, fold_y_pred,
+                                                 task=self.task, metrics=oof_metrics, pos_label=self.pos_label))
+
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
                                   f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5', history)
         oof_proba_origin = oof_proba.copy()
@@ -473,7 +485,10 @@ class DeepTable:
 
         logger.info(f'fit_cross_validation taken {time.time() - start}s')
 
-        return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed
+        if oof_metrics is not None:
+            return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed, oof_scores
+        else:
+            return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed
 
     def _fix_softmax_proba(self, n_rows, proba):
         # proba shape should be (n, 1) if output layer is softmax
@@ -671,8 +686,8 @@ class DeepTable:
             callbacks = []
 
         if self.config.earlystopping_mode == 'auto':
-            if self.monitor.lower() in ['auc', 'acc', 'accuracy', 'precision', 'recall','f1',
-                                        'val_auc', 'val_acc', 'val_accuracy', 'val_precision', 'val_recall','val_f1']:
+            if self.monitor.lower() in ['auc', 'acc', 'accuracy', 'precision', 'recall', 'f1',
+                                        'val_auc', 'val_acc', 'val_accuracy', 'val_precision', 'val_recall', 'val_f1']:
                 mode = 'max'
             else:
                 mode = 'min'

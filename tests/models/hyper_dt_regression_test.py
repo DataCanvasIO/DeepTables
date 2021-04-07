@@ -4,22 +4,20 @@ __author__ = 'yangjian'
 
 """
 import pandas as pd
+from deeptables.models import DeepTable
+from deeptables.models.hyper_dt import HyperDT, mini_dt_space
+from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
+from hypernets.core.searcher import OptimizeDirection
+from hypernets.searchers import RandomSearcher
 from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
 
-from deeptables.models.deeptable import DeepTable
-from deeptables.models.hyper_dt import HyperDT
-from deeptables.models.hyper_dt import mini_dt_space
-from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
-from hypernets.core.searcher import OptimizeDirection
-from hypernets.searchers.random_searcher import RandomSearcher
 from .. import homedir
 
 
 class Test_HyperDT_Regression():
 
     def test_boston(self):
-
         print("Loading datasets...")
         boston_dataset = load_boston()
 

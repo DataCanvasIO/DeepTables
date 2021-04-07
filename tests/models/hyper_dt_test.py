@@ -3,17 +3,17 @@ __author__ = 'yangjian'
 """
 
 """
+
 import numpy as np
 import pandas as pd
+from deeptables.datasets import dsutils
+from deeptables.models import DeepTable
+from deeptables.models.hyper_dt import HyperDT, DTEstimator, mini_dt_space, default_dt_space
 from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
 from hypernets.core.searcher import OptimizeDirection
-from hypernets.searchers.random_searcher import RandomSearcher
+from hypernets.searchers import RandomSearcher
 from sklearn.model_selection import train_test_split
 
-from deeptables.datasets import dsutils
-from deeptables.models.deeptable import DeepTable
-from deeptables.models.hyper_dt import HyperDT
-from deeptables.models.hyper_dt import mini_dt_space, default_dt_space
 from .. import homedir
 
 
@@ -88,11 +88,12 @@ class Test_HyperDT():
         result = model.evaluate(df, y)
         assert len(score) == 100
         assert result
-        assert isinstance(model, DeepTable)
+        assert isinstance(model, DTEstimator)
 
         estimator = hdt.final_train(best_trial.space_sample, df, y, epochs=1)
         score = estimator.predict(df)
         result = estimator.evaluate(df, y)
         assert len(score) == 100
         assert result
+        assert isinstance(estimator, DTEstimator)
         assert isinstance(estimator.model, DeepTable)
