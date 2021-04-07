@@ -224,7 +224,7 @@ class BatchTrainer:
                                                                         n_jobs=self.n_jobs)
             print(f'Scoring...')
             oof_preds = dt.proba2predict(oof_proba)
-            oof_score = calc_score(self.y_train, oof_proba, oof_preds, self.eval_metrics, self.task,
+            oof_score = calc_score(self.y_train, oof_preds, oof_proba, self.eval_metrics, self.task,
                                    dt.pos_label)
             model_set.push(
                 modelset.ModelInfo('oof', f'{config.name} - {nets} - CV - oof', dt, oof_score,
@@ -233,7 +233,7 @@ class BatchTrainer:
 
             if eval_proba is not None:
                 eval_preds = dt.proba2predict(eval_proba)
-                eval_cv_score = calc_score(self.y_eval, eval_proba, eval_preds, self.eval_metrics, self.task,
+                eval_cv_score = calc_score(self.y_eval, eval_preds, eval_proba, self.eval_metrics, self.task,
                                            dt.pos_label)
                 model_set.push(
                     modelset.ModelInfo('cv-eval', f'{config.name} - {nets} - CV - eval', dt, eval_cv_score,
@@ -244,7 +244,7 @@ class BatchTrainer:
                 all_model_proba = dt.predict_proba_all(self.X_eval)
                 for fold_name, fold_proba in all_model_proba.items():
                     fold_preds = dt.proba2predict(fold_proba)
-                    fold_score = calc_score(self.y_eval, fold_proba, fold_preds, self.eval_metrics, self.task,
+                    fold_score = calc_score(self.y_eval, fold_preds, fold_proba, self.eval_metrics, self.task,
                                             dt.pos_label)
                     print(f'\n------------{fold_name} -------------Eval score:\n{fold_score}')
                     model_set.push(
@@ -263,7 +263,7 @@ class BatchTrainer:
             if self.X_eval is not None:
                 proba = dt.predict_proba(self.X_eval, model_selector=consts.MODEL_SELECTOR_BEST)
                 preds = dt.proba2predict(proba)
-                score = calc_score(self.y_eval, proba, preds, self.eval_metrics, self.task, dt.pos_label)
+                score = calc_score(self.y_eval, preds, proba, self.eval_metrics, self.task, dt.pos_label)
                 # score = dt.evaluate(self.X_test, self.y_test)
                 print(f'\n------------{nets} -------------Eval score:\n{score}')
                 model_set.push(
@@ -334,7 +334,7 @@ class BatchTrainer:
                 proba = model.predict_proba(X_eval)
 
             print('Scoring...')
-            score = calc_score(self.y_eval, proba, preds, self.eval_metrics, self.task, pos_label)
+            score = calc_score(self.y_eval, preds, proba, self.eval_metrics, self.task, pos_label)
             model_set.push(modelset.ModelInfo('eval', model_name, model, score, dt=dt))
             print(f'\n------------{model_name} -------------Eval score:\n{score}')
         else:
@@ -505,7 +505,7 @@ class BatchTrainer:
         score = None
         if y is not None and score_dt is not None:
             preds = score_dt.proba2predict(proba_avg)
-            score = calc_score(y, proba_avg, preds, self.eval_metrics, score_dt.task, score_dt.pos_label)
+            score = calc_score(y, preds, proba_avg, self.eval_metrics, score_dt.task, score_dt.pos_label)
             print(f'\nEnsemble Test Score:\n{score}')
         if submission is not None and submission.shape[0] == proba_avg.shape[0]:
             submission[submission_target] = proba_avg[:, 0]

@@ -67,7 +67,7 @@ class Test_Batch_Trainer:
                                         )
         lgbm, score = bt.train_lgbm(conf)
         assert lgbm
-        assert score['auc'] > 0
+        assert score['AUC'] > 0
 
     def test_run_catboost(self):
         data = dsutils.load_adult().head(1000)
@@ -92,7 +92,7 @@ class Test_Batch_Trainer:
                                         )
         cb, score = bt.train_catboost(conf)
         assert cb
-        assert score['auc'] > 0
+        assert score['AUC'] > 0
 
     def test_run_binary(self):
         data = dsutils.load_adult().head(1000)
