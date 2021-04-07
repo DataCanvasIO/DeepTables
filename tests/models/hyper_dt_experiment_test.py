@@ -1,6 +1,5 @@
 from sklearn.metrics import get_scorer
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 
 from deeptables.models.hyper_dt import HyperDT, mini_dt_space
 from hypernets.core.callbacks import SummaryCallback
@@ -21,9 +20,8 @@ def create_hyper_model(reward_metric='AUC', optimize_direction='max'):
 def run_compete_experiment_with_bank_data(init_kwargs, run_kwargs):
     hyper_model = create_hyper_model()
     scorer = get_scorer(metric_to_scoring(hyper_model.reward_metric))
-    X = dsutils.load_bank().head(5000)
-    X['y'] = LabelEncoder().fit_transform(X['y'])
-    y = X.pop('y')
+    X = dsutils.load_heart_disease_uci()
+    y = X.pop('target')
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     X_train, X_eval, y_train, y_eval = train_test_split(X_train, y_train, test_size=0.3)
@@ -58,8 +56,8 @@ def test_simple():
     run_compete_experiment_with_bank_data({}, {})
 
 
-def test_with_jobs():
-    run_compete_experiment_with_bank_data(dict(cv=True), dict(n_jobs=3))
+# def test_with_jobs():
+#     run_compete_experiment_with_bank_data(dict(cv=True), dict(n_jobs=3))
 
 
 def test_without_cv():
@@ -69,6 +67,6 @@ def test_without_cv():
 def test_with_ensemble():
     run_compete_experiment_with_bank_data(dict(ensemble_size=5, cv=False), {})
 
-
-def test_with_cv_ensemble():
-    run_compete_experiment_with_bank_data(dict(ensemble_size=5, cv=True), {})
+#
+# def test_with_cv_ensemble():
+#     run_compete_experiment_with_bank_data(dict(ensemble_size=5, cv=True), {})

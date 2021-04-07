@@ -24,7 +24,7 @@ def get_score_importances(dt_model, X, y, metric, n_iter=5, mode='min'):
             y_pred = dt_model.predict(df)
             y_proba = y_pred
         del df
-        dict = calc_score(y_s, y_proba, y_pred, [metric], dt_model.task, dt_model.pos_label)
+        dict = calc_score(y_s, y_pred, y_proba, [metric], dt_model.task, dt_model.pos_label)
         print(f'score:{dict}')
         if mode == 'min':
             return -dict[metric]
