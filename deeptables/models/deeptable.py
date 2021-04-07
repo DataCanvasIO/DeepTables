@@ -448,7 +448,7 @@ class DeepTable:
                     else:
                         fold_y_proba = fold_oof_proba.copy()
                     fold_y_pred = self.proba2predict(fold_y_proba)
-                    oof_scores.append(calc_score(fold_y_true, fold_y_proba, fold_y_pred,
+                    oof_scores.append(calc_score(fold_y_true, fold_y_pred, fold_y_proba,
                                                  task=self.task, metrics=oof_metrics, pos_label=self.pos_label))
 
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
