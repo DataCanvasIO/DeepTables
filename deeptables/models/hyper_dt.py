@@ -319,6 +319,31 @@ def mini_dt_space():
 
     return space
 
+
+def tiny_dt_space():
+    space = HyperSpace()
+    with space.as_default():
+        dt_module = DTModuleSpace(
+            nets=['dnn_nets'],
+            auto_categorize=Bool(),
+            cat_remain_numeric=Bool(),
+            auto_discrete=False,
+            apply_gbm_features=False,
+            stacking_op=Choice([DT_consts.STACKING_OP_ADD, DT_consts.STACKING_OP_CONCAT]),
+            output_use_bias=Bool(),
+            apply_class_weight=Bool(),
+            earlystopping_patience=Choice([1, 3, 5])
+        )
+        dnn = DnnModule(hidden_units=Choice([10, 20]),
+                        reduce_factor=1,
+                        dnn_dropout=Choice([0, 0.3]),
+                        use_bn=False,
+                        dnn_layers=2,
+                        activation='relu')(dt_module)
+        fit = DTFit(batch_size=Choice([128, 256]))(dt_module)
+
+    return space
+
     # categorical_columns='auto',
     # exclude_columns=[],
     # pos_label=None,
