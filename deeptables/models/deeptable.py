@@ -821,40 +821,6 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
     return n_fold, valid_idx, history.history, oof_proba, eval_proba, test_proba
 
 
-def infer_task_type(y):
-    if len(y.shape) > 1 and y.shape[-1] > 1:
-        labels = list(range(y.shape[-1]))
-        task = consts.TASK_MULTILABEL
-        return task, labels
-
-    uniques = set(y)
-    n_unique = len(uniques)
-    labels = []
-
-    if n_unique == 2:
-        print(f'2 class detected, {uniques}, so inferred as a [binary classification] task')
-        task = consts.TASK_BINARY  # TASK_BINARY
-        labels = sorted(uniques)
-    else:
-        if y.dtype == 'float':
-            print(f'Target column type is float, so inferred as a [regression] task.')
-            task = consts.TASK_REGRESSION
-        else:
-            if n_unique > 1000:
-                if 'int' in y.dtype:
-                    print(
-                        'The number of classes exceeds 1000 and column type is int, so inferred as a [regression] task ')
-                    task = consts.TASK_REGRESSION
-                else:
-                    raise ValueError(
-                        'The number of classes exceeds 1000, please confirm whether your predict target is correct ')
-            else:
-                print(f'{n_unique} class detected, inferred as a [multiclass classification] task')
-                task = consts.TASK_MULTICLASS
-                labels = sorted(uniques)
-    return task, labels
-
-
 def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
     from sklearn.linear_model import LogisticRegression
     print('Extracting features of train set...')

@@ -15,11 +15,10 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 
 from hypernets.tabular import sklearn_ex as skex
-from deeptables.utils import fs
 from . import deeptable
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
-from ..utils import dt_logging, consts
+from ..utils import dt_logging, consts, fs, infer_task_type
 
 logger = dt_logging.get_logger(__name__)
 
@@ -211,7 +210,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
     def fit_transform_y(self, y):
         if self.config.task == consts.TASK_AUTO:
-            self.task_, self.labels_ = deeptable.infer_task_type(y)
+            self.task_, self.labels_ = infer_task_type(y)
         else:
             self.task_ = self.config.task
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
@@ -449,7 +448,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
         vc = \
             VarLenCategoricalColumn(name,
                                     voc_size,
-                                    embedding_output_dim if embedding_output_dim > 0 else min(4 * int(pow(voc_size, 0.25)), 20),
+                                    embedding_output_dim if embedding_output_dim > 0 else min(
+                                        4 * int(pow(voc_size, 0.25)), 20),
                                     sep=sep,
                                     pooling_strategy=pooling_strategy)
 

@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from skopt import BayesSearchCV
 from skopt.callbacks import DeadlineStopper, VerboseCallback
 
-from deeptables.utils import fs, calc_score
+from deeptables.utils import fs, calc_score, infer_task_type
 from . import dt_logging, consts, dart_early_stopping
 from ..models import deeptable, modelset
 
@@ -155,7 +155,7 @@ class BatchTrainer:
 
         self.y_train = self.X_train.pop(self.target).values
         self.y_eval = self.X_eval.pop(self.target).values if self.X_eval is not None else None
-        self.task, labels = deeptable.infer_task_type(self.y_train)
+        self.task, labels = infer_task_type(self.y_train)
         self.classes = len(labels)
         gc.collect()
 
