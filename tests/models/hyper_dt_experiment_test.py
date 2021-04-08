@@ -17,7 +17,7 @@ def create_hyper_model(reward_metric='AUC', optimize_direction='max'):
     return hyper_model
 
 
-def run_compete_experiment_with_bank_data(init_kwargs, run_kwargs):
+def run_compete_experiment_with_heart_disease(init_kwargs, run_kwargs):
     hyper_model = create_hyper_model()
     scorer = get_scorer(metric_to_scoring(hyper_model.reward_metric))
     X = dsutils.load_heart_disease_uci()
@@ -52,21 +52,21 @@ def run_compete_experiment_with_bank_data(init_kwargs, run_kwargs):
     assert score
 
 
-def test_simple():
-    run_compete_experiment_with_bank_data({}, {})
+def test_experiment_simple():
+    run_compete_experiment_with_heart_disease({}, {})
 
 
 # def test_with_jobs():
 #     run_compete_experiment_with_bank_data(dict(cv=True), dict(n_jobs=3))
 
 
-def test_without_cv():
-    run_compete_experiment_with_bank_data(dict(cv=False), {})
+def test_experiment_without_cv():
+    run_compete_experiment_with_heart_disease(dict(cv=False), {})
 
 
-def test_with_ensemble():
-    run_compete_experiment_with_bank_data(dict(ensemble_size=3, cv=False), {})
+def test_experiment_with_ensemble():
+    run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=False), {})
 
 
-def test_with_cv_ensemble():
-    run_compete_experiment_with_bank_data(dict(ensemble_size=3, cv=True), {})
+def test_experiment_with_cv_ensemble():
+    run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=True), {})
