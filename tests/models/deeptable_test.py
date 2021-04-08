@@ -200,24 +200,6 @@ class Test_DeepTable:
         preds = dt.predict(dft)
         assert len(preds), 10
 
-    def test_infer_task_type(self):
-        y1 = np.random.randint(0, 2, size=(1000), dtype='int')
-        y2 = np.random.randint(0, 2, size=(1000)).astype('str')
-        y3 = np.random.randint(0, 20, size=(1000)).astype('object')
-        y4 = np.random.random(size=(1000)).astype('float')
-
-        task, _ = deeptable.infer_task_type(y1)
-        assert (task, consts.TASK_BINARY)
-
-        task, _ = deeptable.infer_task_type(y2)
-        assert (task, consts.TASK_BINARY)
-
-        task, _ = deeptable.infer_task_type(y3)
-        assert (task, consts.TASK_MULTICLASS)
-
-        task, _ = deeptable.infer_task_type(y4)
-        assert (task, consts.TASK_REGRESSION)
-
     def test_duplicate_columns(self):
         x1 = np.random.randint(0, 10, size=(100), dtype='int')
         x2 = np.random.randint(0, 2, size=(100)).astype('str')
