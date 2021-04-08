@@ -5,7 +5,7 @@ __author__ = 'yangjian'
 """
 import pandas as pd
 from deeptables.models import DeepTable
-from deeptables.models.hyper_dt import HyperDT, mini_dt_space
+from deeptables.models.hyper_dt import HyperDT, tiny_dt_space
 from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
 from hypernets.core.searcher import OptimizeDirection
 from hypernets.searchers import RandomSearcher
@@ -31,7 +31,7 @@ class Test_HyperDT_Regression():
         self.y_train, \
         self.y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=42)
 
-        rs = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize, )
+        rs = RandomSearcher(tiny_dt_space, optimize_direction=OptimizeDirection.Maximize, )
         hdt = HyperDT(rs,
                       callbacks=[SummaryCallback(), FileStorageLoggingCallback(rs, output_dir=f'{homedir}/hyn_logs')],
                       reward_metric='RootMeanSquaredError',
