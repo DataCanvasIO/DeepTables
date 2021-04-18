@@ -1,29 +1,15 @@
 # -*- encoding: utf-8 -*-
-import numpy as np
 from sklearn.model_selection import train_test_split
-from deeptables.models import deeptable
-from hypernets.tabular.sklearn_ex import MultiVarLenFeatureEncoder
-from deeptables.utils import consts
+
 from deeptables.datasets import dsutils
+from deeptables.models import deeptable
+from deeptables.utils import consts
 
 
 class TestVarLenCategoricalFeature:
 
     def setup_class(cls):
         cls.df = dsutils.load_movielens().drop(['timestamp', "title"], axis=1)
-
-    def test_encoder(self):
-        df = self.df.copy()
-        df['genres_copy'] = df['genres']
-
-        multi_encoder = MultiVarLenFeatureEncoder([('genres', '|'), ('genres_copy', '|'), ])
-        result_df = multi_encoder.fit_transform(df)
-
-        assert multi_encoder._encoders['genres'].max_element_length > 0
-        assert multi_encoder._encoders['genres_copy'].max_element_length > 0
-
-        shape = np.array(result_df['genres'].tolist()).shape
-        assert shape[1] == multi_encoder._encoders['genres'].max_element_length
 
     def test_var_categorical_feature(self):
         X = self.df.copy()
