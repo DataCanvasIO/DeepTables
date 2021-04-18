@@ -15,7 +15,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 
 from hypernets.tabular import sklearn_ex as skex
-from . import deeptable
+from hypernets.utils import tic_toc
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
 from ..utils import dt_logging, consts, fs, infer_task_type
@@ -64,6 +64,7 @@ class AbstractPreprocessor:
         sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
         return sign
 
+    @tic_toc()
     def get_X_y_signature(self, X, y):
         repr = ''
         if X is not None:
@@ -124,6 +125,10 @@ class DefaultPreprocessor(AbstractPreprocessor):
         self.cache_dir = self._prepare_cache_dir(cache_home)
         self.use_cache = use_cache
 
+    @property
+    def transformers(self):
+        return skex
+
     def reset(self):
         self.metainfo = None
         self.categorical_columns = None
@@ -132,6 +137,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         self.y_lable_encoder = None
         self.X_transformers = collections.OrderedDict()
 
+    @tic_toc()
     def prepare_X(self, X):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -143,6 +149,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             logger.warn(f"Column index of X has been converted: {X.columns}")
         return X
 
+    @tic_toc()
     def fit_transform(self, X, y, copy_data=True):
         sign = self.get_X_y_signature(X, y)
         if self.use_cache:
@@ -191,7 +198,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
             X = self._var_len_encoder(X, var_len_categorical_columns)
 
-        self.X_transformers['last'] = skex.PassThroughEstimator()
+        self.X_transformers['last'] = self.transformers.PassThroughEstimator()
 
         cat_cols = self.get_categorical_columns()
         cont_cols = self.get_continuous_columns()
@@ -208,6 +215,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.save_transformers_to_cache()
         return X, y
 
+    @tic_toc()
     def fit_transform_y(self, y):
         if self.config.task == consts.TASK_AUTO:
             self.task_, self.labels_ = infer_task_type(y)
@@ -223,6 +231,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.labels_ = []
         return y
 
+    @tic_toc()
     def transform(self, X, y, copy_data=True):
         sign = self.get_X_y_signature(X, y)
         if self.use_cache:
@@ -249,6 +258,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         return X_t, y_t
 
+    @tic_toc()
     def transform_y(self, y, copy_data=True):
         logger.info("Transform [y]...")
         start = time.time()
@@ -260,6 +270,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         y = np.array(y)
         return y
 
+    @tic_toc()
     def transform_X(self, X, copy_data=True):
         start = time.time()
         logger.info("Transform [X]...")
@@ -272,12 +283,14 @@ class DefaultPreprocessor(AbstractPreprocessor):
         logger.info(f'transform_X taken {time.time() - start}s')
         return X_t
 
+    @tic_toc()
     def inverse_transform_y(self, y_indicator):
         if self.y_lable_encoder is not None:
             return self.y_lable_encoder.inverse_transform(y_indicator)
         else:
             return y_indicator
 
+    @tic_toc()
     def __prepare_features(self, X):
         start = time.time()
 
@@ -341,7 +354,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
                     num_vars.append((c, dtype, nunique))
 
         if len(convert2cat_vars) > 0:
-            ce = skex.CategorizeEncoder([c for c, d, n in convert2cat_vars], self.config.cat_remain_numeric)
+            cat_columns = [c for c, d, n in convert2cat_vars]
+            ce = self.transformers.CategorizeEncoder(cat_columns, self.config.cat_remain_numeric)
             X = ce.fit_transform(X)
             self.X_transformers['categorize'] = ce
             if self.config.cat_remain_numeric:
@@ -358,6 +372,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Preparing features taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def _imputation(self, X):
         start = time.time()
         logger.info('Data imputation...')
@@ -376,54 +391,58 @@ class DefaultPreprocessor(AbstractPreprocessor):
                                  var_len_categorical_vars), )
 
         ct = ColumnTransformer(transformers)
-        dfwrapper = skex.DataFrameWrapper(ct, categorical_vars + continuous_vars + var_len_categorical_vars)
+        columns = categorical_vars + continuous_vars + var_len_categorical_vars
+        dfwrapper = self.transformers.DataFrameWrapper(ct, columns=columns)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
         print(f'Imputation taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def _categorical_encoding(self, X):
         start = time.time()
         logger.info('Categorical encoding...')
         vars = self.get_categorical_columns()
-        mle = skex.MultiLabelEncoder(vars)
+        mle = self.transformers.MultiLabelEncoder(vars)
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
         print(f'Categorical encoding taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def _discretization(self, X):
         start = time.time()
         logger.info('Data discretization...')
         vars = self.get_continuous_columns()
-        mkbd = skex.MultiKBinsDiscretizer(vars)
+        mkbd = self.transformers.MultiKBinsDiscretizer(vars)
         X = mkbd.fit_transform(X)
         self.__append_categorical_cols([(new_name, bins + 1) for name, new_name, bins in mkbd.new_columns])
         self.X_transformers['discreter'] = mkbd
         print(f'Discretization taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def _var_len_encoder(self, X, var_len_categorical_columns):
         start = time.time()
         logger.info('Encoder var length feature...')
-        transformer = skex.MultiVarLenFeatureEncoder(var_len_categorical_columns)
+        transformer = self.transformers.MultiVarLenFeatureEncoder(var_len_categorical_columns)
         X = transformer.fit_transform(X)
 
         # update var_len_categorical_columns
         for c in self.var_len_categorical_columns:
-            _encoder: skex.VarLenFeatureEncoder = transformer._encoders[c.name]
-            c.max_elements_length = _encoder.max_element_length
+            c.max_elements_length = transformer.max_length_[c.name]
 
         self.X_transformers['var_len_encoder'] = transformer
         print(f'Encoder taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def _apply_gbm_features(self, X, y):
         start = time.time()
         logger.info('Extracting GBM features...')
         cont_vars = self.get_continuous_columns()
         cat_vars = self.get_categorical_columns()
-        gbmencoder = skex.LgbmLeavesEncoder(cat_vars, cont_vars, self.task_, **self.config.gbm_params)
+        gbmencoder = self.transformers.LgbmLeavesEncoder(cat_vars, cont_vars, self.task_, **self.config.gbm_params)
         X = gbmencoder.fit_transform(X, y)
         self.X_transformers['gbm_features'] = gbmencoder
         if self.config.gbm_feature_type == consts.GBM_FEATURE_TYPE_EMB:
@@ -434,6 +453,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
+    @tic_toc()
     def __append_var_len_categorical_col(self, name, voc_size, sep, pooling_strategy):
         logger.debug(f'Var len categorical variables {name} appended.')
 
@@ -455,6 +475,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         self.var_len_categorical_columns.append(vc)
 
+    @tic_toc()
     def __append_categorical_cols(self, cols):
         logger.debug(f'{len(cols)} categorical variables appended.')
 
@@ -476,6 +497,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                                                           else min(4 * int(pow(voc_size, 0.25)), 20))
                                         for name, voc_size in cols]
 
+    @tic_toc()
     def __append_continuous_cols(self, cols, input_name):
         if self.continuous_columns is None:
             self.continuous_columns = []
@@ -483,15 +505,18 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.continuous_columns = self.continuous_columns + [ContinuousColumn(name=input_name,
                                                                                   column_names=[c for c in cols])]
 
+    @tic_toc()
     def get_categorical_columns(self):
         return [c.name for c in self.categorical_columns]
 
+    @tic_toc()
     def get_var_len_categorical_columns(self):
         if self.var_len_categorical_columns is not None:
             return [c.name for c in self.var_len_categorical_columns]
         else:
             return []
 
+    @tic_toc()
     def get_continuous_columns(self):
         cont_vars = []
         for c in self.continuous_columns:
@@ -516,6 +541,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             fs.makedirs(cache_dir, exist_ok=True)
         return cache_dir
 
+    @tic_toc()
     def get_transformed_X_y_from_cache(self, sign):
         file_x_y = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         X_t, y_t = None, None
@@ -530,6 +556,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(file_x_y)
         return X_t, y_t
 
+    @tic_toc()
     def save_transformed_X_y_to_cache(self, sign, X, y):
         filepath = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         try:
@@ -544,6 +571,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(filepath)
         return False
 
+    @tic_toc()
     def load_transformers_from_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
         if fs.exists(transformer_path):
@@ -557,6 +585,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(transformer_path)
         return False
 
+    @tic_toc()
     def save_transformers_to_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
         with fs.open(transformer_path, 'wb') as output:
