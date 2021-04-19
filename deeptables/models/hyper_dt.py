@@ -3,13 +3,19 @@ __author__ = 'yangjian'
 """
 
 """
+import copy
+import pickle
+
+import pandas as pd
+
 from deeptables.models.config import ModelConfig
 from deeptables.models.deeptable import DeepTable
 from deeptables.models.preprocessor import DefaultPreprocessor
-from deeptables.utils import consts as DT_consts
+from deeptables.utils import dt_logging, fs, consts as DT_consts
 from hypernets.core.search_space import HyperSpace, ModuleSpace, Choice, Bool, MultipleChoice
-from hypernets.model.estimator import Estimator
-from hypernets.model.hyper_model import HyperModel
+from hypernets.model import Estimator, HyperModel
+
+logger = dt_logging.get_logger(__name__)
 
 
 class DTModuleSpace(ModuleSpace):
@@ -103,11 +109,15 @@ class DnnModule(ModuleSpace):
 
 class DTEstimator(Estimator):
     def __init__(self, space_sample, cache_preprocessed_data=False, cache_home=None, **config_kwargs):
+        Estimator.__init__(self, space_sample=space_sample)
+
         self.config_kwargs = config_kwargs
         self.cache_preprocessed_data = cache_preprocessed_data
         self.cache_home = cache_home
         self.model = self._build_model(space_sample)
-        Estimator.__init__(self, space_sample=space_sample)
+
+        # fitted
+        self.classes_ = None
 
     def _build_model(self, space_sample):
         config = space_sample.DT_Module.config._replace(**self.config_kwargs)
@@ -127,7 +137,7 @@ class DTEstimator(Estimator):
             print('---------no summary-------------')
             print(ex)
 
-    def fit(self, X, y, **kwargs):
+    def fit(self, X, y, eval_set=None, **kwargs):
         fit_params = self.space_sample.__dict__.get('fit_params')
         if fit_params is not None:
             kwargs.update(fit_params.param_values)
@@ -137,10 +147,26 @@ class DTEstimator(Estimator):
         else:
             self.model.fit(X, y, **kwargs)
 
+        self.classes_ = getattr(self.model, 'classes_', None)
+        return self
+
+    def fit_cross_validation(self, X, y, eval_set=None, metrics=None, **kwargs):
+        assert isinstance(metrics, (list, tuple))
+
+        oof_proba, _, _, oof_scores = self.model.fit_cross_validation(X, y, oof_metrics=metrics, **kwargs)
+
+        # calc final score with mean
+        scores = pd.concat([pd.Series(s) for s in oof_scores], axis=1).mean(axis=1).to_dict()
+        logger.info(f'fit_cross_validation score:{scores}, folds score:{oof_scores}')
+
+        self.classes_ = getattr(self.model, 'classes_', None)
+
+        return scores, oof_proba, oof_scores
+
     def predict(self, X, **kwargs):
         return self.model.predict(X, **kwargs)
 
-    def evaluate(self, X, y, metrics=None, **kwargs):
+    def evaluate(self, X, y, eval_set=None, metrics=None, **kwargs):
         # scores = self.model.evaluate(X, y, batch_size=256, return_dict=False)
         scores = self.model.evaluate(X, y, batch_size=256, return_dict=False)
         dt_model = self.model.get_model()
@@ -166,12 +192,37 @@ class DTEstimator(Estimator):
         result = self.model.predict_proba(X, **kwargs)
         return result
 
-    def save(self, model_file):
-        self.model.save(model_file)
+    def save(self, model_path):
+        if not model_path.endswith(fs.sep):
+            model_path = model_path + fs.sep
+
+        self.model.save(model_path)
+
+        stub = copy.copy(self)
+        stub.model = None
+        stub_path = model_path + 'dt_estimator.pkl'
+        with fs.open(stub_path, 'wb') as f:
+            pickle.dump(stub, f, protocol=4)
 
     @staticmethod
-    def load(model_file):
-        return DeepTable.load(model_file)
+    def load(model_path):
+        if not fs.exists(model_path):
+            raise ValueError(f'Not found storage path: {model_path}')
+
+        if not model_path.endswith(fs.sep):
+            model_path = model_path + fs.sep
+
+        stub_path = model_path + 'dt_estimator.pkl'
+        if not fs.exists(stub_path):
+            raise ValueError(f'Not found storage path of estimator: {stub_path}')
+
+        with fs.open(stub_path, 'rb') as f:
+            stub = pickle.load(f)
+
+        model = DeepTable.load(model_path)
+        stub.model = model
+
+        return stub
 
 
 class HyperDT(HyperModel):
@@ -262,6 +313,31 @@ def mini_dt_space():
                         reduce_factor=Choice([1, 0.8]),
                         dnn_dropout=Choice([0, 0.3]),
                         use_bn=Bool(),
+                        dnn_layers=2,
+                        activation='relu')(dt_module)
+        fit = DTFit(batch_size=Choice([128, 256]))(dt_module)
+
+    return space
+
+
+def tiny_dt_space():
+    space = HyperSpace()
+    with space.as_default():
+        dt_module = DTModuleSpace(
+            nets=['dnn_nets'],
+            auto_categorize=Bool(),
+            cat_remain_numeric=Bool(),
+            auto_discrete=False,
+            apply_gbm_features=False,
+            stacking_op=Choice([DT_consts.STACKING_OP_ADD, DT_consts.STACKING_OP_CONCAT]),
+            output_use_bias=Bool(),
+            apply_class_weight=Bool(),
+            earlystopping_patience=Choice([1, 3, 5])
+        )
+        dnn = DnnModule(hidden_units=Choice([10, 20]),
+                        reduce_factor=1,
+                        dnn_dropout=Choice([0, 0.3]),
+                        use_bn=False,
                         dnn_layers=2,
                         activation='relu')(dt_module)
         fit = DTFit(batch_size=Choice([128, 256]))(dt_module)

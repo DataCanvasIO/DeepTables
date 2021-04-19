@@ -43,7 +43,7 @@ X = df_train
 y = df_train.pop(14)
 y_test = df_test.pop(14)
 # dataset_id='adult_whole_data',
-hdt.search(df_train, y, df_test, y_test, max_trials=2000, batch_size=256, epochs=10, verbose=1, )
+hdt.search(df_train, y, df_test, y_test, max_trials=3, batch_size=256, epochs=1, verbose=1, )
 best_trial = hdt.get_best_trial()
 assert best_trial
 

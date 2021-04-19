@@ -5,7 +5,7 @@ python:
   - "3.6"
   - "3.7"
 env:
-  - TF_VERSION=2.0.0
+  - TF_VERSION=2.0.3
   - TF_VERSION=2.1.0
   - TF_VERSION=2.2.0
   - TF_VERSION=2.3.0
@@ -25,7 +25,7 @@ install:
   - pip install -q codacy-coverage
 # command to run tests
 script:
-  - pytest --cov=deeptables
+  - pytest --cov=deeptables --durations=30 -k "not all_nets and not fgcnn_nets and not fibi_nets and not batch_trainer"
 
 notifications:
   recipients:
