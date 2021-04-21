@@ -6,19 +6,17 @@ import hashlib
 import os
 import pickle
 import time
+from functools import partial
 
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import LabelEncoder
 
 from hypernets.tabular import sklearn_ex as skex
-from hypernets.utils import tic_toc
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
-from ..utils import dt_logging, consts, fs, infer_task_type
+from ..utils import dt_logging, consts, fs, infer_task_type, hash_data
 
 logger = dt_logging.get_logger(__name__)
 
@@ -64,27 +62,27 @@ class AbstractPreprocessor:
         sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
         return sign
 
-    @tic_toc()
     def get_X_y_signature(self, X, y):
-        repr = ''
-        if X is not None:
-            if isinstance(X, list):
-                repr += f'X len({len(X)})|'
-            if hasattr(X, 'shape'):
-                repr += f'X shape{X.shape}|'
-            if hasattr(X, 'dtypes'):
-                repr += f'x.dtypes({list(X.dtypes)})|'
-
-        if y is not None:
-            if isinstance(y, list):
-                repr += f'y len({len(y)})|'
-            if hasattr(y, 'shape'):
-                repr += f'y shape{y.shape}|'
-
-            if hasattr(y, 'dtype'):
-                repr += f'y.dtype({y.dtype})|'
-
-        sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        # repr = ''
+        # if X is not None:
+        #     if isinstance(X, list):
+        #         repr += f'X len({len(X)})|'
+        #     if hasattr(X, 'shape'):
+        #         repr += f'X shape{X.shape}|'
+        #     if hasattr(X, 'dtypes'):
+        #         repr += f'x.dtypes({list(X.dtypes)})|'
+        #
+        # if y is not None:
+        #     if isinstance(y, list):
+        #         repr += f'y len({len(y)})|'
+        #     if hasattr(y, 'shape'):
+        #         repr += f'y shape{y.shape}|'
+        #
+        #     if hasattr(y, 'dtype'):
+        #         repr += f'y.dtype({y.dtype})|'
+        #
+        # sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
+        sign = hash_data([X, y])
         return sign
 
     def fit_transform(self, X, y, copy_data=True):
@@ -108,12 +106,12 @@ class AbstractPreprocessor:
     def get_continuous_columns(self):
         raise NotImplementedError
 
-    def save(self, filepath):
-        raise NotImplementedError
-
-    @staticmethod
-    def load(filepath):
-        raise NotImplementedError
+    # def save(self, filepath):
+    #     raise NotImplementedError
+    #
+    # @staticmethod
+    # def load(filepath):
+    #     raise NotImplementedError
 
 
 class DefaultPreprocessor(AbstractPreprocessor):
@@ -137,8 +135,36 @@ class DefaultPreprocessor(AbstractPreprocessor):
         self.y_lable_encoder = None
         self.X_transformers = collections.OrderedDict()
 
-    @tic_toc()
-    def prepare_X(self, X):
+    def _validate_fit_transform(self, X, y):
+        if X is None:
+            raise ValueError(f'X cannot be none.')
+        if y is None:
+            raise ValueError(f'y cannot be none.')
+
+        X_shape = self._get_shape(X)
+        y_shape = self._get_shape(y)
+
+        if len(X_shape) != 2:
+            raise ValueError(f'X must be a 2D datasets.')
+        # if len(y_shape) != 1:
+        #    raise ValueError(f'y must be a 1D datasets.')
+        if X_shape[0] != y_shape[0]:
+            raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
+
+        y_df = pd.DataFrame(y)
+        if y_df.isnull().sum().sum() > 0:
+            raise ValueError("Missing values in y.")
+
+    def _copy(self, obj):
+        return copy.deepcopy(obj)
+
+    def _get_shape(self, obj):
+        return obj.shape
+
+    def _nunique(self, y):
+        return y.nunique()
+
+    def _prepare_X(self, X):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if len(set(X.columns)) != len(list(X.columns)):
@@ -149,7 +175,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
             logger.warn(f"Column index of X has been converted: {X.columns}")
         return X
 
-    @tic_toc()
     def fit_transform(self, X, y, copy_data=True):
         sign = self.get_X_y_signature(X, y)
         if self.use_cache:
@@ -163,29 +188,16 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         start = time.time()
         self.reset()
-        if X is None:
-            raise ValueError(f'X cannot be none.')
-        if y is None:
-            raise ValueError(f'y cannot be none.')
-        if len(X.shape) != 2:
-            raise ValueError(f'X must be a 2D datasets.')
-        # if len(y.shape) != 1:
-        #    raise ValueError(f'y must be a 1D datasets.')
-        if X.shape[0] != y.shape[0]:
-            raise ValueError(f"The number of samples of X and y must be the same. X.shape:{X.shape}, y.shape{y.shape}")
 
-        y_df = pd.DataFrame(y)
-        if y_df.isnull().sum().sum() > 0:
-            raise ValueError("Missing values in y.")
-
+        self._validate_fit_transform(X, y)
         if copy:
-            X = copy.deepcopy(X)
-            y = copy.deepcopy(y)
+            X = self._copy(X)
+            y = self._copy(y)
 
         y = self.fit_transform_y(y)
+        X = self._prepare_X(X)
+        X = self._prepare_features(X)
 
-        X = self.prepare_X(X)
-        X = self.__prepare_features(X)
         if self.config.auto_imputation:
             X = self._imputation(X)
         if self.config.auto_encode_label:
@@ -215,14 +227,14 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.save_transformers_to_cache()
         return X, y
 
-    @tic_toc()
     def fit_transform_y(self, y):
         if self.config.task == consts.TASK_AUTO:
             self.task_, self.labels_ = infer_task_type(y)
         else:
             self.task_ = self.config.task
+
         if self.task_ in [consts.TASK_BINARY, consts.TASK_MULTICLASS]:
-            self.y_lable_encoder = LabelEncoder()
+            self.y_lable_encoder = self.transformers.LabelEncoder()
             y = self.y_lable_encoder.fit_transform(y)
             self.labels_ = self.y_lable_encoder.classes_
         elif self.task_ == consts.TASK_MULTILABEL:
@@ -231,7 +243,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.labels_ = []
         return y
 
-    @tic_toc()
     def transform(self, X, y, copy_data=True):
         sign = self.get_X_y_signature(X, y)
         if self.use_cache:
@@ -258,40 +269,36 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         return X_t, y_t
 
-    @tic_toc()
     def transform_y(self, y, copy_data=True):
         logger.info("Transform [y]...")
         start = time.time()
         if copy_data:
-            y = copy.deepcopy(y)
+            y = self._copy(y)
         if self.y_lable_encoder is not None:
             y = self.y_lable_encoder.transform(y)
         logger.info(f'transform_y taken {time.time() - start}s')
         y = np.array(y)
         return y
 
-    @tic_toc()
     def transform_X(self, X, copy_data=True):
         start = time.time()
         logger.info("Transform [X]...")
         if copy_data:
-            X = copy.deepcopy(X)
-        X = self.prepare_X(X)
+            X = self._copy(X)
+        X = self._prepare_X(X)
         steps = [step for step in self.X_transformers.values()]
         pipeline = make_pipeline(*steps)
         X_t = pipeline.transform(X)
         logger.info(f'transform_X taken {time.time() - start}s')
         return X_t
 
-    @tic_toc()
     def inverse_transform_y(self, y_indicator):
         if self.y_lable_encoder is not None:
             return self.y_lable_encoder.inverse_transform(y_indicator)
         else:
             return y_indicator
 
-    @tic_toc()
-    def __prepare_features(self, X):
+    def _prepare_features(self, X):
         start = time.time()
 
         logger.info(f'Preparing features...')
@@ -318,9 +325,10 @@ class DefaultPreprocessor(AbstractPreprocessor):
             var_len_col_sep_dict = {}
             var_len_col_pooling_strategy_dict = {}
 
-        unique_upper_limit = round(X.shape[0] ** self.config.cat_exponent)
+        X_shape = self._get_shape(X)
+        unique_upper_limit = round(X_shape[0] ** self.config.cat_exponent)
         for c in X.columns:
-            nunique = X[c].nunique()
+            nunique = self._nunique(X[c])  # X[c].nunique()
             dtype = str(X[c].dtype)
 
             if nunique <= 1 and self.config.auto_discard_unique:
@@ -366,13 +374,11 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         logger.debug(f'{len(cat_vars)} categorical variables and {len(num_vars)} continuous variables found. '
                      f'{len(convert2cat_vars)} of them are from continuous to categorical.')
-
         self.__append_categorical_cols([(c[0], c[2] + 2) for c in cat_vars])
         self.__append_continuous_cols([c[0] for c in num_vars], consts.INPUT_PREFIX_NUM + 'all')
         print(f'Preparing features taken {time.time() - start}s')
         return X
 
-    @tic_toc()
     def _imputation(self, X):
         start = time.time()
         logger.info('Data imputation...')
@@ -381,24 +387,45 @@ class DefaultPreprocessor(AbstractPreprocessor):
         var_len_categorical_vars = self.get_var_len_categorical_columns()
 
         transformers = [
-            ('categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
-             categorical_vars),
-            ('continuous', SimpleImputer(missing_values=np.nan, strategy='mean'), continuous_vars),
+            ('continuous',
+             self.transformers.SimpleImputer(missing_values=np.nan, strategy='mean'),
+             continuous_vars)
         ]
 
-        if len(var_len_categorical_vars) > 0:
-            transformers.append(('var_len_categorical', SimpleImputer(missing_values=np.nan, strategy='constant'),
-                                 var_len_categorical_vars), )
+        obj_cats = []
+        num_cats = []
+        for c in categorical_vars + var_len_categorical_vars:
+            dtype = str(X[c].dtype)
+            if dtype.startswith('obj') or dtype.startswith('str'):
+                obj_cats.append(c)
+            else:
+                num_cats.append(c)
 
-        ct = ColumnTransformer(transformers)
-        columns = categorical_vars + continuous_vars + var_len_categorical_vars
+        if len(obj_cats) > 0:
+            transformers.append(
+                ('categorical_obj',
+                 self.transformers.SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=''),
+                 obj_cats)
+            )
+        if len(num_cats) > 0:
+            transformers.append(
+                ('categorical_num',
+                 self.transformers.SimpleImputer(missing_values=np.nan, strategy='constant', fill_value=0),
+                 num_cats)
+            )
+
+        if hasattr(self.transformers, 'ColumnTransformer'):
+            ct = self.transformers.ColumnTransformer(transformers)
+        else:
+            ct = ColumnTransformer(transformers)
+
+        columns = continuous_vars + obj_cats + num_cats
         dfwrapper = self.transformers.DataFrameWrapper(ct, columns=columns)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
         print(f'Imputation taken {time.time() - start}s')
         return X
 
-    @tic_toc()
     def _categorical_encoding(self, X):
         start = time.time()
         logger.info('Categorical encoding...')
@@ -409,7 +436,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Categorical encoding taken {time.time() - start}s')
         return X
 
-    @tic_toc()
     def _discretization(self, X):
         start = time.time()
         logger.info('Data discretization...')
@@ -421,7 +447,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Discretization taken {time.time() - start}s')
         return X
 
-    @tic_toc()
     def _var_len_encoder(self, X, var_len_categorical_columns):
         start = time.time()
         logger.info('Encoder var length feature...')
@@ -436,7 +461,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         print(f'Encoder taken {time.time() - start}s')
         return X
 
-    @tic_toc()
     def _apply_gbm_features(self, X, y):
         start = time.time()
         logger.info('Extracting GBM features...')
@@ -446,14 +470,20 @@ class DefaultPreprocessor(AbstractPreprocessor):
         X = gbmencoder.fit_transform(X, y)
         self.X_transformers['gbm_features'] = gbmencoder
         if self.config.gbm_feature_type == consts.GBM_FEATURE_TYPE_EMB:
-            self.__append_categorical_cols([(name, X[name].max() + 1) for name in gbmencoder.new_columns])
+            self.__append_categorical_cols(self._gbm_features_to_categorical_cols(X, gbmencoder))
         else:
-            self.__append_continuous_cols([name for name in gbmencoder.new_columns],
+            self.__append_continuous_cols(self._gbm_features_to_continuous_cols(X, gbmencoder),
                                           consts.INPUT_PREFIX_NUM + 'gbm_leaves')
         print(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
-    @tic_toc()
+    def _gbm_features_to_categorical_cols(self, X, gbmencoder):
+        return [(name, X[name].max() + 1) for name in gbmencoder.new_columns]
+
+    def _gbm_features_to_continuous_cols(self, X, gbmencoder):
+        # return [name for name in gbmencoder.new_columns]
+        return gbmencoder.new_columns
+
     def __append_var_len_categorical_col(self, name, voc_size, sep, pooling_strategy):
         logger.debug(f'Var len categorical variables {name} appended.')
 
@@ -475,7 +505,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         self.var_len_categorical_columns.append(vc)
 
-    @tic_toc()
     def __append_categorical_cols(self, cols):
         logger.debug(f'{len(cols)} categorical variables appended.')
 
@@ -497,7 +526,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
                                                           else min(4 * int(pow(voc_size, 0.25)), 20))
                                         for name, voc_size in cols]
 
-    @tic_toc()
     def __append_continuous_cols(self, cols, input_name):
         if self.continuous_columns is None:
             self.continuous_columns = []
@@ -505,18 +533,15 @@ class DefaultPreprocessor(AbstractPreprocessor):
             self.continuous_columns = self.continuous_columns + [ContinuousColumn(name=input_name,
                                                                                   column_names=[c for c in cols])]
 
-    @tic_toc()
     def get_categorical_columns(self):
         return [c.name for c in self.categorical_columns]
 
-    @tic_toc()
     def get_var_len_categorical_columns(self):
         if self.var_len_categorical_columns is not None:
             return [c.name for c in self.var_len_categorical_columns]
         else:
             return []
 
-    @tic_toc()
     def get_continuous_columns(self):
         cont_vars = []
         for c in self.continuous_columns:
@@ -541,7 +566,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
             fs.makedirs(cache_dir, exist_ok=True)
         return cache_dir
 
-    @tic_toc()
     def get_transformed_X_y_from_cache(self, sign):
         file_x_y = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         X_t, y_t = None, None
@@ -556,7 +580,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(file_x_y)
         return X_t, y_t
 
-    @tic_toc()
     def save_transformed_X_y_to_cache(self, sign, X, y):
         filepath = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
         try:
@@ -571,7 +594,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(filepath)
         return False
 
-    @tic_toc()
     def load_transformers_from_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
         if fs.exists(transformer_path):
@@ -585,7 +607,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 fs.rm(transformer_path)
         return False
 
-    @tic_toc()
     def save_transformers_to_cache(self):
         transformer_path = f'{self.cache_dir}/transformers.pkl'
         with fs.open(transformer_path, 'wb') as output:
@@ -594,3 +615,79 @@ class DefaultPreprocessor(AbstractPreprocessor):
     def clear_cache(self):
         fs.rm(self.cache_dir, recursive=True)
         fs.makedirs(self.cache_dir, exist_ok=True)
+
+
+class DefaultDaskPreprocessor(DefaultPreprocessor):
+    from hypernets.tabular import dask_ex as dex_
+
+    def __init__(self, config: ModelConfig, compute_to_local=False, cache_home=None, use_cache=False):
+        # disable cache
+        super(DefaultDaskPreprocessor, self).__init__(config, cache_home=None, use_cache=False)
+
+        if compute_to_local:
+            self._wrap_with_compute()
+
+        self.compute_to_local = compute_to_local
+
+    @property
+    def transformers(self):
+        return self.dex_
+
+    def _wrap_with_compute(self):
+        fns = ['fit_transform', 'transform', 'transform_X', 'transform_y', 'inverse_transform_y']
+        for fn_name in fns:
+            fn_name_original = f'_wrapped_{fn_name}'
+            assert not hasattr(self, fn_name_original)
+            fn = getattr(self, fn_name)
+            assert callable(fn)
+            setattr(self, fn_name_original, fn)
+            setattr(self, fn_name, partial(self.dex_.call_and_compute, fn, False))
+
+    def _validate_fit_transform(self, X, y):
+        assert self.dex_.is_dask_dataframe(X)
+        assert self.dex_.is_dask_object(y)
+
+    def _copy(self, obj):
+        if self.dex_.is_dask_object(obj):
+            return obj.copy()
+        else:
+            return super()._copy(obj)
+
+    def _get_shape(self, obj):
+        if self.dex_.is_dask_object(obj):
+            return self.dex_.compute(obj.shape)[0]
+        else:
+            return super()._get_shape(obj)
+
+    def _nunique(self, y):
+        if self.dex_.is_dask_object(y):
+            n = y.nunique().compute()
+        else:
+            n = super()._nunique(y)
+        return n
+
+    def _prepare_X(self, X):
+        if len(set(X.columns)) != len(list(X.columns)):
+            cols = [item for item, count in collections.Counter(X.columns).items() if count > 1]
+            raise ValueError(f'Columns with duplicate names in X: {cols}')
+        if X.columns.dtype != 'object':
+            X.columns = ['x_' + str(c) for c in X.columns]
+            logger.warning(f"Column index of X has been converted: {X.columns}")
+
+        return X
+
+    def fit_transform_y(self, y):
+        y = super().fit_transform_y(y)
+
+        if self.dex_.is_dask_object(self.labels_):
+            self.labels_ = self.labels_.compute()
+
+        return y
+
+    def _gbm_features_to_categorical_cols(self, X, gbmencoder):
+        if self.dex_.is_dask_dataframe(X):
+            cat_nums = X[gbmencoder.new_columns].max().compute()
+            cols = [(name, cats + 1) for name, cats in cat_nums.to_dict().items()]
+            return cols
+        else:
+            return super()._gbm_features_to_categorical_cols(X, gbmencoder)

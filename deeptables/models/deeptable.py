@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 """Training and inference for tabular datasets using neural nets."""
 
-import datetime
 import os
 import pickle
 import time
@@ -15,10 +14,11 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 from tensorflow.keras.utils import to_categorical
 
+from hypernets.tabular import dask_ex as dex
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel
-from .preprocessor import DefaultPreprocessor
+from .preprocessor import DefaultPreprocessor, DefaultDaskPreprocessor
 from ..utils import dt_logging, consts, fs, calc_score
 from ..utils.tf_version import tf_less_than
 
@@ -283,7 +283,7 @@ class DeepTable:
         self.nets = config.nets
         self.output_path = self._prepare_output_dir(config.home_dir, self.nets)
 
-        self.preprocessor = preprocessor if preprocessor is not None else DefaultPreprocessor(config)
+        self.preprocessor = preprocessor
         self.__current_model = None
         self.__modelset = modelset.ModelSet(metric=self.config.first_metric_name,
                                             best_mode=consts.MODEL_SELECT_MODE_AUTO)
@@ -341,6 +341,9 @@ class DeepTable:
             raise ValueError("Input train data should has 1 feature at least.")
         self.__modelset.clear()
 
+        if self.preprocessor is None:
+            self.preprocessor = _get_default_preprocessor(self.config, X, y)
+
         X, y = self.preprocessor.fit_transform(X, y)
         if validation_data is not None:
             validation_data = self.preprocessor.transform(*validation_data)
@@ -376,8 +379,10 @@ class DeepTable:
         start = time.time()
         logger.info(f'X.Shape={np.shape(X)}, y.Shape={np.shape(y)}, batch_size={batch_size}, config={self.config}')
         logger.info(f'metrics:{self.config.metrics}')
-        n_rows = np.shape(X)[0]
         self.__modelset.clear()
+
+        if self.preprocessor is None:
+            self.preprocessor = _get_default_preprocessor(self.config, X, y)
 
         X, y = self.preprocessor.fit_transform(X, y)
 
@@ -643,7 +648,7 @@ class DeepTable:
         if home_dir[-1] == '/':
             home_dir = home_dir[:-1]
 
-        running_dir = f'dt_{datetime.datetime.now().__format__("%Y%m%d %H%M%S")}_{"_".join(nets)}'
+        running_dir = f'dt_{time.strftime("%Y%m%d%H%M%S")}_{"_".join(nets)}'
         output_path = os.path.expanduser(f'{home_dir}/{running_dir}/')
         if not fs.exists(output_path):
             fs.makedirs(output_path, exist_ok=True)
@@ -858,3 +863,10 @@ def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
                 print(f'{metric}:{score}')
             # result[layers[i]] = {metric:score_fn[metric](features_test[i], y_score) for metric in score_fn.keys()}
     return result
+
+
+def _get_default_preprocessor(config, X, y):
+    if dex.exist_dask_object(X, y) and dex.dask_ml_available:
+        return DefaultDaskPreprocessor(config, compute_to_local=True)
+    else:
+        return DefaultPreprocessor(config)
