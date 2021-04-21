@@ -8,7 +8,7 @@ env:
   - TF_VERSION=2.0.3
   - TF_VERSION=2.1.0
   - TF_VERSION=2.2.0
-  - TF_VERSION=2.3.0
+#  - TF_VERSION=2.3.0
   - TF_VERSION=2.3.1
   - TF_VERSION=2.4.0
 
@@ -19,6 +19,7 @@ install:
   - pip install -q tensorflow==$TF_VERSION
   - pip install git+https://github.com/DataCanvasIO/Hypernets
   - pip install "dask[complete]"
+  - pip install "dask-ml"
   - pip install -r requirements.txt
   - pip install -q pytest-cov==2.4.0
   - pip install -q python-coveralls
