@@ -3,8 +3,6 @@
 import collections
 import copy
 import hashlib
-import os
-import pickle
 import time
 from functools import partial
 
@@ -14,9 +12,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import make_pipeline
 
 from hypernets.tabular import sklearn_ex as skex
+from hypernets.tabular.cache import cache
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
-from ..utils import dt_logging, consts, fs, infer_task_type, hash_data
+from ..utils import dt_logging, consts, infer_task_type, hash_data
 
 logger = dt_logging.get_logger(__name__)
 
@@ -63,25 +62,6 @@ class AbstractPreprocessor:
         return sign
 
     def get_X_y_signature(self, X, y):
-        # repr = ''
-        # if X is not None:
-        #     if isinstance(X, list):
-        #         repr += f'X len({len(X)})|'
-        #     if hasattr(X, 'shape'):
-        #         repr += f'X shape{X.shape}|'
-        #     if hasattr(X, 'dtypes'):
-        #         repr += f'x.dtypes({list(X.dtypes)})|'
-        #
-        # if y is not None:
-        #     if isinstance(y, list):
-        #         repr += f'y len({len(y)})|'
-        #     if hasattr(y, 'shape'):
-        #         repr += f'y shape{y.shape}|'
-        #
-        #     if hasattr(y, 'dtype'):
-        #         repr += f'y.dtype({y.dtype})|'
-        #
-        # sign = hashlib.md5(repr.encode('utf-8')).hexdigest()
         sign = hash_data([X, y])
         return sign
 
@@ -115,13 +95,9 @@ class AbstractPreprocessor:
 
 
 class DefaultPreprocessor(AbstractPreprocessor):
-    def __init__(self, config: ModelConfig, cache_home=None, use_cache=False):
+    def __init__(self, config: ModelConfig):
         super().__init__(config)
         self.reset()
-        self.X_types = None
-        self.y_type = None
-        self.cache_dir = self._prepare_cache_dir(cache_home)
-        self.use_cache = use_cache
 
     @property
     def transformers(self):
@@ -175,17 +151,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             logger.warn(f"Column index of X has been converted: {X.columns}")
         return X
 
+    @cache(arg_keys='X,y', attr_keys='config',
+           attrs_to_restore='labels_,task_,metainfo,'
+                            'categorical_columns,var_len_categorical_columns,continuous_columns,'
+                            'y_lable_encoder,X_transformers',
+           transformer='transform')
     def fit_transform(self, X, y, copy_data=True):
-        sign = self.get_X_y_signature(X, y)
-        if self.use_cache:
-            logger.info('Try to load (X, y) from cache')
-            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
-            if X_t is not None and y_t is not None:
-                if self.load_transformers_from_cache():
-                    return X_t, y_t
-            else:
-                logger.info('Load failed')
-
         start = time.time()
         self.reset()
 
@@ -221,10 +192,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         logger.info(f'fit_transform taken {time.time() - start}s')
 
-        if self.use_cache:
-            logger.info('Put (X, y) into cache')
-            self.save_transformed_X_y_to_cache(sign, X, y)
-            self.save_transformers_to_cache()
         return X, y
 
     def fit_transform_y(self, y):
@@ -244,15 +211,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
         return y
 
     def transform(self, X, y, copy_data=True):
-        sign = self.get_X_y_signature(X, y)
-        if self.use_cache:
-            logger.info('Try to load (X, y) from cache')
-            X_t, y_t = self.get_transformed_X_y_from_cache(sign)
-            if X_t is not None and y_t is not None:
-                return X_t, y_t
-            else:
-                logger.info('Load failed')
-
         X_t = self.transform_X(X, copy_data)
         y_t = self.transform_y(y, copy_data)
 
@@ -262,10 +220,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
             X_t[cat_cols] = X_t[cat_cols].astype('category')
         if len(cont_cols) > 0:
             X_t[cont_cols] = X_t[cont_cols].astype('float')
-
-        if self.use_cache:
-            logger.info('Put (X, y) into cache')
-            self.save_transformed_X_y_to_cache(sign, X_t, y_t)
 
         return X_t, y_t
 
@@ -548,81 +502,12 @@ class DefaultPreprocessor(AbstractPreprocessor):
             cont_vars = cont_vars + c.column_names
         return cont_vars
 
-    def _prepare_cache_dir(self, cache_home, clear_cache=False):
-        if cache_home is None:
-            cache_home = 'cache'
-        if cache_home[-1] == '/':
-            cache_home = cache_home[:-1]
-
-        cache_home = os.path.expanduser(f'{cache_home}')
-        if not fs.exists(cache_home):
-            fs.makedirs(cache_home, exist_ok=True)
-        else:
-            if clear_cache:
-                fs.rm(cache_home, recursive=True)
-                fs.mkdirs(cache_home, exist_ok=True)
-        cache_dir = f'{cache_home}/{self.signature}'
-        if not fs.exists(cache_dir):
-            fs.makedirs(cache_dir, exist_ok=True)
-        return cache_dir
-
-    def get_transformed_X_y_from_cache(self, sign):
-        file_x_y = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
-        X_t, y_t = None, None
-        if fs.exists(file_x_y):
-            try:
-                with fs.open(file_x_y, mode='rb') as f:
-                    df = pd.read_pickle(f, compression='gzip')
-                y_t = df.pop('saved__y__')
-                X_t = df
-            except Exception as e:
-                logger.error(e)
-                fs.rm(file_x_y)
-        return X_t, y_t
-
-    def save_transformed_X_y_to_cache(self, sign, X, y):
-        filepath = f'{self.cache_dir}/X_y_{sign}.pkl.gz'
-        try:
-            # x_t = X.copy(deep=True)
-            X.insert(0, 'saved__y__', y)
-            with fs.open(filepath, mode='wb') as f:
-                X.to_pickle(f, compression='gzip')
-            return True
-        except Exception as e:
-            logger.error(e)
-            if fs.exists(filepath):
-                fs.rm(filepath)
-        return False
-
-    def load_transformers_from_cache(self):
-        transformer_path = f'{self.cache_dir}/transformers.pkl'
-        if fs.exists(transformer_path):
-            try:
-                with fs.open(transformer_path, 'rb') as input:
-                    preprocessor = pickle.load(input)
-                    self.__dict__.update(preprocessor.__dict__)
-                    return True
-            except Exception as e:
-                logger.error(e)
-                fs.rm(transformer_path)
-        return False
-
-    def save_transformers_to_cache(self):
-        transformer_path = f'{self.cache_dir}/transformers.pkl'
-        with fs.open(transformer_path, 'wb') as output:
-            pickle.dump(self, output, protocol=4)
-
-    def clear_cache(self):
-        fs.rm(self.cache_dir, recursive=True)
-        fs.makedirs(self.cache_dir, exist_ok=True)
-
 
 class DefaultDaskPreprocessor(DefaultPreprocessor):
     from hypernets.tabular import dask_ex as dex_
 
-    def __init__(self, config: ModelConfig, compute_to_local=False, cache_home=None, use_cache=False):
-        # disable cache
-        super(DefaultDaskPreprocessor, self).__init__(config, cache_home=None, use_cache=False)
+    def __init__(self, config: ModelConfig, compute_to_local=False):
+        super(DefaultDaskPreprocessor, self).__init__(config)
 
         if compute_to_local:
             self._wrap_with_compute()
@@ -691,3 +576,7 @@ class DefaultDaskPreprocessor(DefaultPreprocessor):
             return cols
         else:
             return super()._gbm_features_to_categorical_cols(X, gbmencoder)
+
+    # override this method to enable cache from super
+    def fit_transform(self, X, y, copy_data=True):
+        return super().fit_transform(X, y, copy_data=copy_data)

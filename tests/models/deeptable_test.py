@@ -121,8 +121,8 @@ class Test_DeepTable:
         df_train = dsutils.load_adult().head(100)
         y = df_train.pop(14).values
         X = df_train
-        cache_home = homedir + '/cache'
-        preprocessor = DefaultPreprocessor(config, cache_home=cache_home, use_cache=True)
+
+        preprocessor = DefaultPreprocessor(config)
         dt = deeptable.DeepTable(config=config, preprocessor=preprocessor)
         dt.fit(X, y, epochs=1)
 
