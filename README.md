@@ -97,3 +97,6 @@ preds = dt.predict(df_test)
 ![](docs/source/images/dc_logo_1.png)
 
 DeepTables is an open source project created by [DataCanvas](https://www.datacanvas.com/). 
+
+## We Are Hiring！
+Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.)  
