@@ -140,3 +140,5 @@ catboost_info/
 docs/**/*.mo
 deeptables.datasets.mo
 
+#dask
+dask-worker-space/

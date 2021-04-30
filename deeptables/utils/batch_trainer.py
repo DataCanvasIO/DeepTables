@@ -296,7 +296,8 @@ class BatchTrainer:
 
         conf = config
         conf = conf._replace(apply_gbm_features=False, auto_categorize=False)
-        dt = deeptable.DeepTable(config=conf)
+        preprocessor = deeptable._get_default_preprocessor(conf, self.X_train, self.y_train)
+        dt = deeptable.DeepTable(config=conf, preprocessor=preprocessor)
         print('Preparing datasets...')
 
         X_train, _ = dt.preprocessor.fit_transform(self.X_train, self.y_train)

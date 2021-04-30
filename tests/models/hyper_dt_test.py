@@ -71,7 +71,6 @@ class Test_HyperDT():
                           'dnn_activation': 'relu',
                       },
                       cache_preprocessed_data=True,
-                      cache_home=homedir + '/cache'
                       )
         x1 = np.random.randint(0, 10, size=(100), dtype='int')
         x2 = np.random.randint(0, 2, size=(100)).astype('str')

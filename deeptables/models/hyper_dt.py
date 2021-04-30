@@ -108,12 +108,11 @@ class DnnModule(ModuleSpace):
 
 
 class DTEstimator(Estimator):
-    def __init__(self, space_sample, cache_preprocessed_data=False, cache_home=None, **config_kwargs):
+    def __init__(self, space_sample, cache_preprocessed_data=False, **config_kwargs):
         Estimator.__init__(self, space_sample=space_sample)
 
         self.config_kwargs = config_kwargs
         self.cache_preprocessed_data = cache_preprocessed_data
-        self.cache_home = cache_home
         self.model = self._build_model(space_sample)
 
         # fitted
@@ -122,7 +121,7 @@ class DTEstimator(Estimator):
     def _build_model(self, space_sample):
         config = space_sample.DT_Module.config._replace(**self.config_kwargs)
         if self.cache_preprocessed_data:
-            preprocessor = DefaultPreprocessor(config, cache_home=self.cache_home, use_cache=True)
+            preprocessor = DefaultPreprocessor(config)
         else:
             preprocessor = None
         model = DeepTable(config, preprocessor=preprocessor)
@@ -224,10 +223,13 @@ class DTEstimator(Estimator):
 
         return stub
 
+    def get_iteration_scores(self):
+        return []
+
 
 class HyperDT(HyperModel):
     def __init__(self, searcher, dispatcher=None, callbacks=[], reward_metric=None, max_model_size=0,
-                 cache_preprocessed_data=False, cache_home=None, **config_kwargs):
+                 cache_preprocessed_data=False, **config_kwargs):
         self.config_kwargs = config_kwargs
         metrics = config_kwargs.get('metrics')
         if metrics is None and reward_metric is None:
@@ -241,7 +243,6 @@ class HyperDT(HyperModel):
             metrics.append(reward_metric)
             config_kwargs['metrics'] = metrics
         self.cache_preprocessed_data = cache_preprocessed_data
-        self.cache_home = cache_home
         HyperModel.__init__(self, searcher, dispatcher=dispatcher, callbacks=callbacks, reward_metric=reward_metric)
 
     def load_estimator(self, model_file):
@@ -249,7 +250,7 @@ class HyperDT(HyperModel):
         return DTEstimator.load(model_file)
 
     def _get_estimator(self, space_sample):
-        estimator = DTEstimator(space_sample, self.cache_preprocessed_data, self.cache_home, **self.config_kwargs)
+        estimator = DTEstimator(space_sample, self.cache_preprocessed_data, **self.config_kwargs)
         return estimator
 
     def export_trial_configuration(self, trial):
