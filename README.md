@@ -12,6 +12,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/DataCanvasIO/deeptables/badge.svg?branch=master)](https://coveralls.io/github/DataCanvasIO/deeptables?branch=master)
 [![License](https://img.shields.io/github/license/DataCanvasIO/deeptables.svg)](https://github.com/DataCanvasIO/deeptables/blob/master/LICENSE)
 
+## We Are Hiring！
+Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.)  
+
 ## DeepTables: Deep-learning Toolkit for Tabular data
 DeepTables(DT) is a easy-to-use toolkit that enables deep learning to unleash great power on tabular data.
 
@@ -97,6 +100,3 @@ preds = dt.predict(df_test)
 ![](docs/source/images/dc_logo_1.png)
 
 DeepTables is an open source project created by [DataCanvas](https://www.datacanvas.com/). 
-
-## We Are Hiring！
-Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.)  
