@@ -62,7 +62,7 @@ class Test_HyperDT():
             2]
 
     def test_hyper_dt(self):
-        rs = RandomSearcher(mini_dt_space, optimize_direction=OptimizeDirection.Maximize, )
+        rs = RandomSearcher(tiny_dt_space, optimize_direction=OptimizeDirection.Maximize, )
         hdt = HyperDT(rs,
                       callbacks=[SummaryCallback()],
                       reward_metric='accuracy',
