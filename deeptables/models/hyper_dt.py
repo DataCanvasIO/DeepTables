@@ -13,7 +13,9 @@ from deeptables.models.deeptable import DeepTable
 from deeptables.models.preprocessor import DefaultPreprocessor
 from deeptables.utils import dt_logging, fs, consts as DT_consts
 from hypernets.core.search_space import HyperSpace, ModuleSpace, Choice, Bool, MultipleChoice
+from hypernets.experiment import make_experiment as _make_experiment
 from hypernets.model import Estimator, HyperModel
+from hypernets.utils import DocLens
 
 logger = dt_logging.get_logger(__name__)
 
@@ -228,8 +230,8 @@ class DTEstimator(Estimator):
 
 
 class HyperDT(HyperModel):
-    def __init__(self, searcher, dispatcher=None, callbacks=[], reward_metric=None, max_model_size=0,
-                 cache_preprocessed_data=False, **config_kwargs):
+    def __init__(self, searcher, dispatcher=None, callbacks=[], reward_metric=None, discriminator=None,
+                 max_model_size=0, cache_preprocessed_data=False, **config_kwargs):
         self.config_kwargs = config_kwargs
         metrics = config_kwargs.get('metrics')
         if metrics is None and reward_metric is None:
@@ -413,3 +415,74 @@ def tiny_dt_space():
     # earlystopping_patience=1,
     # gpu_usage_strategy=DT_consts.GPU_USAGE_STRATEGY_GROWTH,
     # distribute_strategy=None,
+
+
+def make_experiment(train_data,
+                    searcher=None,
+                    search_space=None,
+                    **kwargs):
+    """
+    Utility to make CompeteExperiment instance with HyperDT.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    Runnable experiment object
+
+    Notes:
+    -------
+    Initlialize Dask default client to enable dask in experiment.
+
+    Examples:
+    -------
+    Create experiment with csv data file '/opt/data01/test.csv', and run it
+    >>> experiment = make_experiment('/opt/data01/test.csv', target='y')
+    >>> estimator = experiment.run()
+
+    Create experiment with csv data file '/opt/data01/test.csv' with INFO logging, and run it
+    >>> import logging
+    >>>
+    >>> experiment = make_experiment('/opt/data01/test.csv', target='y', log_level=logging.INFO)
+    >>> estimator = experiment.run()
+
+    or
+    >>> experiment = make_experiment('/opt/data01/test.csv', target='y', log_level='info')
+    >>> estimator = experiment.run()
+
+    Create experiment with parquet data files '/opt/data02/*.parquet', and run it with Dask
+    >>> from dask.distributed import Client
+    >>>
+    >>> client = Client()
+    >>> experiment = make_experiment('/opt/data02/*.parquet', target='y')
+    >>> estimator = experiment.run()
+
+    """
+
+    if (searcher is None or isinstance(searcher, str)) and search_space is None:
+        search_space = mini_dt_space
+
+    experiment = _make_experiment(HyperDT, train_data,
+                                  searcher=searcher,
+                                  search_space=search_space,
+                                  **kwargs
+                                  )
+    return experiment
+
+
+_search_space_doc = """
+    default is mini_dt_space."""
+
+
+def _merge_doc():
+    my_doc = DocLens(make_experiment.__doc__)
+    params = DocLens(_make_experiment.__doc__).parameters
+    params.pop('hyper_model_cls')
+    params['search_space'] += _search_space_doc
+    my_doc.parameters = params
+
+    make_experiment.__doc__ = my_doc.render()
+
+
+_merge_doc()

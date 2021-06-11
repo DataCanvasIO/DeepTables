@@ -43,4 +43,4 @@ jobs:
         pip list
     - name: Test with pytest
       run: |
-        pytest --cov=deeptables --durations=30 -k "not dask"
+        pytest --cov=deeptables --durations=30 -k "not dask and not batch_trainer"
