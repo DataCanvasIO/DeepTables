@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.7, 3.8, 3.6]
-        tf-version: [2.0.3, 2.1.0, 2.2.0, 2.3.1, 2.4.2]
+        tf-version: [2.0.4, 2.1.0, 2.2.0, 2.3.1, 2.4.2]
         exclude:
-          - tf-version: 2.0.3
+          - tf-version: 2.0.4
             python-version: 3.8
           - tf-version: 2.1.0
             python-version: 3.8
@@ -32,6 +32,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: System informations
+      run: |
+        uname -a
+        free -g
+        pwd
     - name: Install dependencies
       run: |
         python --version
