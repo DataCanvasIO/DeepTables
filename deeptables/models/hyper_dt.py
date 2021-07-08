@@ -465,10 +465,13 @@ def make_experiment(train_data,
         search_space = mini_dt_space
 
     default_settings = dict(verbose=0,
-                            n_jobs=-1)
+                            # n_jobs=-1,
+                            )
     for k, v in default_settings.items():
         if k not in kwargs.keys():
             kwargs[k] = v
+    if kwargs.get('cv', True) and 'n_jobs' not in kwargs.keys():
+        kwargs['n_jobs'] = -1
 
     experiment = _make_experiment(HyperDT, train_data,
                                   searcher=searcher,
