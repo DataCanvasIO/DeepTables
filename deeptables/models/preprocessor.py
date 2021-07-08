@@ -305,8 +305,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
                     if np.issubdtype(dtype, np.number):
                         num_vars.append((c, dtype, nunique))
                     else:
-                        print(
-                            f'Column [{c}] has been discarded. It is not numeric and not in [config.categorical_columns].')
+                        logger.info(f'Column [{c}] has been discarded. '
+                                    f'It is not numeric and not in [config.categorical_columns].')
             else:
                 if dtype == 'object' or dtype == 'category' or dtype == 'bool':
                     cat_vars.append((c, dtype, nunique))
@@ -330,7 +330,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                      f'{len(convert2cat_vars)} of them are from continuous to categorical.')
         self.__append_categorical_cols([(c[0], c[2] + 2) for c in cat_vars])
         self.__append_continuous_cols([c[0] for c in num_vars], consts.INPUT_PREFIX_NUM + 'all')
-        print(f'Preparing features taken {time.time() - start}s')
+        logger.info(f'Preparing features taken {time.time() - start}s')
         return X
 
     def _imputation(self, X):
@@ -377,7 +377,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         dfwrapper = self.transformers.DataFrameWrapper(ct, columns=columns)
         X = dfwrapper.fit_transform(X)
         self.X_transformers['imputation'] = dfwrapper
-        print(f'Imputation taken {time.time() - start}s')
+        logger.info(f'Imputation taken {time.time() - start}s')
         return X
 
     def _categorical_encoding(self, X):
@@ -387,7 +387,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         mle = self.transformers.MultiLabelEncoder(vars)
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
-        print(f'Categorical encoding taken {time.time() - start}s')
+        logger.info(f'Categorical encoding taken {time.time() - start}s')
         return X
 
     def _discretization(self, X):
@@ -398,7 +398,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         X = mkbd.fit_transform(X)
         self.__append_categorical_cols([(new_name, bins + 1) for name, new_name, bins in mkbd.new_columns])
         self.X_transformers['discreter'] = mkbd
-        print(f'Discretization taken {time.time() - start}s')
+        logger.info(f'Discretization taken {time.time() - start}s')
         return X
 
     def _var_len_encoder(self, X, var_len_categorical_columns):
@@ -412,7 +412,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
             c.max_elements_length = transformer.max_length_[c.name]
 
         self.X_transformers['var_len_encoder'] = transformer
-        print(f'Encoder taken {time.time() - start}s')
+        logger.info(f'Encoder taken {time.time() - start}s')
         return X
 
     def _apply_gbm_features(self, X, y):
@@ -428,7 +428,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         else:
             self.__append_continuous_cols(self._gbm_features_to_continuous_cols(X, gbmencoder),
                                           consts.INPUT_PREFIX_NUM + 'gbm_leaves')
-        print(f'Extracting gbm features taken {time.time() - start}s')
+        logger.info(f'Extracting gbm features taken {time.time() - start}s')
         return X
 
     def _gbm_features_to_categorical_cols(self, X, gbmencoder):

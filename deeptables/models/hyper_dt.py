@@ -130,13 +130,14 @@ class DTEstimator(Estimator):
         return model
 
     def summary(self):
-        try:
-            mi = self.model.get_model()
-            if mi is not None:
-                mi.model.summary()
-        except(Exception) as ex:
-            print('---------no summary-------------')
-            print(ex)
+        if logger.is_info_enabled():
+            try:
+                mi = self.model.get_model()
+                if mi is not None:
+                    mi.model.summary()
+            except(Exception) as ex:
+                logger.info('---------no summary-------------')
+                logger.info(ex)
 
     def fit(self, X, y, eval_set=None, **kwargs):
         fit_params = self.space_sample.__dict__.get('fit_params')
@@ -183,7 +184,7 @@ class DTEstimator(Estimator):
         ret_metrics = [loss_name]
         ret_metrics.extend(dt_model.config.metrics)
 
-        print(f"TF metrics names is {tf_metrics_names} and user's is {user_metrics}")
+        logger.info(f"TF metrics names is {tf_metrics_names} and user's is {user_metrics}")
 
         result = dict(zip(ret_metrics, scores))
 
@@ -462,6 +463,12 @@ def make_experiment(train_data,
 
     if (searcher is None or isinstance(searcher, str)) and search_space is None:
         search_space = mini_dt_space
+
+    default_settings = dict(verbose=0,
+                            n_jobs=-1)
+    for k, v in default_settings.items():
+        if k not in kwargs.keys():
+            kwargs[k] = v
 
     experiment = _make_experiment(HyperDT, train_data,
                                   searcher=searcher,

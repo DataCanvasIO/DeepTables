@@ -375,8 +375,8 @@ class DeepTable:
                              max_queue_size=10, workers=1, use_multiprocessing=False,
                              oof_metrics=None,
                              ):
-        print("Start cross validation")
         start = time.time()
+        logger.info("Start cross validation")
         logger.info(f'X.Shape={np.shape(X)}, y.Shape={np.shape(y)}, batch_size={batch_size}, config={self.config}')
         logger.info(f'metrics:{self.config.metrics}')
         self.__modelset.clear()
@@ -387,10 +387,10 @@ class DeepTable:
         X, y = self.preprocessor.fit_transform(X, y)
 
         if X_eval is not None:
-            print(f'transform X_eval')
+            logger.info(f'transform X_eval')
             X_eval = self.preprocessor.transform_X(X_eval)
         if X_test is not None:
-            print(f'transform X_test')
+            logger.info(f'transform X_test')
             X_test = self.preprocessor.transform_X(X_test)
 
         if iterators is None:
@@ -398,7 +398,7 @@ class DeepTable:
                 iterators = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=random_state)
             else:
                 iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)
-        print(f'Iterators:{iterators}')
+        logger.info(f'Iterators:{iterators}')
 
         test_proba_mean = None
         eval_proba_mean = None
@@ -627,18 +627,18 @@ class DeepTable:
         return mi.model
 
     def get_class_weight(self, y):
-        print('Calc classes weight.')
+        logger.info('Calc classes weight.')
         if len(y.shape) == 1:
             y = to_categorical(y)
         y_sum = y.sum(axis=0)
         class_weight = {}
         total = y.shape[0]
         classes = len(y_sum)
-        print(f"Examples:\nTotal:{total}")
+        logger.info(f"Examples:\nTotal:{total}")
         for i in range(classes):
             weight = total / y_sum[i] / classes
             class_weight[i] = weight
-            print(f'class {i}:{weight}')
+            logger.info(f'class {i}:{weight}')
 
         return class_weight
 
@@ -673,7 +673,7 @@ class DeepTable:
         if save_model and isinstance(model, DeepModel):
             modelfile = f'{self.output_path}{name}.h5'
             model.save(modelfile)
-            print(f'Model has been saved to:{modelfile}')
+            logger.info(f'Model has been saved to:{modelfile}')
         mi = modelset.ModelInfo(type, name, model, {}, history=history, modelfile=modelfile)
         self.__modelset.push(mi)
         self.__current_model = mi.name
@@ -708,7 +708,7 @@ class DeepTable:
         #                          save_freq='epoch',
         #                          )
         #    callbacks.append(mcp)
-        #    print(f'Injected a callback [ModelCheckpoint].\nfilepath:{mcp.filepath}\nmonitor:{mcp.monitor}')
+        #    logger.info(f'Injected a callback [ModelCheckpoint].\nfilepath:{mcp.filepath}\nmonitor:{mcp.monitor}')
         if es is None:
             es = EarlyStopping(monitor=self.monitor if tf_less_than('2.2') else self.monitor.lower(),
                                restore_best_weights=True,
@@ -719,7 +719,9 @@ class DeepTable:
                                baseline=None,
                                )
             callbacks.append(es)
-            print(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, patience:{es.patience}, mode:{mode}')
+            if logger.is_info_enabled():
+                logger.info(f'Injected a callback [EarlyStopping]. monitor:{es.monitor}, '
+                            f'patience:{es.patience}, mode:{mode}')
         return callbacks
 
     def __getstate__(self):
@@ -782,7 +784,7 @@ class DeepTable:
 
     def load_deepmodel(self, filepath):
         if fs.exists(filepath):
-            print(f'Load model from: {filepath}.')
+            logger.info(f'Load model from: {filepath}.')
             dm = DeepModel(self.task, self.num_classes, self.config,
                            self.preprocessor.categorical_columns,
                            self.preprocessor.continuous_columns, model_file=filepath)
@@ -798,7 +800,7 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
                    shuffle=True, class_weight=None, sample_weight=None,
                    initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1,
                    max_queue_size=10, workers=1, use_multiprocessing=False):
-    print(f'\nFold:{n_fold + 1}\n')
+    logger.info(f'\nFold:{n_fold + 1}\n')
     model = DeepModel(task, num_classes, config, categorical_columns, continuous_columns)
     history = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=verbose,
                         callbacks=callbacks, validation_data=(X_val, y_val),
@@ -806,7 +808,7 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
                         initial_epoch=initial_epoch, steps_per_epoch=steps_per_epoch,
                         validation_steps=validation_steps, validation_freq=validation_freq,
                         max_queue_size=max_queue_size, workers=workers, use_multiprocessing=use_multiprocessing)
-    print(f'Fold {n_fold + 1} fitting over.')
+    logger.info(f'Fold {n_fold + 1} fitting over.')
     oof_proba = model.predict(X_val)
     eval_proba = None
     test_proba = None
@@ -818,19 +820,19 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
             file = f'{model_file}.test_proba.csv'
             with fs.open(file, 'w', encoding='utf-8') as f:
                 pd.DataFrame(test_proba).to_csv(f, index=False)
-    print(f'Fold {n_fold + 1} scoring over.')
+    logger.info(f'Fold {n_fold + 1} scoring over.')
     if model_file is not None:
         model.save(model_file)
-        print(f'Save model to:{model_file}.')
+        logger.info(f'Save model to:{model_file}.')
     model.release()
     return n_fold, valid_idx, history.history, oof_proba, eval_proba, test_proba
 
 
 def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
     from sklearn.linear_model import LogisticRegression
-    print('Extracting features of train set...')
+    logger.info('Extracting features of train set...')
     features_train = dt.apply(X, output_layers=layers)
-    print('Extracting features of test set...')
+    logger.info('Extracting features of test set...')
     features_test = dt.apply(X_test, output_layers=layers)
     y = dt.preprocessor.transform_y(y)
     y_test = dt.preprocessor.transform_y(y_test)
@@ -842,25 +844,25 @@ def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
     result = {}
     for i, x_train in enumerate(features_train):
         clf = LogisticRegression(random_state=0).fit(x_train, y)
-        print(f'Fit model for layer[{layers[i]}]...')
+        logger.info(f'Fit model for layer[{layers[i]}]...')
         y_proba = clf.predict_proba(features_test[i])[:, 1]
         y_score = clf.predict(features_test[i])
-        print(f'Scoring...')
+        logger.info(f'Scoring...')
         if len(score_fn) == 0:
             score = clf.score(features_test[i], y_test)
-            print(f'Evaluating accuracy score...')
+            logger.info(f'Evaluating accuracy score...')
             result[layers[i]] = {'accuracy': score}
         else:
             result[layers[i]] = {}
             for metric in score_fn.keys():
-                print(f'Evaluating {metric} score...')
+                logger.info(f'Evaluating {metric} score...')
                 fn = score_fn[metric]
                 if fn == roc_auc_score:
                     score = fn(y_test, y_proba)
                 else:
                     score = fn(y_test, y_score)
                 result[layers[i]][metric] = score
-                print(f'{metric}:{score}')
+                logger.info(f'{metric}:{score}')
             # result[layers[i]] = {metric:score_fn[metric](features_test[i], y_score) for metric in score_fn.keys()}
     return result
 

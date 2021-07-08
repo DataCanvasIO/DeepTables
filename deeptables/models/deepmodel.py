@@ -157,8 +157,9 @@ class DeepModel:
                 for i, x_o in enumerate(output):
                     if len(x_o.shape) > 2:
                         x_o = x_o.reshape((x_o.shape[0], -1))
-                    print(
-                        f'Performing transformation on [{output_layers[i]}] by "{str(transformer)}", input shape:{x_o.shape}.')
+                    if logger.is_info_enabled():
+                        logger.info(f'Performing transformation on [{output_layers[i]}] by "{str(transformer)}", '
+                                    f'input shape:{x_o.shape}.')
                     output_t.append(transformer.fit_transform(x_o))
                 return output_t
             else:
@@ -293,13 +294,14 @@ class DeepModel:
                 out = Flatten(name=f'flatten_{name}_out')(out)
             x = out
         else:
-            raise ValueError(f'Unexcepted logit output.{outs}')
+            raise ValueError(f'Unexpected logit output.{outs}')
         all_inputs = list(categorical_inputs.values()) + list(var_len_categorical_inputs.values()) + \
                      list(continuous_inputs.values())
         output = self.__output_layer(x, task, num_classes, use_bias=self.config.output_use_bias)
         model = Model(inputs=all_inputs, outputs=output)
         model = self.__compile_model(model, task, num_classes, config.optimizer, config.loss, config.metrics)
-        print(self.model_desc)
+        if logger.is_info_enabled():
+            logger.info(self.model_desc)
         return model
 
     def __compile_model(self, model, task, num_classes, optimizer, loss, metrics):
