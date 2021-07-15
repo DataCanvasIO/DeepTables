@@ -452,9 +452,10 @@ class DeepTable:
                         fold_y_proba = self._fix_softmax_proba(fold_oof_proba.shape[0], fold_oof_proba.copy())
                     else:
                         fold_y_proba = fold_oof_proba.copy()
-                    fold_y_pred = self.proba2predict(fold_y_proba)
-                    oof_scores.append(calc_score(fold_y_true, fold_y_pred, fold_y_proba,
-                                                 task=self.task, metrics=oof_metrics, pos_label=self.pos_label))
+                    fold_y_true = self.preprocessor.inverse_transform_y(fold_y_true)
+                    fold_y_pred = self.proba2predict(fold_y_proba, encode_to_label=True)
+                    oof_scores.append(calc_score(fold_y_true, fold_y_pred, fold_y_proba, task=self.task,
+                                                 metrics=oof_metrics, pos_label=self.pos_label, classes=self.classes_))
 
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
                                   f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5', history)
@@ -462,8 +463,10 @@ class DeepTable:
         nan_idx = np.argwhere(np.isnan(oof_proba).any(1)).ravel()
         if self.task == consts.TASK_BINARY:
             oof_proba_fixed = self._fix_softmax_proba(X.shape[0], oof_proba_origin.copy())
+        elif self.task == consts.TASK_REGRESSION:
+            oof_proba_fixed = oof_proba_origin.reshape(X.shape[0])
         else:
-            oof_proba_fixed = oof_proba
+            oof_proba_fixed = oof_proba_origin
 
         if len(nan_idx) > 0:
             oof_proba_fixed[nan_idx] = np.nan
