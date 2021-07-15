@@ -6,3 +6,4 @@ from deeptables.models.modelset import ModelInfo, ModelSet
 from deeptables.models.deeptable import DeepTable
 from deeptables.models.deepmodel import DeepModel
 from deeptables.models.metainfo import ContinuousColumn, CategoricalColumn
+from deeptables.models.hyper_dt import make_experiment

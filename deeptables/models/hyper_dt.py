@@ -136,10 +136,11 @@ class DTEstimator(Estimator):
                 if mi is not None:
                     mi.model.summary()
             except(Exception) as ex:
-                logger.info('---------no summary-------------')
-                logger.info(ex)
+                pass
+                # logger.info('---------no summary-------------')
+                # logger.info(ex)
 
-    def fit(self, X, y, eval_set=None, **kwargs):
+    def fit(self, X, y, eval_set=None, pos_label=None, **kwargs):
         fit_params = self.space_sample.__dict__.get('fit_params')
         if fit_params is not None:
             kwargs.update(fit_params.param_values)
@@ -152,7 +153,7 @@ class DTEstimator(Estimator):
         self.classes_ = getattr(self.model, 'classes_', None)
         return self
 
-    def fit_cross_validation(self, X, y, eval_set=None, metrics=None, **kwargs):
+    def fit_cross_validation(self, X, y, eval_set=None, metrics=None, pos_label=None, **kwargs):
         assert isinstance(metrics, (list, tuple))
 
         oof_proba, _, _, oof_scores = self.model.fit_cross_validation(X, y, oof_metrics=metrics, **kwargs)
@@ -324,6 +325,11 @@ def mini_dt_space():
     return space
 
 
+def mini_dt_space_validator(sample):
+    nets = [p.value for p in sample.get_assigned_params() if p.alias.endswith('.nets')][0]
+    return nets != ['fm_nets']
+
+
 def tiny_dt_space():
     space = HyperSpace()
     with space.as_default():
@@ -461,8 +467,10 @@ def make_experiment(train_data,
 
     """
 
+    searcher_options = kwargs.pop('searcher_options', {})
     if (searcher is None or isinstance(searcher, str)) and search_space is None:
         search_space = mini_dt_space
+        searcher_options['space_sample_validation_fn'] = mini_dt_space_validator
 
     default_settings = dict(verbose=0,
                             # n_jobs=-1,
@@ -473,11 +481,20 @@ def make_experiment(train_data,
     if kwargs.get('cv', True) and 'n_jobs' not in kwargs.keys():
         kwargs['n_jobs'] = -1
 
+    config_options = {}
+    option_keys = set(f for f in ModelConfig._fields if f not in {'name', 'task', 'metrics', 'nets', 'pos_label'})
+    for k in option_keys:
+        if k in kwargs.keys():
+            config_options[k] = kwargs.pop(k)
+    if 'pos_label' in kwargs.keys():
+        config_options['pos_label'] = kwargs.get('pos_label')
+
     experiment = _make_experiment(HyperDT, train_data,
                                   searcher=searcher,
+                                  searcher_options=searcher_options,
                                   search_space=search_space,
-                                  **kwargs
-                                  )
+                                  hyper_model_options=config_options,
+                                  **kwargs)
     return experiment
 
 
