@@ -68,6 +68,7 @@ Example
    ModelConfig<model_config.md>
    Models<models.md>
    Layers<layers.md>
+   AutoML<automl.md>
    API<modules.rst>
    FAQ<faq.md>
 

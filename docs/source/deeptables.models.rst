@@ -76,6 +76,13 @@ deeptables\.models\.preprocessor module
     :undoc-members:
     :show-inheritance:
 
+deeptables\.models\.hyper_dt module
+---------------------------------------
+
+.. automodule:: deeptables.models.hyper_dt
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 Module contents
 ---------------
