@@ -205,7 +205,7 @@ class DTEstimator(Estimator):
         stub.model = None
         stub_path = model_path + 'dt_estimator.pkl'
         with fs.open(stub_path, 'wb') as f:
-            pickle.dump(stub, f, protocol=4)
+            pickle.dump(stub, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     @staticmethod
     def load(model_path):
@@ -229,6 +229,16 @@ class DTEstimator(Estimator):
 
     def get_iteration_scores(self):
         return []
+
+    def __getstate__(self):
+        try:
+            state = super().__getstate__()
+        except AttributeError:
+            state = self.__dict__.copy()
+
+        state['model'] = None
+
+        return state
 
 
 class HyperDT(HyperModel):
