@@ -449,12 +449,6 @@ def make_experiment(train_data,
     >>> estimator = experiment.run()
 
     Create experiment with csv data file '/opt/data01/test.csv' with INFO logging, and run it
-    >>> import logging
-    >>>
-    >>> experiment = make_experiment('/opt/data01/test.csv', target='y', log_level=logging.INFO)
-    >>> estimator = experiment.run()
-
-    or
     >>> experiment = make_experiment('/opt/data01/test.csv', target='y', log_level='info')
     >>> estimator = experiment.run()
 
