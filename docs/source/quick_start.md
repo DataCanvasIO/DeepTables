@@ -10,13 +10,23 @@
 
 ### Install DeepTables
 
+`pip` is recommended to install DeepTables:
+
 ```shell script
 pip install deeptables
 ```
 
-**GPU** Setup (Optional): If you have GPUs on your machine and want to use them to accelerate the training, you can use the following command.
+Note:
+* If you installed TensorFlow before DeepTables, the DeepTables installer will reuse it, otherwise 'tensorflow>=2.0.0,<2.5.0' will be added to the requirements. 
+* DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
+
+**GPU** Setup (Optional)
+
+If you have GPUs on your machine and want to use them to accelerate the training, install `tensorflow-gpu` before install DeepTable please.
+
 ```shell script
-pip install deeptables[gpu]
+pip install tensorflow-gpu==2.4.2
+pip install deeptables
 ```
                      
 ***Verify the install***:

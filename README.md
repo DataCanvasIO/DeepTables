@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/github/license/DataCanvasIO/deeptables.svg)](https://github.com/DataCanvasIO/deeptables/blob/master/LICENSE)
 
 ## We Are Hiring！
-Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.)  
+Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.) 
 
 ## DeepTables: Deep-learning Toolkit for Tabular data
 DeepTables(DT) is a easy-to-use toolkit that enables deep learning to unleash great power on tabular data.
@@ -42,15 +42,29 @@ Please refer to the official docs at [https://deeptables.readthedocs.io/en/lates
 * [Layers](https://deeptables.readthedocs.io/en/latest/layers.html)
 
 ## Installation
+
+`pip` is recommended to install DeepTables:
+
 ```shell script
 pip install deeptables
 ```
+
+Note:
+* If you installed TensorFlow before DeepTables, the DeepTables installer will reuse it, otherwise 'tensorflow>=2.0.0,<2.5.0' will be added to the requirements. 
+* DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
+
 **GPU** Setup (Optional)
+
+To use DeepTables with GPU devices, install `tensorflow-gpu` before install DeepTable please.
+
 ```shell script
-pip install deeptables[gpu]
+pip install tensorflow-gpu==2.4.2
+pip install deeptables
 ```
 
-***Verify the install***:
+
+***Verify the installation***:
+
 ```shell script
 python -c "from deeptables.utils.quicktest import test; test()”
 ```

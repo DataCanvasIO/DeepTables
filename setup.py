@@ -7,6 +7,13 @@ import os
 from setuptools import find_packages
 from setuptools import setup
 
+try:
+    import tensorflow
+
+    tf_installed = True
+except ImportError:
+    tf_installed = False
+
 
 def read_requirements(file_path='requirements.txt'):
     if not os.path.exists(file_path):
@@ -59,6 +66,8 @@ def read_version(py_file, var_name='__version__'):
 name = 'deeptables'
 version = read_version(os.path.join(name, '_version.py'))
 requirements = read_requirements()
+if not tf_installed:
+    requirements = ['tensorflow>=2.0.0,<2.5.0', ] + requirements
 
 MIN_PYTHON_VERSION = '>=3.6.*'
 
@@ -78,7 +87,7 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        'gpu': ['tensorflow-gpu>=2.0.0', ]
+        # 'gpu': ['tensorflow-gpu>=2.0.0', ]
     },
 
     classifiers=[
