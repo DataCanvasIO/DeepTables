@@ -40,6 +40,7 @@ Please refer to the official docs at [https://deeptables.readthedocs.io/en/lates
 * [ModelConfig](https://deeptables.readthedocs.io/en/latest/model_config.html)
 * [Models](https://deeptables.readthedocs.io/en/latest/models.html)
 * [Layers](https://deeptables.readthedocs.io/en/latest/layers.html)
+* [AutoML](https://deeptables.readthedocs.io/en/latest/automl.html)
 
 ## Installation
 
