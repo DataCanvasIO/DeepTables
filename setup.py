@@ -87,7 +87,6 @@ setup(
     python_requires=MIN_PYTHON_VERSION,
     extras_require={
         'tests': ['pytest', ],
-        # 'gpu': ['tensorflow-gpu>=2.0.0', ]
     },
 
     classifiers=[
@@ -107,8 +106,8 @@ setup(
     ],
     packages=find_packages(exclude=('docs', 'tests', 'examples')),
     package_data={
-        # 包含data目录下所有的.dat文件
-        'deeptables': ['datasets/*.csv'],
+        # 包含examples目录下所有文件
+        'deeptables': ['examples/*'],
     },
     zip_safe=False,
     include_package_data=True,

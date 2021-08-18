@@ -15,7 +15,7 @@ from deeptables.utils import dt_logging, fs, consts as DT_consts
 from hypernets.core.search_space import HyperSpace, ModuleSpace, Choice, Bool, MultipleChoice
 from hypernets.experiment import make_experiment as _make_experiment
 from hypernets.model import Estimator, HyperModel
-from hypernets.utils import DocLens
+from hypernets.utils import DocLens, isnotebook
 
 logger = dt_logging.get_logger(__name__)
 
@@ -492,6 +492,13 @@ def make_experiment(train_data,
             config_options[k] = kwargs.pop(k)
     if 'pos_label' in kwargs.keys():
         config_options['pos_label'] = kwargs.get('pos_label')
+
+    if isnotebook() and not 'callbacks' in kwargs.keys():
+        from hypernets.experiment import SimpleNotebookCallback
+        from hypernets.core import NotebookCallback as SearchNotebookCallback
+
+        kwargs['callbacks'] = [SimpleNotebookCallback()]
+        kwargs['search_callbacks'] = [SearchNotebookCallback()]
 
     experiment = _make_experiment(HyperDT, train_data,
                                   searcher=searcher,

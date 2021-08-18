@@ -67,7 +67,7 @@ pip install deeptables
 ***Verify the installation***:
 
 ```shell script
-python -c "from deeptables.utils.quicktest import test; test()”
+python -c "from deeptables.utils.quicktest import test; test()"
 ```
 
 ## Optional dependencies
