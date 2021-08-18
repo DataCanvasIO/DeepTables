@@ -56,7 +56,7 @@ Note:
 
 **GPU** Setup (Optional)
 
-To use DeepTables with GPU devices, install `tensorflow-gpu` before install DeepTable please.
+To use DeepTables with GPU devices, install `tensorflow-gpu` before install DeepTables please.
 
 ```shell script
 pip install tensorflow-gpu==2.4.2

@@ -22,7 +22,7 @@ Note:
 
 **GPU** Setup (Optional)
 
-If you have GPUs on your machine and want to use them to accelerate the training, install `tensorflow-gpu` before install DeepTable please.
+If you have GPUs on your machine and want to use them to accelerate the training, install `tensorflow-gpu` before install DeepTables please.
 
 ```shell script
 pip install tensorflow-gpu==2.4.2
