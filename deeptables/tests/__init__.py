@@ -6,7 +6,6 @@ __author__ = 'yangjian'
 import os
 import time
 
-import tests.misc
 from deeptables.utils import consts
 
 homedir = f'{consts.PROJECT_NAME}_test_{time.strftime("%Y%m%d%H%M%S")}'

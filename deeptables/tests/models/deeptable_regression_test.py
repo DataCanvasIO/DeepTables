@@ -8,7 +8,7 @@ from sklearn.datasets import load_boston
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import backend as K
 from deeptables.models import deeptable
-from tests.misc import r2_c
+from deeptables.tests.misc import r2_c
 from deeptables.utils import consts
 
 

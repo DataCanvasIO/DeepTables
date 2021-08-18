@@ -7,7 +7,7 @@ from deeptables.models import deeptable
 from deeptables.models.preprocessor import DefaultDaskPreprocessor
 from hypernets.tabular import dask_ex as dex
 from hypernets.tests.tabular.dask_transofromer_test import setup_dask
-from tests import homedir
+from deeptables.tests import homedir
 
 
 class Test_Preprocessor_Dask:

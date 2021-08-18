@@ -9,7 +9,7 @@ from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from sklearn.datasets import load_boston
 import pandas as pd
-from tests.misc import r2_c
+from deeptables.tests.misc import r2_c
 
 
 class Test_Batch_Trainer:
