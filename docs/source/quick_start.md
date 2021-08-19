@@ -12,25 +12,25 @@
 
 `pip` is recommended to install DeepTables:
 
-```shell script
-pip install deeptables
+```bash
+pip install tensorflow==2.4.2 deeptables
 ```
 
 Note:
-* If you installed TensorFlow before DeepTables, the DeepTables installer will reuse it, otherwise 'tensorflow>=2.0.0,<2.5.0' will be added to the requirements. 
+* Tensorflow is required by DeepTables, install it before running DeepTables. 
 * DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
 
 **GPU** Setup (Optional)
 
-If you have GPUs on your machine and want to use them to accelerate the training, install `tensorflow-gpu` before install DeepTables please.
+To use DeepTables with GPU devices, install `tensorflow-gpu` instead of `tensorflow`.
 
-```shell script
-pip install tensorflow-gpu==2.4.2
-pip install deeptables
+```bash
+pip install tensorflow-gpu==2.4.2 deeptables
 ```
-                     
-***Verify the install***:
-```shell script
+
+***Verify the installation***:
+
+```bash
 python -c "from deeptables.utils.quicktest import test; test()"
 ```
 
@@ -41,7 +41,7 @@ You can also quickly try DeepTables through the [Docker](https://docs.docker.com
 2. Launch Docker container.
 
 Pull the latest image:
-```
+```bash
 docker pull datacanvas/deeptables-example
 ```
 
@@ -63,7 +63,7 @@ DT can be use to solve **classification** and **regression** prediction problems
 
 ### Simple Example
 DT supports these tasks with extremely simple interface without dealing with data cleaning and feature engineering. You don't even specify the task type, DT will automatically infer.
-```
+```python
 from deeptables.models.deeptable import DeepTable, ModelConfig
 from deeptables.models.deepnets import DeepFM
 

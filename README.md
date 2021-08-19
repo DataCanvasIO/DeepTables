@@ -46,41 +46,40 @@ Please refer to the official docs at [https://deeptables.readthedocs.io/en/lates
 
 `pip` is recommended to install DeepTables:
 
-```shell script
-pip install deeptables
+```bash
+pip install tensorflow==2.4.2 deeptables
 ```
 
 Note:
-* If you installed TensorFlow before DeepTables, the DeepTables installer will reuse it, otherwise 'tensorflow>=2.0.0,<2.5.0' will be added to the requirements. 
+* Tensorflow is required by DeepTables, install it before running DeepTables. 
 * DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
 
 **GPU** Setup (Optional)
 
-To use DeepTables with GPU devices, install `tensorflow-gpu` before install DeepTables please.
+To use DeepTables with GPU devices, install `tensorflow-gpu` instead of `tensorflow`.
 
-```shell script
-pip install tensorflow-gpu==2.4.2
-pip install deeptables
+```bash
+pip install tensorflow-gpu==2.4.2 deeptables
 ```
 
 
 ***Verify the installation***:
 
-```shell script
+```bash
 python -c "from deeptables.utils.quicktest import test; test()"
 ```
 
 ## Optional dependencies
 Following libraries are not hard dependencies and are not automatically installed when you install DeepTables. To use all functionalities of DT, these optional dependencies must be installed.
 
-```shell script
+```bash
 pip install shap
 ```
 
 ## Example：
 
 ### A simple binary classification example
-``` python
+```python
 import numpy as np
 from deeptables.models import deeptable, deepnets
 from deeptables.datasets import dsutils
