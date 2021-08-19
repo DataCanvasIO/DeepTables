@@ -1,30 +1,22 @@
-FROM ubuntu:18.04
-USER root
-ENV LANG C.UTF-8
-ENV NotebookToken ''
+From python:3.7-buster
 
-RUN  sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list \
-     && sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list \
-     && cat /etc/apt/sources.list \
-     && apt-get update \
-     && apt-get install -y python3 python3-pip git \
-     && pip3 install -i https://pypi.doubanio.com/simple --no-cache-dir --upgrade pip \
-     && apt-get clean
+ARG PIP_PKGS="tensorflow==2.4.2 hypernets[all] deeptables shap"
+ARG PIP_OPTS="--disable-pip-version-check --no-cache-dir"
+# ARG PIP_OPTS="--disable-pip-version-check --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple/"
 
-RUN mkdir -p /opt/datacanvas
-
-RUN git clone https://github.com/DataCanvasIO/deeptables.git  /opt/datacanvas/deeptables
-
-RUN pip3 install -i https://pypi.doubanio.com/simple --no-cache-dir jupyter
-RUN pip3 install -i https://pypi.doubanio.com/simple --no-cache-dir -r /opt/datacanvas/deeptables/requirements.txt
-
-ENV PYTHONPATH /opt/datacanvas/deeptables
+RUN pip install $PIP_OPTS $PIP_PKGS\
+    && mkdir -p /opt/datacanvas \
+    && cp -r /usr/local/lib/python3.7/site-packages/deeptables/examples /opt/datacanvas/ \
+    && echo "#!/bin/bash\njupyter lab --notebook-dir=/opt/datacanvas --ip=0.0.0.0 --port=\$NotebookPort --no-browser --allow-root --NotebookApp.token=\$NotebookToken" > /entrypoint.sh \
+    && chmod +x /entrypoint.sh \
+    && rm -rf /tmp/*
 
 EXPOSE 8888
 
-RUN echo "#!/bin/bash\njupyter notebook --notebook-dir=/opt/datacanvas/deeptables/examples --ip=0.0.0.0 --no-browser --allow-root --NotebookApp.token=\$NotebookToken" > /entrypoint.sh \
-    && chmod +x /entrypoint.sh
+ENV TF_CPP_MIN_LOG_LEVEL=3 \
+    NotebookToken="" \
+    NotebookPort=8888
 
 CMD ["/entrypoint.sh"]
 
-# docker run --rm --name deeptable -p 8830:8888 -e NotebookToken=your-token datacanvas/deeptables-example
+# docker run --rm --name deeptables -p 8830:8888 -e NotebookToken=your-token datacanvas/deeptables
