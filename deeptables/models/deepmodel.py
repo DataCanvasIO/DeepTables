@@ -118,7 +118,7 @@ class DeepModel:
     def __predict(self, model, X, batch_size=128, verbose=0):
         logger.info("Performing predictions...")
         ds = self.__get_prediction_data(X, batch_size=batch_size)
-        return model.predict(ds, batch_size=batch_size, verbose=verbose)
+        return model.predict(ds, verbose=verbose)
 
     def apply(self, X, output_layers=[], concat_outputs=False, batch_size=128,
               verbose=0, transformer=None):
@@ -145,7 +145,7 @@ class DeepModel:
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, return_dict=True):
         logger.info("Performing evaluation...")
         ds = self.__get_prediction_data(X_test, y_test, batch_size=batch_size)
-        result = self.model.evaluate(ds, batch_size=batch_size, verbose=verbose)
+        result = self.model.evaluate(ds, verbose=verbose)
         if return_dict:
             result = {k: v for k, v in zip(self.model.metrics_names, result)}
             return IgnoreCaseDict(result)
