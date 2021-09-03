@@ -231,7 +231,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         if self.y_lable_encoder is not None:
             y = self.y_lable_encoder.transform(y)
         logger.info(f'transform_y taken {time.time() - start}s')
-        y = np.array(y)
+        # y = np.array(y)
         return y
 
     def transform_X(self, X, copy_data=True):

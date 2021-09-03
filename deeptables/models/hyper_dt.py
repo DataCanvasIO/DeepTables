@@ -37,9 +37,9 @@ class DTModuleSpace(ModuleSpace):
 
 
 class DTFit(ModuleSpace):
-    def __init__(self, batch_size=128, epochs=None, space=None, name=None, **hyperparams):
+    def __init__(self, batch_size=None, epochs=None, space=None, name=None, **hyperparams):
         if batch_size is None:
-            batch_size = Choice([128, 256, 512])
+            batch_size = Choice([128, 256])
         hyperparams['batch_size'] = batch_size
 
         if epochs is not None:
@@ -278,7 +278,7 @@ class HyperDT(HyperModel):
         return str
 
 
-def default_dt_space():
+def default_dt_space(**hyperparams):
     space = HyperSpace()
     with space.as_default():
         p_nets = MultipleChoice(
@@ -300,12 +300,12 @@ def default_dt_space():
             earlystopping_patience=Choice([1, 3, 5])
         )
         dnn = DnnModule()(dt_module)
-        fit = DTFit(batch_size=Choice([128, 256]))(dt_module)
+        fit = DTFit(**hyperparams)(dt_module)
 
     return space
 
 
-def mini_dt_space():
+def mini_dt_space(**hyperparams):
     space = HyperSpace()
     with space.as_default():
         p_nets = MultipleChoice(
@@ -330,7 +330,7 @@ def mini_dt_space():
                         use_bn=Bool(),
                         dnn_layers=2,
                         activation='relu')(dt_module)
-        fit = DTFit(batch_size=Choice([128, 256]))(dt_module)
+        fit = DTFit(**hyperparams)(dt_module)
 
     return space
 
@@ -340,7 +340,7 @@ def mini_dt_space_validator(sample):
     return nets != ['fm_nets']
 
 
-def tiny_dt_space():
+def tiny_dt_space(**hyperparams):
     space = HyperSpace()
     with space.as_default():
         dt_module = DTModuleSpace(
@@ -360,7 +360,7 @@ def tiny_dt_space():
                         use_bn=False,
                         dnn_layers=2,
                         activation='relu')(dt_module)
-        fit = DTFit(batch_size=Choice([128, 256]))(dt_module)
+        fit = DTFit(**hyperparams)(dt_module)
 
     return space
 
@@ -493,7 +493,7 @@ def make_experiment(train_data,
     if 'pos_label' in kwargs.keys():
         config_options['pos_label'] = kwargs.get('pos_label')
 
-    if isnotebook() and not 'callbacks' in kwargs.keys():
+    if isnotebook() and 'callbacks' not in kwargs.keys():
         from hypernets.experiment import SimpleNotebookCallback
         from hypernets.core import NotebookCallback as SearchNotebookCallback
 

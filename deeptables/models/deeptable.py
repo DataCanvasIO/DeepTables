@@ -5,6 +5,7 @@ import os
 import pickle
 import time
 
+import dask
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
@@ -12,7 +13,6 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
-from tensorflow.keras.utils import to_categorical
 
 from hypernets.tabular import dask_ex as dex
 from . import modelset, deepnets
@@ -394,20 +394,34 @@ class DeepTable:
             X_test = self.preprocessor.transform_X(X_test)
 
         if iterators is None:
-            if stratified and self.task != consts.TASK_REGRESSION:
+            if stratified and self.task != consts.TASK_REGRESSION and not dex.exist_dask_object(X, y):
                 iterators = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=random_state)
             else:
                 iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)
         logger.info(f'Iterators:{iterators}')
 
+        X_shape = X.shape
+        if dex.is_dask_object(X):
+            X_shape = dex.compute(X_shape)[0]
+
         test_proba_mean = None
         eval_proba_mean = None
         if self.task in (consts.TASK_MULTICLASS, consts.TASK_MULTILABEL):
-            oof_proba = np.full((y.shape[0], self.num_classes), np.nan)
+            oof_proba = np.full((X_shape[0], self.num_classes), np.nan)
         else:
-            oof_proba = np.full((y.shape[0], 1), np.nan)
+            oof_proba = np.full((X_shape[0], 1), np.nan)
 
-        y = np.array(y)
+        if dex.exist_dask_object(X, y):
+            X = dex.reset_index(dex.to_dask_frame_or_series(X))
+            y = dex.to_dask_type(y)
+            if dex.is_dask_dataframe_or_series(y):
+                y = y.to_dask_array(lengths=True)
+            X, y = dask.persist(X, y)
+            to_split = np.arange(X_shape[0]), None
+        else:
+            y = np.array(y)
+            to_split = X, y
+
         if class_weight is None and self.config.apply_class_weight and self.task == consts.TASK_BINARY:
             class_weight = self.get_class_weight(y)
 
@@ -429,10 +443,10 @@ class DeepTable:
                 self.task, self.num_classes, self.config,
                 self.preprocessor.categorical_columns, self.preprocessor.continuous_columns,
                 n_fold, valid_idx,
-                X.iloc[train_idx], y[train_idx], X.iloc[valid_idx], y[valid_idx],
+                dex.select_df(X, train_idx), y[train_idx], dex.select_df(X, valid_idx), y[valid_idx],
                 X_eval, X_test, f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5',
                 **fit_and_score_kwargs)
-                           for n_fold, (train_idx, valid_idx) in enumerate(iterators.split(X, y)))
+                           for n_fold, (train_idx, valid_idx) in enumerate(iterators.split(*to_split)))
 
             for n_fold, idx, history, fold_oof_proba, fold_eval_proba, fold_test_proba in out:
                 oof_proba[idx] = fold_oof_proba
@@ -503,13 +517,14 @@ class DeepTable:
         if proba is None:
             return None
         else:
-            assert proba.shape == (n_rows, 1)
-            return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
+            # assert proba.shape == (n_rows, 1)
+            # return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
+            return dex.fix_binary_predict_proba_result(proba)
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0,
                  model_selector=consts.MODEL_SELECTOR_CURRENT, return_dict=True):
         X_t, y_t = self.preprocessor.transform(X_test, y_test)
-        y_t = np.array(y_t)
+        # y_t = np.array(y_t)
         model = self.get_model(model_selector)
         if not isinstance(model, DeepModel):
             raise ValueError(f'Wrong model_selector:{model_selector}')
@@ -630,18 +645,23 @@ class DeepTable:
         return mi.model
 
     def get_class_weight(self, y):
-        logger.info('Calc classes weight.')
-        if len(y.shape) == 1:
-            y = to_categorical(y)
-        y_sum = y.sum(axis=0)
-        class_weight = {}
-        total = y.shape[0]
-        classes = len(y_sum)
-        logger.info(f"Examples:\nTotal:{total}")
-        for i in range(classes):
-            weight = total / y_sum[i] / classes
-            class_weight[i] = weight
-            logger.info(f'class {i}:{weight}')
+        # logger.info('Calc classes weight.')
+        # if len(y.shape) == 1:
+        #     y = to_categorical(y)
+        # y_sum = y.sum(axis=0)
+        # class_weight = {}
+        # total = y.shape[0]
+        # classes = len(y_sum)
+        # logger.info(f"Examples:\nTotal:{total}")
+        # for i in range(classes):
+        #     weight = total / y_sum[i] / classes
+        #     class_weight[i] = weight
+        #     logger.info(f'class {i}:{weight}')
+
+        n = len(self.classes_)
+        class_weight = dex.compute_class_weight('balanced', classes=range(n), y=y)
+        class_weight = {k: v for k, v in zip(range(n), class_weight)}
+        logger.info(f'classes weight: {class_weight}')
 
         return class_weight
 
@@ -663,7 +683,8 @@ class DeepTable:
             X = self.preprocessor.transform_X(X)
         proba = model.predict(X, batch_size=batch_size, verbose=verbose)
         if self.task == consts.TASK_BINARY:
-            return self._fix_softmax_proba(X.shape[0], proba)
+            # return self._fix_softmax_proba(X.shape[0], proba)
+            return dex.fix_binary_predict_proba_result(proba)
         else:
             return proba
 
@@ -712,10 +733,11 @@ class DeepTable:
         #                          )
         #    callbacks.append(mcp)
         #    logger.info(f'Injected a callback [ModelCheckpoint].\nfilepath:{mcp.filepath}\nmonitor:{mcp.monitor}')
-        if es is None:
+        es_patience = self.config.earlystopping_patience
+        if es is None and isinstance(es_patience, int) and es_patience > 0:
             es = EarlyStopping(monitor=self.monitor if tf_less_than('2.2') else self.monitor.lower(),
                                restore_best_weights=True,
-                               patience=self.config.earlystopping_patience,
+                               patience=es_patience,
                                verbose=1,
                                # min_delta=0.0001,
                                mode=mode,
@@ -812,21 +834,23 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
                         validation_steps=validation_steps, validation_freq=validation_freq,
                         max_queue_size=max_queue_size, workers=workers, use_multiprocessing=use_multiprocessing)
     logger.info(f'Fold {n_fold + 1} fitting over.')
+
     oof_proba = model.predict(X_val)
-    eval_proba = None
-    test_proba = None
-    if X_eval is not None:
-        eval_proba = model.predict(X_eval)
-    if X_test is not None:
-        test_proba = model.predict(X_test)
-        if model_file is not None:
-            file = f'{model_file}.test_proba.csv'
-            with fs.open(file, 'w', encoding='utf-8') as f:
-                pd.DataFrame(test_proba).to_csv(f, index=False)
+    eval_proba = model.predict(X_eval) if X_eval is not None else None
+    test_proba = model.predict(X_test) if X_test is not None else None
+    oof_proba, eval_proba, test_proba = \
+        [p.compute() if dex.is_dask_object(p) else p for p in (oof_proba, eval_proba, test_proba)]
     logger.info(f'Fold {n_fold + 1} scoring over.')
+
     if model_file is not None:
         model.save(model_file)
         logger.info(f'Save model to:{model_file}.')
+
+        if X_test is not None:
+            file = f'{model_file}.test_proba.csv'
+            with fs.open(file, 'w', encoding='utf-8') as f:
+                pd.DataFrame(test_proba).to_csv(f, index=False)
+
     model.release()
     return n_fold, valid_idx, history.history, oof_proba, eval_proba, test_proba
 
@@ -872,6 +896,6 @@ def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
 
 def _get_default_preprocessor(config, X, y):
     if dex.exist_dask_object(X, y) and dex.dask_ml_available:
-        return DefaultDaskPreprocessor(config, compute_to_local=True)
+        return DefaultDaskPreprocessor(config, compute_to_local=False)
     else:
         return DefaultPreprocessor(config)

@@ -4,19 +4,17 @@ import io
 from collections import OrderedDict
 from typing import List
 
-import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import train_test_split
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
 from tensorflow.keras.models import Model, load_model, save_model
-from tensorflow.keras.utils import to_categorical
 
 from deeptables.models.metainfo import CategoricalColumn
+from hypernets.tabular.dask_ex import train_test_split
 from . import deepnets
 from .layers import MultiColumnEmbedding, dt_custom_objects, VarLenColumnEmbedding
 from .metainfo import VarLenCategoricalColumn
-from ..utils import dt_logging, consts, gpu
+from ..utils import dt_logging, consts, gpu, to_dataset
 
 logger = dt_logging.get_logger(__name__)
 
@@ -65,19 +63,13 @@ class DeepModel:
         if batch_size is None:
             batch_size = 128
 
-        X_train_input = self.__get_model_input(X)
-        X_val_input = self.__get_model_input(X_val)
-        y = np.array(y)
-        y_val = np.array(y_val)
-        if self.task == consts.TASK_MULTICLASS:
-            y = to_categorical(y, num_classes=self.num_classes)
-            y_val = to_categorical(y_val, num_classes=self.num_classes)
+        train_data = self.__get_train_data(X, y, batch_size=batch_size, shuffle=shuffle)
+        validation_data = self.__get_train_data(X_val, y_val, batch_size=batch_size, shuffle=shuffle)
 
         if self.config.distribute_strategy is not None:
             from tensorflow.python.distribute.distribute_lib import Strategy
             if not isinstance(self.config.distribute_strategy, Strategy):
-                raise ValueError(
-                    f'[distribute_strategy] in ModelConfig must be an instance of tensorflow.python.distribute.distribute_lib.Strategy.')
+                raise ValueError(f'[distribute_strategy] in ModelConfig must be an instance of {Strategy}')
             with self.config.distribute_strategy.scope():
                 self.model = self.__build_model(task=self.task,
                                                 num_classes=self.num_classes,
@@ -86,6 +78,10 @@ class DeepModel:
                                                 continuous_columns=self.continuous_columns,
                                                 var_len_categorical_columns=self.var_len_categorical_columns,
                                                 config=self.config)
+            if steps_per_epoch is None:
+                steps_per_epoch = X.shape[0] // batch_size
+            if validation_steps is None:
+                validation_steps = X_val.shape[0] // batch_size
         else:
             self.model = self.__build_model(task=self.task,
                                             num_classes=self.num_classes,
@@ -96,25 +92,6 @@ class DeepModel:
                                             config=self.config)
 
         logger.info(f'training...')
-
-        train_data = tf.data.Dataset.from_tensor_slices((X_train_input, y))
-        validation_data = tf.data.Dataset.from_tensor_slices((X_val_input, y_val))
-        if shuffle:
-            train_data = train_data.shuffle(buffer_size=X.shape[0])
-            validation_data = validation_data.shuffle(buffer_size=X_val.shape[0])
-        if self.config.distribute_strategy is not None:
-            options = tf.data.Options()
-            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-            train_data = train_data.repeat().batch(batch_size).with_options(options=options)
-            validation_data = validation_data.repeat().batch(batch_size).with_options(options=options)
-            if steps_per_epoch is None:
-                steps_per_epoch = X.shape[0] // batch_size
-            if validation_steps is None:
-                validation_steps = X_val.shape[0] // batch_size
-        else:
-            train_data = train_data.batch(batch_size)
-            validation_data = validation_data.batch(batch_size)
-
         history = self.model.fit(train_data,
                                  epochs=epochs,
                                  verbose=verbose,
@@ -140,12 +117,12 @@ class DeepModel:
 
     def __predict(self, model, X, batch_size=128, verbose=0):
         logger.info("Performing predictions...")
-        X_input = self.__get_model_input(X)
-        return model.predict(X_input, batch_size=batch_size, verbose=verbose)
+        ds = self.__get_prediction_data(X, batch_size=batch_size)
+        return model.predict(ds, batch_size=batch_size, verbose=verbose)
 
     def apply(self, X, output_layers=[], concat_outputs=False, batch_size=128,
               verbose=0, transformer=None):
-        model = self.__buld_proxy_model(self.model, output_layers, concat_outputs)
+        model = self.__build_proxy_model(self.model, output_layers, concat_outputs)
         output = self.__predict(model, X, batch_size=batch_size, verbose=verbose)
 
         # support datasets transformation before returning, e.g. t-sne
@@ -167,13 +144,8 @@ class DeepModel:
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, return_dict=True):
         logger.info("Performing evaluation...")
-        X_input = self.__get_model_input(X_test)
-        y_t = np.array(y_test)
-
-        if self.task == consts.TASK_MULTICLASS:
-            y_t = to_categorical(y_t, num_classes=self.num_classes)
-        # tf2.0 has no return_dict param
-        result = self.model.evaluate(X_input, y_t, batch_size=batch_size, verbose=verbose)
+        ds = self.__get_prediction_data(X_test, y_test, batch_size=batch_size)
+        result = self.model.evaluate(ds, batch_size=batch_size, verbose=verbose)
         if return_dict:
             result = {k: v for k, v in zip(self.model.metrics_names, result)}
             return IgnoreCaseDict(result)
@@ -210,26 +182,24 @@ class DeepModel:
         self.model = None
         K.clear_session()
 
-    def __get_model_input(self, X):
-        train_data = {}
-        # add categorical data
-        if self.categorical_columns is not None and len(self.categorical_columns) > 0:
-            train_data['input_categorical_vars_all'] = \
-                X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+    def __get_train_data(self, X, y, *, batch_size, shuffle):
+        ds = to_dataset(self.config, self.task, self.num_classes, X, y,
+                        batch_size=batch_size, shuffle=shuffle, drop_remainder=True,
+                        categorical_columns=self.categorical_columns,
+                        continuous_columns=self.continuous_columns,
+                        var_len_categorical_columns=self.var_len_categorical_columns)
+        return ds
 
-        # add continuous data
-        if self.continuous_columns is not None and len(self.continuous_columns) > 0:
-            for c in self.continuous_columns:
-                train_data[c.name] = X[c.column_names].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+    def __get_prediction_data(self, X, y=None, *, batch_size):
+        ds = to_dataset(self.config, self.task, self.num_classes, X, y,
+                        batch_size=batch_size, shuffle=False, drop_remainder=False,
+                        categorical_columns=self.categorical_columns,
+                        continuous_columns=self.continuous_columns,
+                        var_len_categorical_columns=self.var_len_categorical_columns)
 
-        # add var len categorical data
-        if self.var_len_categorical_columns is not None and len(self.var_len_categorical_columns) > 0:
-            for col in self.var_len_categorical_columns:
-                train_data[col.name] = np.array(X[col.name].tolist())
+        return ds
 
-        return train_data
-
-    def __buld_proxy_model(self, model, output_layers=[], concat_output=False):
+    def __build_proxy_model(self, model, output_layers=[], concat_output=False):
         model.trainable = False
         if len(output_layers) <= 0:
             raise ValueError('"output_layers" at least 1 element.')
