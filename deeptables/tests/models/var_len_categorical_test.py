@@ -1,9 +1,8 @@
 # -*- encoding: utf-8 -*-
-from sklearn.model_selection import train_test_split
-
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from deeptables.utils import consts
+from hypernets.tabular.dask_ex import train_test_split
 
 
 class TestVarLenCategoricalFeature:

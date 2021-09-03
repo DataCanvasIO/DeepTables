@@ -4,19 +4,24 @@ __author__ = 'yangjian'
 
 """
 
-from sklearn.model_selection import train_test_split
-
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from deeptables.utils import consts
+from hypernets.tabular.dask_ex import train_test_split
 
 
 class Test_DeepTable_CV:
-    def setup_class(self):
+
+    @staticmethod
+    def load_data():
         print("Loading datasets...")
-        df_train = dsutils.load_adult().head(1000)
-        self.y = df_train.pop(14).values
-        self.X = df_train
+        df = dsutils.load_adult().head(1000)
+
+        return df
+
+    def setup_class(self):
+        self.X = self.load_data()
+        self.y = self.X.pop(14)
 
         conf = deeptable.ModelConfig(metrics=['AUC'],
                                      apply_gbm_features=False,

@@ -27,7 +27,7 @@ def run_compete_experiment_with_heart_disease(init_kwargs, run_kwargs, with_dask
     }
     run_kwargs = {
         'max_trials': 3,
-        'batch_size': 128,
+        'batch_size': 16,
         'epochs': 1,
         **run_kwargs
     }
