@@ -3,6 +3,7 @@
 
 """
 from concurrent.futures import ThreadPoolExecutor
+from distutils.version import LooseVersion
 from functools import partial
 
 import dask
@@ -97,6 +98,45 @@ class _TFDGForDask(TFDatasetGenerator):
         return meta
 
     def __call__(self, X, y=None, *, batch_size, shuffle, drop_remainder):
+        if LooseVersion(tf.version.VERSION) < LooseVersion('2.4.0'):
+            ds = self._to_ds20(X, y, batch_size=batch_size, shuffle=shuffle, drop_remainder=drop_remainder)
+        else:
+            ds = self._to_ds24(X, y, batch_size=batch_size, shuffle=shuffle, drop_remainder=drop_remainder)
+        return ds
+
+    def _to_ds20(self, X, y=None, *, batch_size, shuffle, drop_remainder):
+        ds_types = {}
+        ds_shapes = {}
+        meta = self._get_meta(X)
+        for k, (dtype, idx) in meta.items():
+            if dtype is not None:
+                ds_shapes[k] = (None, len(idx))
+                ds_types[k] = dtype
+            else:  # var len
+                v = X[k].head(1).tolist()[0]
+                ds_shapes[k] = (None, len(v))
+                ds_types[k] = 'int32'
+
+        if y is not None:
+            if isinstance(y, dd.Series):
+                y = y.to_dask_array(lengths=True)
+            if self.task == consts.TASK_MULTICLASS:
+                y = self._to_categorical(y, num_classes=self.num_classes)
+                ds_shape_y = None, self.num_classes
+            else:
+                ds_shape_y = None,
+            ds_shapes = ds_shapes, ds_shape_y
+            ds_types = ds_types, y.dtype
+
+        X = X.to_dask_array(lengths=True)
+        X, y = dask.persist(X, y)
+        gen = partial(self._generate, meta, X, y,
+                      batch_size=batch_size, shuffle=shuffle, drop_remainder=drop_remainder)
+        ds = tf.data.Dataset.from_generator(gen, output_shapes=ds_shapes, output_types=ds_types)
+
+        return ds
+
+    def _to_ds24(self, X, y=None, *, batch_size, shuffle, drop_remainder):
         def to_spec(name, dtype, idx):
             if dtype is not None:
                 spec = tf.TensorSpec(shape=(None, len(idx)), dtype=dtype)
@@ -107,7 +147,6 @@ class _TFDGForDask(TFDatasetGenerator):
 
         meta = self._get_meta(X)
         sig = {k: to_spec(k, dtype, idx) for k, (dtype, idx) in meta.items()}
-        X = X.to_dask_array(lengths=True)
 
         if y is not None:
             if isinstance(y, dd.Series):
@@ -118,6 +157,7 @@ class _TFDGForDask(TFDatasetGenerator):
             else:
                 sig = sig, tf.TensorSpec(shape=(None,), dtype=y.dtype)
 
+        X = X.to_dask_array(lengths=True)
         X, y = dask.persist(X, y)
         gen = partial(self._generate, meta, X, y,
                       batch_size=batch_size, shuffle=shuffle, drop_remainder=drop_remainder)

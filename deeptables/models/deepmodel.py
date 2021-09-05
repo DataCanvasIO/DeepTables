@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import collections
 import io
+import math
 from collections import OrderedDict
 from typing import List
 
@@ -10,7 +11,7 @@ from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, Bat
 from tensorflow.keras.models import Model, load_model, save_model
 
 from deeptables.models.metainfo import CategoricalColumn
-from hypernets.tabular.dask_ex import train_test_split
+from hypernets.tabular import dask_ex as dex
 from . import deepnets
 from .layers import MultiColumnEmbedding, dt_custom_objects, VarLenColumnEmbedding
 from .metainfo import VarLenCategoricalColumn
@@ -54,7 +55,7 @@ class DeepModel:
             initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1,
             max_queue_size=10, workers=1, use_multiprocessing=False):
         if validation_data is None:
-            X, X_val, y, y_val = train_test_split(X, y, test_size=validation_split)
+            X, X_val, y, y_val = dex.train_test_split(X, y, test_size=validation_split)
         else:
             if len(validation_data) != 2:
                 raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
@@ -63,7 +64,16 @@ class DeepModel:
         if batch_size is None:
             batch_size = 128
 
-        train_data = self.__get_train_data(X, y, batch_size=batch_size, shuffle=shuffle)
+        if steps_per_epoch is None:
+            steps_per_epoch = dex.compute(X.shape[0])[0] // batch_size
+            if steps_per_epoch == 0:
+                steps_per_epoch = 1
+        if validation_steps is None:
+            validation_steps = dex.compute(X_val.shape[0])[0] // batch_size - 1
+            if validation_steps <= 1:
+                validation_steps = 1
+
+        train_data = self.__get_train_data(X, y, batch_size=batch_size, shuffle=shuffle).repeat(count=epochs)
         validation_data = self.__get_train_data(X_val, y_val, batch_size=batch_size, shuffle=shuffle)
 
         if self.config.distribute_strategy is not None:
@@ -78,10 +88,6 @@ class DeepModel:
                                                 continuous_columns=self.continuous_columns,
                                                 var_len_categorical_columns=self.var_len_categorical_columns,
                                                 config=self.config)
-            if steps_per_epoch is None:
-                steps_per_epoch = X.shape[0] // batch_size
-            if validation_steps is None:
-                validation_steps = X_val.shape[0] // batch_size
         else:
             self.model = self.__build_model(task=self.task,
                                             num_classes=self.num_classes,
@@ -118,7 +124,8 @@ class DeepModel:
     def __predict(self, model, X, batch_size=128, verbose=0):
         logger.info("Performing predictions...")
         ds = self.__get_prediction_data(X, batch_size=batch_size)
-        return model.predict(ds, verbose=verbose)
+        steps = math.ceil(dex.compute(X.shape[0])[0] / batch_size)
+        return model.predict(ds, steps=steps, verbose=verbose)
 
     def apply(self, X, output_layers=[], concat_outputs=False, batch_size=128,
               verbose=0, transformer=None):
@@ -145,7 +152,8 @@ class DeepModel:
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, return_dict=True):
         logger.info("Performing evaluation...")
         ds = self.__get_prediction_data(X_test, y_test, batch_size=batch_size)
-        result = self.model.evaluate(ds, verbose=verbose)
+        steps = math.ceil(dex.compute(X_test.shape[0])[0] / batch_size)
+        result = self.model.evaluate(ds, steps=steps, verbose=verbose)
         if return_dict:
             result = {k: v for k, v in zip(self.model.metrics_names, result)}
             return IgnoreCaseDict(result)
