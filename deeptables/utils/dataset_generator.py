@@ -65,9 +65,9 @@ class _TFDGForPandas(TFDatasetGenerator):
             ds = ds.shuffle(buffer_size=X.shape[0])
 
         if self.distributed:
-            options = tf.data.Options()
-            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-            ds = ds.repeat().batch(batch_size, drop_remainder=drop_remainder).with_options(options=options)
+            # options = tf.data.Options()
+            # options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+            ds = ds.repeat().batch(batch_size, drop_remainder=drop_remainder)  # .with_options(options=options)
         else:
             ds = ds.batch(batch_size, drop_remainder=drop_remainder and X.shape[0] >= batch_size)
 

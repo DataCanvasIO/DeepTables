@@ -80,6 +80,9 @@ class DeepModel:
             from tensorflow.python.distribute.distribute_lib import Strategy
             if not isinstance(self.config.distribute_strategy, Strategy):
                 raise ValueError(f'[distribute_strategy] in ModelConfig must be an instance of {Strategy}')
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+            train_data = train_data.with_options(options=options)
             with self.config.distribute_strategy.scope():
                 self.model = self.__build_model(task=self.task,
                                                 num_classes=self.num_classes,
