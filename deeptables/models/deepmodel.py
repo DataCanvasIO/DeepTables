@@ -83,6 +83,7 @@ class DeepModel:
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
             train_data = train_data.with_options(options=options)
+            validation_data = validation_data.with_options(options=options)
             with self.config.distribute_strategy.scope():
                 self.model = self.__build_model(task=self.task,
                                                 num_classes=self.num_classes,
