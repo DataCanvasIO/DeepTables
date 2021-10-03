@@ -13,6 +13,7 @@ from sklearn.pipeline import make_pipeline
 
 from hypernets.tabular import sklearn_ex as skex
 from hypernets.tabular.cache import cache
+from hypernets.tabular.dask_ex import DaskToolBox
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
 from ..utils import dt_logging, consts, infer_task_type, hash_data
@@ -504,8 +505,6 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
 
 class DefaultDaskPreprocessor(DefaultPreprocessor):
-    from hypernets.tabular import dask_ex as dex_
-
     def __init__(self, config: ModelConfig, compute_to_local=False):
         super(DefaultDaskPreprocessor, self).__init__(config)
 
@@ -516,7 +515,8 @@ class DefaultDaskPreprocessor(DefaultPreprocessor):
 
     @property
     def transformers(self):
-        return self.dex_
+        from hypernets.tabular import dask_ex as dex
+        return dex
 
     def _wrap_with_compute(self):
         fns = ['fit_transform', 'transform', 'transform_X', 'transform_y', 'inverse_transform_y']
@@ -526,26 +526,23 @@ class DefaultDaskPreprocessor(DefaultPreprocessor):
             fn = getattr(self, fn_name)
             assert callable(fn)
             setattr(self, fn_name_original, fn)
-            setattr(self, fn_name, partial(self.dex_.call_and_compute, fn, False))
+            setattr(self, fn_name, partial(DaskToolBox.call_and_compute, fn, False))
 
     def _validate_fit_transform(self, X, y):
-        assert self.dex_.is_dask_dataframe(X)
-        assert self.dex_.is_dask_object(y)
+        assert DaskToolBox.is_dask_dataframe(X)
+        assert DaskToolBox.is_dask_object(y)
 
     def _copy(self, obj):
-        if self.dex_.is_dask_object(obj):
+        if DaskToolBox.is_dask_object(obj):
             return obj.copy()
         else:
             return super()._copy(obj)
 
     def _get_shape(self, obj):
-        if self.dex_.is_dask_object(obj):
-            return self.dex_.compute(obj.shape)[0]
-        else:
-            return super()._get_shape(obj)
+        return DaskToolBox.get_shape(obj)
 
     def _nunique(self, y):
-        if self.dex_.is_dask_object(y):
+        if DaskToolBox.is_dask_object(y):
             n = y.nunique().compute()
         else:
             n = super()._nunique(y)
@@ -564,13 +561,13 @@ class DefaultDaskPreprocessor(DefaultPreprocessor):
     def fit_transform_y(self, y):
         y = super().fit_transform_y(y)
 
-        if self.dex_.is_dask_object(self.labels_):
+        if DaskToolBox.is_dask_object(self.labels_):
             self.labels_ = self.labels_.compute()
 
         return y
 
     def _gbm_features_to_categorical_cols(self, X, gbmencoder):
-        if self.dex_.is_dask_dataframe(X):
+        if DaskToolBox.is_dask_dataframe(X):
             cat_nums = X[gbmencoder.new_columns].max().compute()
             cols = [(name, cats + 1) for name, cats in cat_nums.to_dict().items()]
             return cols

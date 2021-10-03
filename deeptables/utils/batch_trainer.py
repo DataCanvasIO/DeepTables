@@ -17,12 +17,15 @@ from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 from skopt import BayesSearchCV
 from skopt.callbacks import DeadlineStopper, VerboseCallback
 
-from deeptables.utils import fs, calc_score, infer_task_type
+from deeptables.utils import fs, infer_task_type
+from hypernets.tabular import get_tool_box
 from . import dt_logging, consts, dart_early_stopping
 from ..models import deeptable, modelset
 
 warnings.filterwarnings("ignore")
 logger = dt_logging.get_logger(__name__)
+
+calc_score = get_tool_box(pd.DataFrame).metrics.calc_score
 
 
 @contextmanager

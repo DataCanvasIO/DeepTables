@@ -2,7 +2,7 @@
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from deeptables.utils import consts
-from hypernets.tabular.dask_ex import train_test_split
+from hypernets.tabular import get_tool_box
 
 
 class TestVarLenCategoricalFeature:
@@ -16,7 +16,8 @@ class TestVarLenCategoricalFeature:
 
         conf = deeptable.ModelConfig(nets=['dnn_nets'],
                                      task=consts.TASK_REGRESSION,
-                                     categorical_columns=["movie_id", "user_id", "gender", "occupation", "zip", "title", "age"],
+                                     categorical_columns=["movie_id", "user_id", "gender", "occupation", "zip", "title",
+                                                          "age"],
                                      metrics=['mse'],
                                      fixed_embedding_dim=True,
                                      embeddings_output_dim=4,
@@ -27,8 +28,9 @@ class TestVarLenCategoricalFeature:
 
         dt = deeptable.DeepTable(config=conf)
 
-        X_train, X_validation, y_train, y_validation = train_test_split(X, y, test_size=0.2)
+        X_train, X_validation, y_train, y_validation = get_tool_box(X).train_test_split(X, y, test_size=0.2)
 
-        model, history = dt.fit(X_train, y_train, validation_data=(X_validation, y_validation), epochs=10, batch_size=32)
+        model, history = dt.fit(X_train, y_train, validation_data=(X_validation, y_validation),
+                                epochs=10, batch_size=32)
 
         assert 'genres' in model.model.input_names

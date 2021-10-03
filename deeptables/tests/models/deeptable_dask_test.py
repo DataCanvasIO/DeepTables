@@ -15,7 +15,7 @@ import dask.array as da
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable, deepmodel
 from deeptables.utils import consts, fs
-from hypernets.tabular import dask_ex as dex
+from hypernets.tabular import get_tool_box
 from hypernets.tests.tabular.dask_transofromer_test import setup_dask
 
 
@@ -28,7 +28,7 @@ class Test_DeepTable_Dask:
         row_count = 1000
         df = dsutils.load_adult().head(row_count)
 
-        cls.df = dex.dd.from_pandas(df, npartitions=2)
+        cls.df = dd.from_pandas(df, npartitions=2)
         cls.df_row_count = row_count
         cls.target = 14
 
@@ -43,10 +43,10 @@ class Test_DeepTable_Dask:
             df = self.df.copy()
             target = self.target
 
-        X_train, X_test = dex.train_test_split(df, test_size=0.2, random_state=9527)
+        X_train, X_test = get_tool_box(df).train_test_split(df, test_size=0.2, random_state=9527)
         y_train = X_train.pop(target)
         y_test = X_test.pop(target)
-        test_size = dex.compute(X_test.shape)[0][0]
+        test_size = len(X_test)
 
         dt = deeptable.DeepTable(config=config)
 
@@ -110,8 +110,8 @@ class Test_DeepTable_Dask:
         out1 = random.sample(range(test_size), test_size // 2)
         # X_sample = X_test.iloc[out1,]
         X_test_values = X_test.to_dask_array(lengths=True)
-        samples = dex.make_chunk_size_known(X_test_values[out1])
-        X_sample = dex.dd.from_array(samples, columns=X_test.columns)
+        samples = get_tool_box(X_test).make_chunk_size_known(X_test_values[out1])
+        X_sample = dd.from_array(samples, columns=X_test.columns)
 
         features = dt.apply(X_sample,
                             output_layers=['flatten_embeddings', 'dnn_dense_1'],
@@ -159,7 +159,7 @@ class Test_DeepTable_Dask:
         assert preds.shape, (self.df_row_count,)
 
     def test_var_len_encoder(self):
-        df = dex.dd.from_pandas(dsutils.load_movielens(), npartitions=2)
+        df = dd.from_pandas(dsutils.load_movielens(), npartitions=2)
 
         config = deeptable.ModelConfig(nets=['dnn_nets'],
                                        task=consts.TASK_REGRESSION,

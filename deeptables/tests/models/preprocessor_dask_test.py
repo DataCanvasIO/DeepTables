@@ -2,12 +2,13 @@
 """
 
 """
+import dask.dataframe as dd
+
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from deeptables.models.preprocessor import DefaultDaskPreprocessor
-from hypernets.tabular import dask_ex as dex
+from hypernets.tabular import get_tool_box
 from hypernets.tests.tabular.dask_transofromer_test import setup_dask
-from deeptables.tests import homedir
 
 
 class Test_Preprocessor_Dask:
@@ -17,10 +18,10 @@ class Test_Preprocessor_Dask:
 
     def test_transform(self):
         df_train = dsutils.load_adult()
-        df_train = dex.dd.from_pandas(df_train, npartitions=2)
+        df_train = dd.from_pandas(df_train, npartitions=2)
         y = df_train.pop(14)  # .values
         X = df_train
-        X_train, X_test, y_train, y_test = dex.train_test_split(X, y, test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = get_tool_box(X, y).train_test_split(X, y, test_size=0.2, random_state=42)
         conf = deeptable.ModelConfig(auto_discrete=True,
                                      auto_imputation=True,
                                      auto_encode_label=True,
@@ -42,7 +43,7 @@ class Test_Preprocessor_Dask:
 
     def test_categorical_columns_config(self):
         df_train = dsutils.load_adult().head(1000)
-        df_train = dex.dd.from_pandas(df_train, npartitions=2)
+        df_train = dd.from_pandas(df_train, npartitions=2)
         y = df_train.pop(14).values
 
         conf = deeptable.ModelConfig(
@@ -59,7 +60,7 @@ class Test_Preprocessor_Dask:
 
     def test_categorical_columns_config_2(self):
         df_train = dsutils.load_adult().head(1000)
-        df_train = dex.dd.from_pandas(df_train, npartitions=2)
+        df_train = dd.from_pandas(df_train, npartitions=2)
         y = df_train.pop(14)
 
         conf = deeptable.ModelConfig(

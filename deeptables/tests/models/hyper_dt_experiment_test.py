@@ -1,7 +1,8 @@
+import dask.dataframe as dd
+
 from deeptables.models.hyper_dt import tiny_dt_space, make_experiment
-from hypernets.tabular import dask_ex as dex
+from hypernets.tabular import get_tool_box
 from hypernets.tabular.datasets import dsutils
-from hypernets.tabular.metrics import calc_score
 from hypernets.tests.tabular.dask_transofromer_test import setup_dask
 
 
@@ -11,10 +12,11 @@ def run_compete_experiment_with_heart_disease(init_kwargs, run_kwargs, with_dask
 
     if with_dask:
         setup_dask(None)
-        df = dex.dd.from_pandas(df, npartitions=1)
+        df = dd.from_pandas(df, npartitions=1)
 
-    train_data, test_data = dex.train_test_split(df, test_size=0.2, random_state=7)
-    train_data, eval_data = dex.train_test_split(train_data, test_size=0.3, random_state=7)
+    tb = get_tool_box(df)
+    train_data, test_data = tb.train_test_split(df, test_size=0.2, random_state=7)
+    train_data, eval_data = tb.train_test_split(train_data, test_size=0.3, random_state=7)
     y_test = test_data.pop(target)
 
     init_kwargs = {
@@ -39,7 +41,7 @@ def run_compete_experiment_with_heart_disease(init_kwargs, run_kwargs, with_dask
     preds = estimator.predict(test_data)
     proba = estimator.predict_proba(test_data)
 
-    score = calc_score(y_test, preds, proba, metrics=['AUC', 'accuracy', 'f1', 'recall', 'precision'])
+    score = tb.metrics.calc_score(y_test, preds, proba, metrics=['AUC', 'accuracy', 'f1', 'recall', 'precision'])
     print('evaluate score:', score)
     assert score
 

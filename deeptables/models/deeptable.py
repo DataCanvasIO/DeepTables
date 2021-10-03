@@ -14,12 +14,13 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 
-from hypernets.tabular import dask_ex as dex
+from hypernets.tabular import get_tool_box
+from hypernets.tabular.dask_ex import DaskToolBox
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel
 from .preprocessor import DefaultPreprocessor, DefaultDaskPreprocessor
-from ..utils import dt_logging, consts, fs, calc_score
+from ..utils import dt_logging, consts, fs
 from ..utils.tf_version import tf_less_than
 
 logger = dt_logging.get_logger(__name__)
@@ -394,16 +395,14 @@ class DeepTable:
             X_test = self.preprocessor.transform_X(X_test)
 
         if iterators is None:
-            if stratified and self.task != consts.TASK_REGRESSION and not dex.exist_dask_object(X, y):
+            if stratified and self.task != consts.TASK_REGRESSION and not DaskToolBox.exist_dask_object(X, y):
                 iterators = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=random_state)
             else:
                 iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)
         logger.info(f'Iterators:{iterators}')
 
-        X_shape = X.shape
-        if dex.is_dask_object(X):
-            X_shape = dex.compute(X_shape)[0]
-
+        tb = get_tool_box(X)
+        X_shape = tb.get_shape(X)
         test_proba_mean = None
         eval_proba_mean = None
         if self.task in (consts.TASK_MULTICLASS, consts.TASK_MULTILABEL):
@@ -411,10 +410,10 @@ class DeepTable:
         else:
             oof_proba = np.full((X_shape[0], 1), np.nan)
 
-        if dex.exist_dask_object(X, y):
-            X = dex.reset_index(dex.to_dask_frame_or_series(X))
-            y = dex.to_dask_type(y)
-            if dex.is_dask_dataframe_or_series(y):
+        if DaskToolBox.exist_dask_object(X, y):
+            X = DaskToolBox.reset_index(DaskToolBox.to_dask_frame_or_series(X))
+            y = DaskToolBox.to_dask_type(y)
+            if DaskToolBox.is_dask_dataframe_or_series(y):
                 y = y.to_dask_array(lengths=True)
             X, y = dask.persist(X, y)
             to_split = np.arange(X_shape[0]), None
@@ -443,7 +442,7 @@ class DeepTable:
                 self.task, self.num_classes, self.config,
                 self.preprocessor.categorical_columns, self.preprocessor.continuous_columns,
                 n_fold, valid_idx,
-                dex.select_df(X, train_idx), y[train_idx], dex.select_df(X, valid_idx), y[valid_idx],
+                tb.select_df(X, train_idx), y[train_idx], tb.select_df(X, valid_idx), y[valid_idx],
                 X_eval, X_test, f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5',
                 **fit_and_score_kwargs)
                            for n_fold, (train_idx, valid_idx) in enumerate(iterators.split(*to_split)))
@@ -468,8 +467,9 @@ class DeepTable:
                         fold_y_proba = fold_oof_proba.copy()
                     fold_y_true = self.preprocessor.inverse_transform_y(fold_y_true)
                     fold_y_pred = self.proba2predict(fold_y_proba, encode_to_label=True)
-                    oof_scores.append(calc_score(fold_y_true, fold_y_pred, fold_y_proba, task=self.task,
-                                                 metrics=oof_metrics, pos_label=self.pos_label, classes=self.classes_))
+                    oof_scores.append(tb.metrics.calc_score(fold_y_true, fold_y_pred, fold_y_proba, task=self.task,
+                                                            metrics=oof_metrics, pos_label=self.pos_label,
+                                                            classes=self.classes_))
 
                 self.__push_model('val', f'{"+".join(self.nets)}-kfold-{n_fold + 1}',
                                   f'{self.output_path}{"_".join(self.nets)}-kfold-{n_fold + 1}.h5', history)
@@ -519,7 +519,7 @@ class DeepTable:
         else:
             # assert proba.shape == (n_rows, 1)
             # return np.insert(proba, 0, values=(1 - proba).reshape(1, -1), axis=1)
-            return dex.fix_binary_predict_proba_result(proba)
+            return get_tool_box(proba).fix_binary_predict_proba_result(proba)
 
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0,
                  model_selector=consts.MODEL_SELECTOR_CURRENT, return_dict=True):
@@ -659,7 +659,7 @@ class DeepTable:
         #     logger.info(f'class {i}:{weight}')
 
         n = len(self.classes_)
-        class_weight = dex.compute_class_weight('balanced', classes=range(n), y=y)
+        class_weight = get_tool_box(y).compute_class_weight('balanced', classes=range(n), y=y)
         class_weight = {k: v for k, v in zip(range(n), class_weight)}
         logger.info(f'classes weight: {class_weight}')
 
@@ -684,7 +684,7 @@ class DeepTable:
         proba = model.predict(X, batch_size=batch_size, verbose=verbose)
         if self.task == consts.TASK_BINARY:
             # return self._fix_softmax_proba(X.shape[0], proba)
-            return dex.fix_binary_predict_proba_result(proba)
+            return get_tool_box(proba).fix_binary_predict_proba_result(proba)
         else:
             return proba
 
@@ -838,8 +838,7 @@ def _fit_and_score(task, num_classes, config, categorical_columns, continuous_co
     oof_proba = model.predict(X_val)
     eval_proba = model.predict(X_eval) if X_eval is not None else None
     test_proba = model.predict(X_test) if X_test is not None else None
-    oof_proba, eval_proba, test_proba = \
-        [p.compute() if dex.is_dask_object(p) else p for p in (oof_proba, eval_proba, test_proba)]
+    oof_proba, eval_proba, test_proba = get_tool_box(X_val).to_local(oof_proba, eval_proba, test_proba)
     logger.info(f'Fold {n_fold + 1} scoring over.')
 
     if model_file is not None:
@@ -895,7 +894,7 @@ def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
 
 
 def _get_default_preprocessor(config, X, y):
-    if dex.exist_dask_object(X, y) and dex.dask_ml_available:
+    if DaskToolBox.exist_dask_object(X, y):
         return DefaultDaskPreprocessor(config, compute_to_local=False)
     else:
         return DefaultPreprocessor(config)

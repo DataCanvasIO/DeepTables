@@ -9,7 +9,7 @@ from sklearn.datasets import load_boston
 from deeptables.models import deeptable
 from deeptables.tests.misc import r2_c
 from deeptables.utils import consts
-from hypernets.tabular.dask_ex import train_test_split
+from hypernets.tabular import get_tool_box
 
 
 class Test_DeepTable_Regression:
@@ -34,7 +34,7 @@ class Test_DeepTable_Regression:
         self.dt = deeptable.DeepTable(config=conf)
 
         self.X_train, self.X_test, self.y_train, self.y_test = \
-            train_test_split(self.X, self.y, test_size=0.2, random_state=42)
+            get_tool_box(self.X).train_test_split(self.X, self.y, test_size=0.2, random_state=42)
         self.model, self.history = self.dt.fit(self.X_train, self.y_train, batch_size=32, epochs=100)
 
     def test_leaderboard(self):

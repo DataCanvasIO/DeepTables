@@ -4,10 +4,11 @@ __author__ = 'yangjian'
 
 """
 
-from eli5.permutation_importance import get_score_importances as eli5_importances
-import pandas as pd
 import numpy as np
-from deeptables.utils import calc_score
+import pandas as pd
+from eli5.permutation_importance import get_score_importances as eli5_importances
+
+from hypernets.tabular import get_tool_box
 
 
 def get_score_importances(dt_model, X, y, metric, n_iter=5, mode='min'):
@@ -24,7 +25,7 @@ def get_score_importances(dt_model, X, y, metric, n_iter=5, mode='min'):
             y_pred = dt_model.predict(df)
             y_proba = y_pred
         del df
-        dict = calc_score(y_s, y_pred, y_proba, [metric], dt_model.task, dt_model.pos_label)
+        dict = get_tool_box(y_s).metrics.calc_score(y_s, y_pred, y_proba, [metric], dt_model.task, dt_model.pos_label)
         print(f'score:{dict}')
         if mode == 'min':
             return -dict[metric]

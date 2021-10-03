@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 from deeptables.datasets import dsutils
 from deeptables.models import make_experiment
 # from hypergbm import make_experiment
-from hypernets.tabular.metrics import calc_score
+from hypernets.tabular import get_tool_box
 
 
 def train(data, target, reward_metric):
@@ -27,6 +27,7 @@ def train(data, target, reward_metric):
     estimator = experiment.run(max_trials=3, batch_size=128, epochs=1, verbose=0, )
 
     y_pred = estimator.predict(df_test)
+    calc_score = get_tool_box(y_test).metrics.calc_score
     if experiment.task == 'regression':
         result = calc_score(y_test, y_pred, None, task=experiment.task, metrics=[reward_metric, 'rmse', ])
     else:

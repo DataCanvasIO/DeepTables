@@ -7,7 +7,7 @@ __author__ = 'yangjian'
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from deeptables.utils import consts
-from hypernets.tabular.dask_ex import train_test_split
+from hypernets.tabular import get_tool_box
 
 
 class Test_DeepTable_CV:
@@ -32,7 +32,7 @@ class Test_DeepTable_CV:
         self.X_train, \
         self.X_eval, \
         self.y_train, \
-        self.y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=42)
+        self.y_test = get_tool_box(self.X).train_test_split(self.X, self.y, test_size=0.2, random_state=42)
         self.oof_proba, self.eval_proba, self.test_proba = self.dt.fit_cross_validation(self.X_train,
                                                                                         self.y_train,
                                                                                         self.X_eval,

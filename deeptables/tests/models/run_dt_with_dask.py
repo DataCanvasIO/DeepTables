@@ -1,21 +1,22 @@
 import os
 
+import dask
 import tensorflow as tf
 
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable, deepnets
-from hypernets.tabular import dask_ex as dex
-from hypernets.tabular.metrics import calc_score
+from hypernets.tabular import get_tool_box
 from hypernets.tests.tabular.dask_transofromer_test import setup_dask
 
 
 def run(distribute_strategy=None, batch_size=32, epochs=5):
     # loading data
     df = dsutils.load_bank_by_dask()
-    df_train, df_test = dex.train_test_split(df, test_size=0.2, random_state=42)
+    df_train, df_test = get_tool_box(df).train_test_split(df, test_size=0.2, random_state=42)
 
     y = df_train.pop('y')
     y_test = df_test.pop('y')
+    df_train, y, df_test, y_test = dask.persist(df_train, y, df_test, y_test)
 
     # training
     config = deeptable.ModelConfig(nets=deepnets.DeepFM, earlystopping_patience=5,
@@ -37,7 +38,7 @@ def run(distribute_strategy=None, batch_size=32, epochs=5):
     # scoring
     preds = dt2.predict(df_test, batch_size=512, )
     proba = dt2.predict_proba(df_test, batch_size=512, )
-    print(calc_score(y_test, preds, proba, metrics=['accuracy', 'auc']))
+    print(get_tool_box(y_test).metrics.calc_score(y_test, preds, proba, metrics=['accuracy', 'auc']))
 
 
 if __name__ == '__main__':

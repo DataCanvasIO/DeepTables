@@ -11,7 +11,7 @@ from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, Bat
 from tensorflow.keras.models import Model, load_model, save_model
 
 from deeptables.models.metainfo import CategoricalColumn
-from hypernets.tabular import dask_ex as dex
+from hypernets.tabular import get_tool_box
 from . import deepnets
 from .layers import MultiColumnEmbedding, dt_custom_objects, VarLenColumnEmbedding
 from .metainfo import VarLenCategoricalColumn
@@ -54,8 +54,9 @@ class DeepModel:
             class_weight=None, sample_weight=None,
             initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1,
             max_queue_size=10, workers=1, use_multiprocessing=False):
+        tb = get_tool_box(X)
         if validation_data is None:
-            X, X_val, y, y_val = dex.train_test_split(X, y, test_size=validation_split)
+            X, X_val, y, y_val = tb.train_test_split(X, y, test_size=validation_split)
         else:
             if len(validation_data) != 2:
                 raise ValueError(f'Unexpected validation_data length, expected 2 but {len(validation_data)}.')
@@ -65,11 +66,11 @@ class DeepModel:
             batch_size = 128
 
         if steps_per_epoch is None:
-            steps_per_epoch = dex.compute(X.shape[0])[0] // batch_size
+            steps_per_epoch = len(X) // batch_size
             if steps_per_epoch == 0:
                 steps_per_epoch = 1
         if validation_steps is None:
-            validation_steps = dex.compute(X_val.shape[0])[0] // batch_size - 1
+            validation_steps = len(X_val) // batch_size - 1
             if validation_steps <= 1:
                 validation_steps = 1
 
@@ -128,7 +129,7 @@ class DeepModel:
     def __predict(self, model, X, batch_size=128, verbose=0):
         logger.info("Performing predictions...")
         ds = self.__get_prediction_data(X, batch_size=batch_size)
-        steps = math.ceil(dex.compute(X.shape[0])[0] / batch_size)
+        steps = math.ceil(len(X) / batch_size)
         return model.predict(ds, steps=steps, verbose=verbose)
 
     def apply(self, X, output_layers=[], concat_outputs=False, batch_size=128,
@@ -156,7 +157,7 @@ class DeepModel:
     def evaluate(self, X_test, y_test, batch_size=256, verbose=0, return_dict=True):
         logger.info("Performing evaluation...")
         ds = self.__get_prediction_data(X_test, y_test, batch_size=batch_size)
-        steps = math.ceil(dex.compute(X_test.shape[0])[0] / batch_size)
+        steps = math.ceil(len(X_test) / batch_size)
         result = self.model.evaluate(ds, steps=steps, verbose=verbose)
         if return_dict:
             result = {k: v for k, v in zip(self.model.metrics_names, result)}
