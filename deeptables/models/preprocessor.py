@@ -11,12 +11,12 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import make_pipeline
 
-from hypernets.tabular import sklearn_ex as skex
+from hypernets.tabular import sklearn_ex as skex, get_tool_box
 from hypernets.tabular.cache import cache
 from hypernets.tabular.dask_ex import DaskToolBox
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
-from ..utils import dt_logging, consts, infer_task_type, hash_data
+from ..utils import dt_logging, consts
 
 logger = dt_logging.get_logger(__name__)
 
@@ -63,7 +63,7 @@ class AbstractPreprocessor:
         return sign
 
     def get_X_y_signature(self, X, y):
-        sign = hash_data([X, y])
+        sign = get_tool_box(X, y).data_hasher()([X, y])
         return sign
 
     def fit_transform(self, X, y, copy_data=True):
@@ -197,7 +197,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
     def fit_transform_y(self, y):
         if self.config.task == consts.TASK_AUTO:
-            self.task_, self.labels_ = infer_task_type(y)
+            self.task_, self.labels_ = get_tool_box(y).infer_task_type(y)
         else:
             self.task_ = self.config.task
 
