@@ -505,6 +505,9 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
 
 class DefaultDaskPreprocessor(DefaultPreprocessor):
+    class Dummy:
+        pass
+
     def __init__(self, config: ModelConfig, compute_to_local=False):
         super(DefaultDaskPreprocessor, self).__init__(config)
 
@@ -515,8 +518,13 @@ class DefaultDaskPreprocessor(DefaultPreprocessor):
 
     @property
     def transformers(self):
-        from hypernets.tabular import dask_ex as dex
-        return dex
+        import dask.dataframe as dd
+        tfs = get_tool_box(dd.DataFrame).transformers
+        r = DefaultDaskPreprocessor.Dummy()
+        for k, v in tfs.items():
+            setattr(r, k, v)
+
+        return r
 
     def _wrap_with_compute(self):
         fns = ['fit_transform', 'transform', 'transform_X', 'transform_y', 'inverse_transform_y']
