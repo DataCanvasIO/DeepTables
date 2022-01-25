@@ -2,15 +2,17 @@
 """
 
 """
-import dask.dataframe as dd
-
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
-from deeptables.models.preprocessor import DefaultDaskPreprocessor
 from hypernets.tabular import get_tool_box
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
+
+if is_dask_installed:
+    import dask.dataframe as dd
+    from deeptables.models.preprocessor import DefaultDaskPreprocessor
 
 
+@if_dask_ready
 class Test_Preprocessor_Dask:
     @classmethod
     def setup_class(cls):

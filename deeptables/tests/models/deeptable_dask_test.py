@@ -10,15 +10,18 @@ import numpy as np
 import pandas as pd
 from sklearn import manifold
 from sklearn.metrics import roc_auc_score, mean_squared_error, f1_score
-import dask.dataframe as dd
-import dask.array as da
+
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable, deepmodel
 from deeptables.utils import consts, fs
 from hypernets.tabular import get_tool_box
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
+
+if is_dask_installed:
+    import dask.dataframe as dd
 
 
+@if_dask_ready
 class Test_DeepTable_Dask:
     @classmethod
     def setup_class(cls):

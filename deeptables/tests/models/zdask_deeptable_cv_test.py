@@ -3,14 +3,15 @@ __author__ = 'yangjian'
 """
 
 """
-
-import dask.dataframe as dd
-
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
 from .deeptable_cv_test import Test_DeepTable_CV
 
+if is_dask_installed:
+    import dask.dataframe as dd
 
-class Test_DeepTable_CV_Dask(Test_DeepTable_CV):
+
+@if_dask_ready
+class TestDeepTableCV_Dask(Test_DeepTable_CV):
     @staticmethod
     def load_data():
         setup_dask(None)

@@ -2,14 +2,17 @@
 """
 
 """
-import dask.dataframe as dd
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable
 from hypernets.tabular import get_tool_box
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
 from .deeptable_multiclass_test import Test_DeepTable_Multiclass
 
+if is_dask_installed:
+    import dask.dataframe as dd
 
+
+@if_dask_ready
 class TestDeepTableMulticlassByDask(Test_DeepTable_Multiclass):
     def setup_class(self):
         setup_dask(self)

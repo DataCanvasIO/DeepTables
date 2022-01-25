@@ -6,7 +6,7 @@ import tensorflow as tf
 from deeptables.datasets import dsutils
 from deeptables.models import deeptable, deepnets
 from hypernets.tabular import get_tool_box
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import setup_dask
 
 
 def run(distribute_strategy=None, batch_size=32, epochs=5):

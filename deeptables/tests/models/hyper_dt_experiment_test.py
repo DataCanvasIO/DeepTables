@@ -1,9 +1,11 @@
-import dask.dataframe as dd
-
 from deeptables.models.hyper_dt import tiny_dt_space, make_experiment
 from hypernets.tabular import get_tool_box
 from hypernets.tabular.datasets import dsutils
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
+
+if is_dask_installed:
+    import dask.dataframe as dd
 
 
 def run_compete_experiment_with_heart_disease(init_kwargs, run_kwargs, with_dask=False):
@@ -50,6 +52,7 @@ def test_experiment_basis():
     run_compete_experiment_with_heart_disease({}, {})
 
 
+@if_dask_ready
 def test_experiment_basis_dask():
     run_compete_experiment_with_heart_disease({}, {}, with_dask=True)
 
@@ -62,6 +65,7 @@ def test_experiment_without_cv():
     run_compete_experiment_with_heart_disease(dict(cv=False), {})
 
 
+@if_dask_ready
 def test_experiment_without_cv_dask():
     run_compete_experiment_with_heart_disease(dict(cv=False), {}, with_dask=True)
 
@@ -70,6 +74,7 @@ def test_experiment_with_ensemble():
     run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=False), {})
 
 
+@if_dask_ready
 def test_experiment_with_ensemble_dask():
     run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=False), {}, with_dask=True)
 
@@ -78,5 +83,6 @@ def test_experiment_with_cv_ensemble():
     run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=True), {})
 
 
+@if_dask_ready
 def test_experiment_with_cv_ensemble_dask():
     run_compete_experiment_with_heart_disease(dict(ensemble_size=3, cv=True), {}, with_dask=True)

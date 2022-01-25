@@ -3,13 +3,16 @@ __author__ = 'yangjian'
 """
 
 """
-import dask.dataframe as dd
 import pandas as pd
 
-from hypernets.tests.tabular.dask_transofromer_test import setup_dask
+from hypernets.tests.tabular.tb_dask import is_dask_installed, if_dask_ready, setup_dask
 from .deeptable_regression_test import Test_DeepTable_Regression
 
+if is_dask_installed:
+    import dask.dataframe as dd
 
+
+@if_dask_ready
 class TestDeepTableRegressionByDask(Test_DeepTable_Regression):
     @staticmethod
     def load_data():
