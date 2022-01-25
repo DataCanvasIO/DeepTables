@@ -14,14 +14,16 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Concatenate, BatchNormalization
 
-from hypernets.tabular import get_tool_box
-from hypernets.tabular.dask_ex import DaskToolBox
+from hypernets.tabular import get_tool_box, is_dask_installed
 from . import modelset, deepnets
 from .config import ModelConfig
 from .deepmodel import DeepModel
 from .preprocessor import DefaultPreprocessor, DefaultDaskPreprocessor
 from ..utils import dt_logging, consts, fs
 from ..utils.tf_version import tf_less_than
+
+if is_dask_installed:
+    from hypernets.tabular.dask_ex import DaskToolBox
 
 logger = dt_logging.get_logger(__name__)
 
@@ -395,7 +397,9 @@ class DeepTable:
             X_test = self.preprocessor.transform_X(X_test)
 
         if iterators is None:
-            if stratified and self.task != consts.TASK_REGRESSION and not DaskToolBox.exist_dask_object(X, y):
+            if is_dask_installed and DaskToolBox.exist_dask_object(X, y):
+                iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)
+            elif stratified and self.task != consts.TASK_REGRESSION:
                 iterators = StratifiedKFold(n_splits=num_folds, shuffle=True, random_state=random_state)
             else:
                 iterators = KFold(n_splits=num_folds, shuffle=True, random_state=random_state)
@@ -410,7 +414,7 @@ class DeepTable:
         else:
             oof_proba = np.full((X_shape[0], 1), np.nan)
 
-        if DaskToolBox.exist_dask_object(X, y):
+        if is_dask_installed and DaskToolBox.exist_dask_object(X, y):
             X = DaskToolBox.reset_index(DaskToolBox.to_dask_frame_or_series(X))
             y = DaskToolBox.to_dask_type(y)
             if DaskToolBox.is_dask_dataframe_or_series(y):
@@ -894,7 +898,7 @@ def probe_evaluate(dt, X, y, X_test, y_test, layers, score_fn={}):
 
 
 def _get_default_preprocessor(config, X, y):
-    if DaskToolBox.exist_dask_object(X, y):
+    if is_dask_installed and DaskToolBox.exist_dask_object(X, y):
         return DefaultDaskPreprocessor(config, compute_to_local=False)
     else:
         return DefaultPreprocessor(config)

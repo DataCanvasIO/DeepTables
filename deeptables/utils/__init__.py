@@ -3,5 +3,5 @@ __author__ = 'yangjian'
 """
 
 """
-from hypernets.utils import fs, load_data, isnotebook
+from hypernets.utils import fs, isnotebook
 from .dataset_generator import to_dataset

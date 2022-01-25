@@ -11,12 +11,14 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import make_pipeline
 
-from hypernets.tabular import sklearn_ex as skex, get_tool_box
+from hypernets.tabular import sklearn_ex as skex, get_tool_box, is_dask_installed
 from hypernets.tabular.cache import cache
-from hypernets.tabular.dask_ex import DaskToolBox
 from .config import ModelConfig
 from .metainfo import CategoricalColumn, ContinuousColumn, VarLenCategoricalColumn
 from ..utils import dt_logging, consts
+
+if is_dask_installed:
+    from hypernets.tabular.dask_ex import DaskToolBox
 
 logger = dt_logging.get_logger(__name__)
 
