@@ -1,4 +1,4 @@
-# tensorflow>=2.0.0,<2.5.0    # optional added by setup.py
+# tensorflow>=2.0.0,<2.5.0    # required at runtime
 packaging
 scipy>=1.3.1
 pandas>=0.25.3
@@ -6,6 +6,6 @@ numpy>=1.16.5
 scikit-learn>=0.22.1
 lightgbm>=2.2.0
 category_encoders>=2.1.0
-hypernets==0.2.3
+hypernets==0.2.5.1
 h5py==2.10.0
 eli5
