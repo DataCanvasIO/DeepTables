@@ -109,6 +109,24 @@ preds = dt.predict(df_test)
 
 [Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
 
+## Citation
+
+If you use DeepTables in your research, please cite us as follows:
+
+   Jian Yang, Xuefeng Li, Haifeng Wu. **DeepTables: A Deep Learning Python Package for Tabular Data.** https://github.com/DataCanvasIO/DeepTables, 2022. Version 0.2.x.
+
+BibTex:
+
+```
+@misc{deeptables,
+  author={Jian Yang, Xuefeng Li, Haifeng Wu},
+  title={{DeepTables}: { A Deep Learning Python Package for Tabular Data}},
+  howpublished={https://github.com/DataCanvasIO/DeepTables},
+  note={Version 0.2.x},
+  year={2022}
+}
+```
+
 ## DataCanvas
 
 ![](docs/source/images/dc_logo_1.png)
