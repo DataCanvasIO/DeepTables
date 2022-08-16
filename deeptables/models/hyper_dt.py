@@ -140,13 +140,13 @@ class DTEstimator(Estimator):
                 # logger.info('---------no summary-------------')
                 # logger.info(ex)
 
-    def fit(self, X, y, eval_set=None, pos_label=None, **kwargs):
+    def fit(self, X, y, eval_set=None, pos_label=None, n_jobs=1, **kwargs):
         fit_params = self.space_sample.__dict__.get('fit_params')
         if fit_params is not None:
             kwargs.update(fit_params.param_values)
         if kwargs.get('cross_validation') is not None:
             kwargs.pop('cross_validation')
-            self.model.fit_cross_validation(X, y, **kwargs)
+            self.model.fit_cross_validation(X, y, n_jobs=n_jobs, **kwargs)
         else:
             self.model.fit(X, y, **kwargs)
 
