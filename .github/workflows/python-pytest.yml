@@ -12,7 +12,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -41,7 +41,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -q tensorflow==${{ matrix.tf-version }}
         pip install -q git+https://github.com/DataCanvasIO/Hypernets
-        pip install -q -r requirements.txt "protobuf<4.0"
+        pip install -q -r requirements.txt "protobuf<4.0" numpy==1.19.5
         pip install -q pytest-cov==2.4.0  python-coveralls  codacy-coverage
         pip list
     - name: Test with pytest
