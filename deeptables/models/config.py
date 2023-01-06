@@ -200,11 +200,14 @@ class ModelConfig(collections.namedtuple('ModelConfig',
 
     @property
     def first_metric_name(self):
+        import tensorflow as tf
         if self.metrics is None or len(self.metrics) <= 0:
             raise ValueError('`metrics` is none or empty.')
         first_metric = self.metrics[0]
         if isinstance(first_metric, str):
             return first_metric
+        if isinstance(first_metric, tf.metrics.Metric):
+            return first_metric.name
         if callable(first_metric):
             return first_metric.__name__
         raise ValueError('`metric` must be string or callable object.')

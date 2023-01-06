@@ -232,18 +232,30 @@ class Test_DeepTable:
         preds = newdt.predict(self.X_test)
         assert preds.shape, (200,)
 
-    def test_ignore_case_dict(self):
-        metrics = {"AUC": 0.82, 'Accuracy': 0.9}
-        _dict = IgnoreCaseDict(metrics)
+    def test_multiple_metrics(self):
+        from tensorflow import keras
+        # loading data
+        df = dsutils.load_bank()
+        df_train, df_test = train_test_split(df, test_size=0.9, random_state=42)
 
-        assert _dict['auc'] == 0.82
-        assert _dict['Auc'] == 0.82
-        assert _dict['AUC'] == 0.82
+        y = df_train.pop('y')
+        y_test = df_test.pop('y')
 
-        assert _dict.get('AUC') == 0.82
+        # training
+        config = deeptable.ModelConfig(earlystopping_patience=5, apply_class_weight=True,
+                                       metrics=[keras.metrics.AUC(name="AUCPR", curve='PR', num_thresholds=1000),
+                                                keras.metrics.AUC(name="AUC", curve='ROC', num_thresholds=1000)])
 
-        assert _dict['Accuracy'] == 0.9
-        assert _dict['accuracy'] == 0.9
+        dt = deeptable.DeepTable(config=config)
+        model, history = dt.fit(df_train, y, batch_size=128, epochs=10)
+
+        # evaluation
+        result = dt.evaluate(df_test, y_test, verbose=0)
+        names = list(map(lambda m: m.upper(), result.keys()))
+        print('score:', result)
+
+        assert "AUCPR" in names
+        assert "AUC" in names
 
 
 if __name__ == "__main__":
