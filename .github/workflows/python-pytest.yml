@@ -41,7 +41,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install tensorflow==${{ matrix.tf-version }}
         pip install git+https://github.com/DataCanvasIO/Hypernets
-        pip install -r requirements.txt "protobuf<4.0" numpy==1.19.5
+        pip install -r requirements.txt "protobuf<4.0" "numpy==1.19.5" "featuretools==0.27"
         pip install pytest-cov==2.4.0  python-coveralls  codacy-coverage
         pip list
     - name: Test with pytest
