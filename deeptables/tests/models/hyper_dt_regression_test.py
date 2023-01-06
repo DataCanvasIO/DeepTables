@@ -9,8 +9,9 @@ from deeptables.models.hyper_dt import HyperDT, tiny_dt_space
 from hypernets.core.callbacks import SummaryCallback, FileStorageLoggingCallback
 from hypernets.core.searcher import OptimizeDirection
 from hypernets.searchers import RandomSearcher
-from sklearn.datasets import load_boston
+
 from sklearn.model_selection import train_test_split
+from hypernets.tabular.datasets.dsutils import load_boston
 
 from .. import homedir
 
@@ -19,11 +20,9 @@ class Test_HyperDT_Regression():
 
     def test_boston(self):
         print("Loading datasets...")
-        boston_dataset = load_boston()
-
-        df_train = pd.DataFrame(boston_dataset.data)
-        df_train.columns = boston_dataset.feature_names
-        self.y = pd.Series(boston_dataset.target)
+        df = load_boston()
+        df_train = df
+        self.y = df.pop('target')
         self.X = df_train
 
         self.X_train, \

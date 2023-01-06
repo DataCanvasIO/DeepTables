@@ -4,12 +4,12 @@ __author__ = 'yangjian'
 
 """
 import pandas as pd
-from sklearn.datasets import load_boston
 
 from deeptables.models import deeptable
 from deeptables.tests.misc import r2_c
 from deeptables.utils import consts
 from hypernets.tabular import get_tool_box
+from hypernets.tabular.datasets.dsutils import load_boston
 
 
 class Test_DeepTable_Regression:
@@ -17,13 +17,10 @@ class Test_DeepTable_Regression:
     @staticmethod
     def load_data():
         print("Loading datasets...")
-
-        boston_dataset = load_boston()
-
-        df_train = pd.DataFrame(boston_dataset.data)
-        df_train.columns = boston_dataset.feature_names
-        target = pd.Series(boston_dataset.target)
-
+        df = load_boston()
+        target = df.pop("target")
+        df_train = df
+        # target = pd.Series(boston_dataset.target)
         return df_train, target
 
     def setup_class(self):
