@@ -4,9 +4,9 @@ __author__ = 'yangjian'
 
 """
 import copy
-import pickle
 
 import pandas as pd
+import pickle
 
 from deeptables.models.config import ModelConfig
 from deeptables.models.deeptable import DeepTable
@@ -18,6 +18,12 @@ from hypernets.model import Estimator, HyperModel
 from hypernets.utils import DocLens, isnotebook
 
 logger = dt_logging.get_logger(__name__)
+
+
+def _to_hp(v):
+    if isinstance(v, (list, tuple)):
+        v = Choice(v)
+    return v
 
 
 class DTModuleSpace(ModuleSpace):
@@ -37,13 +43,16 @@ class DTModuleSpace(ModuleSpace):
 
 
 class DTFit(ModuleSpace):
-    def __init__(self, batch_size=None, epochs=None, space=None, name=None, **hyperparams):
-        if batch_size is None:
-            batch_size = Choice([128, 256])
-        hyperparams['batch_size'] = batch_size
+    def __init__(self, space=None, name=None, **hyperparams):
+        # if batch_size is None:
+        #     batch_size = Choice([128, 256])
+        # hyperparams['batch_size'] = batch_size
+        #
+        # if epochs is not None:
+        #     hyperparams['epochs'] = epochs
 
-        if epochs is not None:
-            hyperparams['epochs'] = epochs
+        for k, v in hyperparams.items():
+            hyperparams[k] = _to_hp(v)
 
         ModuleSpace.__init__(self, space, name, **hyperparams)
         self.space.fit_params = self
@@ -62,24 +71,24 @@ class DnnModule(ModuleSpace):
     def __init__(self, hidden_units=None, reduce_factor=None, dnn_dropout=None, use_bn=None, dnn_layers=None,
                  activation=None, space=None, name=None, **hyperparams):
         if hidden_units is None:
-            hidden_units = Choice([100, 200, 300, 500, 800, 1000])
-        hyperparams['hidden_units'] = hidden_units
+            hidden_units = [100, 200, 300, 500, 800, 1000]
+        hyperparams['hidden_units'] = _to_hp(hidden_units)
 
         if reduce_factor is None:
-            reduce_factor = Choice([1, 0.8, 0.5])
-        hyperparams['reduce_factor'] = reduce_factor
+            reduce_factor = [1, 0.8, 0.5]
+        hyperparams['reduce_factor'] = _to_hp(reduce_factor)
 
         if dnn_dropout is None:
-            dnn_dropout = Choice([0, 0.1, 0.3, 0.5])
-        hyperparams['dnn_dropout'] = dnn_dropout
+            dnn_dropout = [0, 0.1, 0.3, 0.5]
+        hyperparams['dnn_dropout'] = _to_hp(dnn_dropout)
 
         if use_bn is None:
             use_bn = Bool()
         hyperparams['use_bn'] = use_bn
 
         if dnn_layers is None:
-            dnn_layers = Choice([1, 2, 3])
-        hyperparams['dnn_layers'] = dnn_layers
+            dnn_layers = [1, 2, 3]
+        hyperparams['dnn_layers'] = _to_hp(dnn_layers)
 
         if activation is None:
             activation = 'relu'
@@ -141,22 +150,25 @@ class DTEstimator(Estimator):
                 # logger.info(ex)
 
     def fit(self, X, y, eval_set=None, pos_label=None, n_jobs=1, **kwargs):
-        fit_params = self.space_sample.__dict__.get('fit_params')
-        if fit_params is not None:
-            kwargs.update(fit_params.param_values)
+        # fit_params = self.space_sample.__dict__.get('fit_params')
+        # if fit_params is not None:
+        #     kwargs.update(fit_params.param_values)
         if kwargs.get('cross_validation') is not None:
             kwargs.pop('cross_validation')
             self.model.fit_cross_validation(X, y, n_jobs=n_jobs, **kwargs)
         else:
-            self.model.fit(X, y, **kwargs)
+            fit_kwargs = self.space_sample.fit_params.param_values.copy()
+            fit_kwargs.update(kwargs)
+            self.model.fit(X, y, **fit_kwargs)
 
         self.classes_ = getattr(self.model, 'classes_', None)
         return self
 
     def fit_cross_validation(self, X, y, eval_set=None, metrics=None, pos_label=None, **kwargs):
         assert isinstance(metrics, (list, tuple))
-
-        oof_proba, _, _, oof_scores = self.model.fit_cross_validation(X, y, oof_metrics=metrics, **kwargs)
+        fit_kwargs = self.space_sample.fit_params.param_values.copy()
+        fit_kwargs.update(kwargs)
+        oof_proba, _, _, oof_scores = self.model.fit_cross_validation(X, y, oof_metrics=metrics, **fit_kwargs)
 
         # calc final score with mean
         scores = pd.concat([pd.Series(s) for s in oof_scores], axis=1).mean(axis=1).to_dict()
@@ -360,6 +372,7 @@ def tiny_dt_space(**hyperparams):
                         use_bn=False,
                         dnn_layers=2,
                         activation='relu')(dt_module)
+        hyperparams['batch_size'] = [64, 100]
         fit = DTFit(**hyperparams)(dt_module)
 
     return space
