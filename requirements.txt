@@ -6,6 +6,6 @@ numpy>=1.16.5
 scikit-learn>=0.22.1
 lightgbm>=2.2.0
 category_encoders>=2.1.0
-hypernets>=0.2.5.1, <0.2.6
+hypernets>=0.2.5.1
 h5py>=2.10.0
 eli5
