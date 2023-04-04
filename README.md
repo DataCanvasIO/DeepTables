@@ -47,19 +47,18 @@ Please refer to the official docs at [https://deeptables.readthedocs.io/en/lates
 `pip` is recommended to install DeepTables:
 
 ```bash
-pip install tensorflow==2.4.2 deeptables
+pip install tensorflow deeptables
 ```
 
 Note:
 * Tensorflow is required by DeepTables, install it before running DeepTables. 
-* DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
 
 **GPU** Setup (Optional)
 
 To use DeepTables with GPU devices, install `tensorflow-gpu` instead of `tensorflow`.
 
 ```bash
-pip install tensorflow-gpu==2.4.2 deeptables
+pip install tensorflow-gpu deeptables
 ```
 
 

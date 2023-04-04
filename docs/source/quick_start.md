@@ -5,7 +5,7 @@
 ### Requirements
 **Python 3**: DT requires Python version 3.6 or 3.7. 
 
-**Tensorflow** >= 2.0.0: DT is based on TensorFlow. Please follow this [tutorial](https://www.tensorflow.org/install/pip) to install TensorFlow for python3.
+**Tensorflow** >= 2.4.0: DT is based on TensorFlow. Please follow this [tutorial](https://www.tensorflow.org/install/pip) to install TensorFlow for python3.
 
 
 ### Install DeepTables
@@ -13,19 +13,18 @@
 `pip` is recommended to install DeepTables:
 
 ```bash
-pip install tensorflow==2.4.2 deeptables
+pip install tensorflow deeptables
 ```
 
 Note:
 * Tensorflow is required by DeepTables, install it before running DeepTables. 
-* DeepTables was tested with TensorFlow version 2.0 to 2.4, install the tested version please.
 
 **GPU** Setup (Optional)
 
 To use DeepTables with GPU devices, install `tensorflow-gpu` instead of `tensorflow`.
 
 ```bash
-pip install tensorflow-gpu==2.4.2 deeptables
+pip install tensorflow-gpu deeptables
 ```
 
 ***Verify the installation***:
