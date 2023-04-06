@@ -70,6 +70,7 @@ Example
    Layers<layers.md>
    AutoML<automl.md>
    API<modules.rst>
+   API<release_note.md>
    FAQ<faq.md>
 
 Indices and tables
