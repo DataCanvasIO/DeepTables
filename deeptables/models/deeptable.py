@@ -512,7 +512,7 @@ class DeepTable:
         logger.info(f'fit_cross_validation taken {time.time() - start}s')
 
         if oof_metrics is not None:
-            return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed, oof_scores
+            return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed, oof_scores,
         else:
             return oof_proba_fixed, eval_proba_mean_fixed, test_proba_mean_fixed
 
