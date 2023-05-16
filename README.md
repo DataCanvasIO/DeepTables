@@ -128,6 +128,6 @@ BibTex:
 
 ## DataCanvas
 
-![](docs/source/images/dc_logo_1.png)
+![](https://raw.githubusercontent.com/DataCanvasIO/DeepTables/master/docs/source/images/dc_logo_1.png)
 
 DeepTables is an open source project created by [DataCanvas](https://www.datacanvas.com/). 
