@@ -176,7 +176,7 @@ class DTEstimator(Estimator):
 
         self.classes_ = getattr(self.model, 'classes_', None)
 
-        return scores, oof_proba, oof_scores, None, None  # TODO: add xvals, yvals
+        return scores, oof_proba, oof_scores, None, None, None, None
 
     def predict(self, X, **kwargs):
         return self.model.predict(X, **kwargs)
