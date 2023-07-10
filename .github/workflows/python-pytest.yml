@@ -8,6 +8,9 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+    # since * is a special character in YAML you have to quote this string
+    - cron:  '0 0 5 1/7 * ?'
 
 jobs:
   default:
