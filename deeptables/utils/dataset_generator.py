@@ -6,14 +6,12 @@ from concurrent.futures import ThreadPoolExecutor
 from distutils.version import LooseVersion
 from functools import partial
 
-import dask
-import dask.dataframe as dd
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.utils import to_categorical as tf_to_categorical
 
 from deeptables.utils import consts, dt_logging
-
+from hypernets.tabular import get_tool_box, is_dask_installed
 logger = dt_logging.get_logger(__name__)
 
 TFDG_DASK_CHUNK = 100
@@ -105,6 +103,7 @@ class _TFDGForDask(TFDatasetGenerator):
         return ds
 
     def _to_ds20(self, X, y=None, *, batch_size, shuffle, drop_remainder):
+        import dask
         ds_types = {}
         ds_shapes = {}
         meta = self._get_meta(X)
@@ -118,6 +117,7 @@ class _TFDGForDask(TFDatasetGenerator):
                 ds_types[k] = 'int32'
 
         if y is not None:
+            import dask.dataframe as dd
             if isinstance(y, dd.Series):
                 y = y.to_dask_array(lengths=True)
             if self.task == consts.TASK_MULTICLASS:
@@ -149,6 +149,7 @@ class _TFDGForDask(TFDatasetGenerator):
         sig = {k: to_spec(k, dtype, idx) for k, (dtype, idx) in meta.items()}
 
         if y is not None:
+            import dask.dataframe as dd
             if isinstance(y, dd.Series):
                 y = y.to_dask_array(lengths=True)
             if self.task == consts.TASK_MULTICLASS:
@@ -167,6 +168,7 @@ class _TFDGForDask(TFDatasetGenerator):
 
     @staticmethod
     def _generate(meta, X, y, *, batch_size, shuffle, drop_remainder):
+        import dask
         total_size = dask.compute(X.shape)[0][0]
         chunk_size = min(total_size, batch_size * TFDG_DASK_CHUNK)
         fn = partial(_TFDGForDask._compute_chunk, X, y, chunk_size)
@@ -205,6 +207,7 @@ class _TFDGForDask(TFDatasetGenerator):
 
     @staticmethod
     def _to_categorical(y, *, num_classes):
+        import dask
         if len(y.shape) == 1:
             y = y.reshape(dask.compute(y.shape[0])[0], 1)
         fn = partial(tf_to_categorical, num_classes=num_classes, dtype='float32')
@@ -213,6 +216,7 @@ class _TFDGForDask(TFDatasetGenerator):
 
     @staticmethod
     def _compute_chunk(X, y, chunk_size, i):
+        import dask
         try:
             Xc = X[i:i + chunk_size]
             yc = y[i:i + chunk_size] if y is not None else None
@@ -236,7 +240,12 @@ class _TFDGForDask(TFDatasetGenerator):
 def to_dataset(config, task, num_classes, X, y=None, *,
                batch_size, shuffle, drop_remainder,
                categorical_columns, continuous_columns, var_len_categorical_columns):
-    cls = _TFDGForDask if isinstance(X, dd.DataFrame) else _TFDGForPandas
+
+    if is_dask_installed:
+        import dask.dataframe as dd
+        cls = _TFDGForDask if isinstance(X, dd.DataFrame) else _TFDGForPandas
+    else:
+        cls = _TFDGForPandas
     logger.info(f'create dataset generator with {cls.__name__}, '
                 f'batch_size={batch_size}, shuffle={shuffle}, drop_remainder={drop_remainder}')
 

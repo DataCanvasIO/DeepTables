@@ -5,7 +5,6 @@ import os
 import pickle
 import time
 
-import dask
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
@@ -415,6 +414,7 @@ class DeepTable:
             oof_proba = np.full((X_shape[0], 1), np.nan)
 
         if is_dask_installed and DaskToolBox.exist_dask_object(X, y):
+            import dask
             X = DaskToolBox.reset_index(DaskToolBox.to_dask_frame_or_series(X))
             y = DaskToolBox.to_dask_type(y)
             if DaskToolBox.is_dask_dataframe_or_series(y):
