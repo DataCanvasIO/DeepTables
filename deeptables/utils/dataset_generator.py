@@ -137,6 +137,7 @@ class _TFDGForDask(TFDatasetGenerator):
         return ds
 
     def _to_ds24(self, X, y=None, *, batch_size, shuffle, drop_remainder):
+        import dask
         def to_spec(name, dtype, idx):
             if dtype is not None:
                 spec = tf.TensorSpec(shape=(None, len(idx)), dtype=dtype)

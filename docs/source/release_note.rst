@@ -1,3 +1,10 @@
+Version 0.2.6(stable)
+---------------------
+**Main improvements**
+
+1. Support ``hypernets>=0.3.0``
+
+
 Version 0.2.5(stable)
 ---------------------
 **Main improvements**
