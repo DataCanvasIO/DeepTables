@@ -41,12 +41,12 @@ You can also quickly try DeepTables through the [Docker](https://docs.docker.com
 
 Pull the latest image:
 ```bash
-docker pull datacanvas/deeptables-example
+docker pull datacanvas/deeptables
 ```
 
 Then launch Docker container with this command line:
 ```bash
-docker run -it -p 8830:8888 -e NotebookToken="your-token"  datacanvas/deeptables-example
+docker run -it -p 8830:8888 -e NotebookToken="your-token"  datacanvas/deeptables
 ```
 
 The value "your-token" is a user specified string for the notebook and can be empty.
@@ -58,7 +58,7 @@ Launch a browser and connect to that URL you will see the Jupyter Notebook like 
 ## Getting started: 5 lines to DT
 
 ### Supported Tasks
-DT can be use to solve **classification** and **regression** prediction problems on tabular data.
+DT can be used to solve **classification** and **regression** prediction problems on tabular data.
 
 ### Simple Example
 DT supports these tasks with extremely simple interface without dealing with data cleaning and feature engineering. You don't even specify the task type, DT will automatically infer.
