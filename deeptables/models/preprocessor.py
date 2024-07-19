@@ -174,6 +174,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
         if self.config.auto_imputation:
             X = self._imputation(X)
+        if self.config.auto_scale:
+            X = self._standard_scale(X)
         if self.config.auto_encode_label:
             X = self._categorical_encoding(X)
         if self.config.auto_discrete:
@@ -391,6 +393,17 @@ class DefaultPreprocessor(AbstractPreprocessor):
         X = mle.fit_transform(X)
         self.X_transformers['label_encoder'] = mle
         logger.info(f'Categorical encoding taken {time.time() - start}s')
+        return X
+
+    def _standard_scale(self, X):
+        start = time.time()
+        logger.info('Standard scale ...')
+        vars = self.get_continuous_columns()
+        ss = self.transformers.MinMaxScalerTransformer(vars)
+        ss.fit(X)
+        X = ss.transform(X)
+        self.X_transformers['standard_scale'] = ss
+        logger.info(f'Standard scale taken {time.time() - start}s')
         return X
 
     def _discretization(self, X):
