@@ -795,28 +795,28 @@ class DeepTable:
             pickle.dump(self, output, protocol=4)
 
     @staticmethod
-    def load(filepath):
+    def load(filepath, custom_objects=None):
         if filepath[-1] != '/':
             filepath = filepath + '/'
         with fs.open(f'{filepath}dt.pkl', 'rb') as input:
             dt = pickle.load(input)
-            dt.restore_modelset(filepath)
+            dt.restore_modelset(filepath, custom_objects=custom_objects)
             return dt
 
-    def restore_modelset(self, filepath):
+    def restore_modelset(self, filepath, custom_objects=None):
         for mi in self.__modelset.get_modelinfos():
             if isinstance(mi.model, str):
                 modelfile = mi.model
                 modelfile = os.path.split(modelfile)[-1]
-                dm = self.load_deepmodel(f'{filepath}{modelfile}')
+                dm = self.load_deepmodel(f'{filepath}{modelfile}', custom_objects)
                 mi.model = dm
 
-    def load_deepmodel(self, filepath):
+    def load_deepmodel(self, filepath, custom_objects=None):
         if fs.exists(filepath):
             logger.info(f'Load model from: {filepath}.')
             dm = DeepModel(self.task, self.num_classes, self.config,
                            self.preprocessor.categorical_columns,
-                           self.preprocessor.continuous_columns, model_file=filepath)
+                           self.preprocessor.continuous_columns, model_file=filepath, custom_objects=custom_objects)
             return dm
         else:
             raise ValueError(f'Invalid model filename:{filepath}.')

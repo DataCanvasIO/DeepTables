@@ -30,7 +30,8 @@ class DeepModel:
                  categorical_columns,
                  continuous_columns,
                  model_file=None,
-                 var_categorical_len_columns=None, ):
+                 var_categorical_len_columns=None,
+                 custom_objects=None):
 
         # set gpu usage strategy before build model
         if config.gpu_usage_strategy == consts.GPU_USAGE_STRATEGY_GROWTH:
@@ -47,7 +48,11 @@ class DeepModel:
         if model_file is not None:
             # fixme: `load_model` executed multiple times in a process,
             #  resulting in a metric name rename to like auc_1, auc_2
-            self.model = self._load_model(model_file, dt_custom_objects)
+            custom_objects_merge = {}
+            custom_objects_merge.update(dt_custom_objects)
+            if custom_objects is not None:
+                custom_objects_merge.update(custom_objects)
+            self.model = self._load_model(model_file, custom_objects_merge)
 
     def fit(self, X=None, y=None, batch_size=128, epochs=1, verbose=1, callbacks=None,
             validation_split=0.2, validation_data=None, shuffle=True,
