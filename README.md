@@ -16,7 +16,7 @@
 Dear folks, we are opening several precious positions based in Beijing both for professionals and interns avid in AutoML/NAS, please send your resume/cv to yangjian@zetyun.com. (Application deadline: TBD.) 
 
 ## DeepTables: Deep-learning Toolkit for Tabular data
-DeepTables(DT) is a easy-to-use toolkit that enables deep learning to unleash great power on tabular data.
+DeepTables(DT) is an easy-to-use toolkit that enables deep learning to unleash great power on tabular data.
 
 
 ## Overview
@@ -106,7 +106,7 @@ preds = dt.predict(df_test)
 
 ### A solution using DeepTables to win the 1st place in Kaggle Categorical Feature Encoding Challenge II
 
-[Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
+[Click here](https://github.com/DataCanvasIO/DeepTables/blob/master/deeptables/examples/Kaggle%20-%20Categorical%20Feature%20Encoding%20Challenge%20II.ipynb)
 
 ## Citation
 
