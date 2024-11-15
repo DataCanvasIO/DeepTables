@@ -2,13 +2,15 @@
 import collections
 import io
 import math
+import os.path
+import tempfile
 from collections import OrderedDict
-from typing import List
+from typing import List, Union
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
-from tensorflow.keras.models import Model, load_model, save_model
+from keras import backend as K
+from keras.api.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
+from keras.api.models import Model, load_model, save_model
 
 from deeptables.models.metainfo import CategoricalColumn
 from hypernets.tabular import get_tool_box
@@ -120,9 +122,9 @@ class DeepModel:
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq,
-                                 max_queue_size=max_queue_size,
-                                 workers=workers,
-                                 use_multiprocessing=use_multiprocessing,
+                                 # max_queue_size=max_queue_size,
+                                 # workers=workers,
+                                 # use_multiprocessing=use_multiprocessing,
                                  )
         logger.info(f'Training finished.')
         history.history = IgnoreCaseDict(history.history)  # update dict metrics
@@ -163,36 +165,58 @@ class DeepModel:
         logger.info("Performing evaluation...")
         ds = self.__get_prediction_data(X_test, y_test, batch_size=batch_size)
         steps = math.ceil(len(X_test) / batch_size)
-        result = self.model.evaluate(ds, steps=steps, verbose=verbose)
+        result = self.model.evaluate(ds, steps=steps, verbose=verbose, return_dict=return_dict)
         if return_dict:
-            result = {k: v for k, v in zip(self.model.metrics_names, result)}
-            return IgnoreCaseDict(result)
+            return IgnoreCaseDict(inputs=result)
         else:
             return result
 
     @staticmethod
     def _load_model(filepath, custom_objects):
-        import h5py
+        # import h5py
         from deeptables.utils import fs
+        from hypernets.utils._fsutils import AdaptedLocalFileSystem
 
+        # try load model from local
+        if isinstance(fs, AdaptedLocalFileSystem):
+            try_model_path = os.path.join(fs.local_root_, filepath)
+            if os.path.exists(try_model_path):
+                return load_model(try_model_path, custom_objects)
+
+        # download model then load it in case of non-local file system
         with fs.open(filepath, 'rb') as f:
             data = f.read()
 
-        buf = io.BytesIO(data)
-        del data
-        with h5py.File(buf, 'r') as h:
-            return load_model(h, custom_objects)
+        with tempfile.NamedTemporaryFile(suffix=".h5") as temp_file:
+            temp_path = temp_file.name
+            with open(temp_path, "wb") as f:
+                f.write(data)
+            return load_model(temp_path, custom_objects)
+
+        # with fs.open(filepath, 'rb') as f:
+        #     data = f.read()
+        #
+        # buf = io.BytesIO(data)
+        # del data
+        # with h5py.File(buf, 'r') as h:
+        #     return load_model(h, custom_objects)
 
     def save(self, filepath):
         import h5py
         from deeptables.utils import fs
 
+        with tempfile.NamedTemporaryFile(suffix=".h5") as temp_file:
+            temp_path = temp_file.name
+            save_model(self.model, temp_path, save_format="h5")
+            with open(temp_path, "rb") as f:
+                data = f.read()
+
         with fs.open(filepath, 'wb') as f:
-            buf = io.BytesIO()
-            with h5py.File(buf, 'w') as h:
-                save_model(self.model, h, save_format='h5')
-            data = buf.getvalue()
-            buf.close()
+            # buf = io.BytesIO()
+            # with h5py.File(buf, 'w') as h:
+            #     save_model(self.model, h) # , save_format='h5'
+            # data = buf.getvalue()
+            # buf.close()
             f.write(data)
 
     def release(self):
@@ -293,8 +317,9 @@ class DeepModel:
         return model
 
     def __compile_model(self, model, task, num_classes, optimizer, loss, metrics):
+        import keras
         if optimizer == 'auto':
-            optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+            optimizer = keras.optimizers.Adam(learning_rate=0.001)
 
         if loss == 'auto':
             if task == consts.TASK_BINARY or task == consts.TASK_MULTILABEL:
@@ -504,9 +529,12 @@ class ModelDesc:
 
 class IgnoreCaseDict(collections.UserDict):
 
-    def __init__(self, *args, **kwargs):
-        super(IgnoreCaseDict, self).__init__(*args, **kwargs)
-        # update key
+    def __init__(self, inputs: Union[dict, collections.UserDict]=None):
+        if isinstance(inputs, collections.UserDict):
+            super(IgnoreCaseDict, self).__init__(inputs.data)
+        else:
+            super(IgnoreCaseDict, self).__init__(inputs)
+
         for k in self.data:
             if not isinstance(k, str):
                 raise KeyError(f"Key should be str but is {k}")
