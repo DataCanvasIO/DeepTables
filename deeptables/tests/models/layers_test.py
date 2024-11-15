@@ -4,7 +4,7 @@ __author__ = 'yangjian'
 
 """
 from deeptables.models.layers import MultiColumnEmbedding
-from tensorflow.keras import layers, models
+from keras import layers, models
 import numpy as np
 
 

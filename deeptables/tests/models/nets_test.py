@@ -5,8 +5,8 @@ import time
 import pytest
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import backend as K
-from tensorflow.keras import layers
+from keras import backend as K
+from keras import layers
 
 from deeptables.datasets import dsutils
 from deeptables.models import deepnets

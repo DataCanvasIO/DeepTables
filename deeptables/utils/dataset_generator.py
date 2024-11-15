@@ -8,8 +8,8 @@ from functools import partial
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.utils import to_categorical as tf_to_categorical
-
+# from tensorflow.keras.utils import to_categorical as tf_to_categorical
+from keras.api.utils import to_categorical as tf_to_categorical
 from deeptables.utils import consts, dt_logging
 from hypernets.tabular import get_tool_box, is_dask_installed
 logger = dt_logging.get_logger(__name__)

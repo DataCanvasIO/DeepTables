@@ -25,8 +25,10 @@ class Test_DeepTable_Regression:
 
     def setup_class(self):
         self.X, self.y = self.load_data()
-
+        # Note: keras can not be 3.4.1 for https://github.com/keras-team/keras/pull/20107
+        # https://github.com/keras-team/keras/issues/20104
         conf = deeptable.ModelConfig(task=consts.TASK_REGRESSION, metrics=[r2_c, 'RootMeanSquaredError'],
+                                     earlystopping_patience=5,
                                      apply_gbm_features=False)
         self.dt = deeptable.DeepTable(config=conf)
 

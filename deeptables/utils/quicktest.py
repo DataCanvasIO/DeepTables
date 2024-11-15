@@ -14,3 +14,6 @@ def test():
     y = pd.Series(np.random.randint(0, 2, 100))
     dt = deeptable.DeepTable(deeptable.ModelConfig(nets=deepnets.DeepFM))
     dt.fit(X, y)
+
+if __name__ == '__main__':
+    test()

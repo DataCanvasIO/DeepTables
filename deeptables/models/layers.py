@@ -1,16 +1,19 @@
 # -*- coding:utf-8 -*-
 
 import tensorflow as tf
-from tensorflow.keras.layers import Layer, Dense, Dropout, BatchNormalization, Activation, Concatenate, Flatten, Input, \
+from keras.api.layers  import Layer, Dense, Dropout, BatchNormalization, Activation, Concatenate, Flatten, Input, \
     Embedding, Lambda, Add, Conv2D, MaxPooling2D, SpatialDropout1D
-from tensorflow.keras import backend as K
-from tensorflow.keras import initializers, regularizers, losses, constraints
+from keras import backend as K
+import keras
+# from tensorflow.keras import backend as K
+from keras import initializers, regularizers, losses, constraints
 from tensorflow.python.eager import context
 from tensorflow.python.framework import ops
 from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
-from tensorflow.keras.metrics import RootMeanSquaredError
+from keras.api.metrics import RootMeanSquaredError
+from keras.src.legacy.losses import Reduction
 import itertools
 
 from ..utils import dt_logging, consts, gpu
@@ -44,8 +47,8 @@ class FM(Layer):
         super(FM, self).__init__(**kwargs)
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x)}.')
         square_of_sum = tf.square(tf.reduce_sum(
             x, axis=1, keepdims=True))
         sum_of_square = tf.reduce_sum(
@@ -106,8 +109,8 @@ class MultiheadAttention(Layer):
         super(MultiheadAttention, self).build(input_shape)
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x)}.')
 
         # Linear projections
         queries = x
@@ -281,8 +284,8 @@ class SENET(Layer):
         super(SENET, self).build(input_shape)
 
     def call(self, x, training=None, **kwargs):
-        if K.ndim(x) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x)}.')
         # inputs = concat_func(inputs, axis=1)
         if self.pooling_op == 'max':
             Z = tf.reduce_max(x, axis=-1)
@@ -355,8 +358,8 @@ class BilinearInteraction(Layer):
         super(BilinearInteraction, self).build(input_shape)
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x)}.')
         x = tf.split(x, self.field_num, axis=1)
         if self.bilinear_type == "field_all":
             p = [tf.tensordot(v_i, self.W, axes=(-1, 0)) * v_j for v_i, v_j in itertools.combinations(x, 2)]
@@ -419,8 +422,8 @@ class Cross(Layer):
                 self.add_weight(name='bias_' + str(i), shape=(num_dims, 1), initializer='zeros', trainable=True))
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 2:
-            raise ValueError(f'Wrong dimensions of x, expected 2 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 2:
+            raise ValueError(f'Wrong dimensions of x, expected 2 but input {keras.ops.ndim(x)}.')
         x_f = tf.expand_dims(x, axis=-1)
         x_n = x_f
         for i in range(self.num_cross_layer):
@@ -464,8 +467,8 @@ class InnerProduct(Layer):
         super(InnerProduct, self).__init__(**kwargs)
 
     def call(self, x, **kwargs):
-        if K.ndim(x[0]) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x[0])}.')
+        if keras.ops.ndim(x[0]) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x[0])}.')
         num_inputs = len(x)
         num_pairs = int(num_inputs * (num_inputs - 1) / 2)
         row = []
@@ -534,8 +537,8 @@ class OuterProduct(Layer):
         super(OuterProduct, self).build(input)
 
     def call(self, x, **kwargs):
-        if K.ndim(x[0]) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x[0])}.')
+        if keras.ops.ndim(x[0]) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x[0])}.')
         row = []
         col = []
         num_inputs = len(x)
@@ -673,8 +676,8 @@ class CIN(Layer):
         super(CIN, self).build(input_shape)
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
+        if keras.ops.ndim(x) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x)}.')
 
         dim = int(x.get_shape()[-1])
         hidden_nn_layers = [x]
@@ -781,8 +784,8 @@ class AFM(Layer):
         self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
 
     def call(self, x, **kwargs):
-        if K.ndim(x[0]) != 3:
-            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x[0])}.')
+        if keras.ops.ndim(x[0]) != 3:
+            raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {keras.ops.ndim(x[0])}.')
         row = []
         col = []
         for r, c in itertools.combinations(x, 2):
@@ -849,7 +852,7 @@ class MultiColumnEmbedding(Layer):
         if input_shape[1] != len(self.input_dims):
             raise ValueError('The inputs dimension on axis 1 must be the same as the length of [input_dims].')
 
-        if context.executing_eagerly() and context.context().num_gpus():
+        if context.executing_eagerly() and context.context().num_gpus() < 1:
             with ops.device('cpu:0'):
                 self.embeddings = []
                 for i, (input_dim, output_dim) in enumerate(zip(self.input_dims, self.output_dims)):
@@ -882,7 +885,8 @@ class MultiColumnEmbedding(Layer):
     def call(self, inputs):
         if inputs.shape[1] == 0:
             return []
-        dtype = K.dtype(inputs)
+
+        dtype = inputs.dtype
         if dtype != 'int32' and dtype != 'int64':
             inputs = math_ops.cast(inputs, 'int32')
         columns = tf.split(inputs, len(self.embeddings), axis=1)
@@ -922,12 +926,14 @@ class VarLenColumnEmbedding(Embedding):
         super(VarLenColumnEmbedding, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        super(VarLenColumnEmbedding, self).build(input_shape)  # Be sure to call this somewhere!
+        import keras
+        super(VarLenColumnEmbedding, self).build(input_shape)
+
         height = input_shape[1]
         if self.pooling_strategy == "mean":
-            self._pooling_layer = tf.keras.layers.AveragePooling2D(pool_size=(height, 1))
+            self._pooling_layer = keras.layers.AveragePooling2D(pool_size=(height, 1))
         else:
-            self._pooling_layer = tf.keras.layers.MaxPooling2D(pool_size=(height, 1))
+            self._pooling_layer = keras.layers.MaxPooling2D(pool_size=(height, 1))
 
         if self.dropout_rate > 0:
             self._dropout = SpatialDropout1D(self.dropout_rate)
@@ -982,7 +988,8 @@ class BinaryFocalLoss(losses.Loss):
         model.compile(loss=[BinaryFocalLoss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
     """
 
-    def __init__(self, gamma=2., alpha=.25, reduction=losses.Reduction.AUTO, name='focal_loss'):
+    def __init__(self, gamma=2., alpha=.25, reduction=Reduction.AUTO, name='focal_loss'):
+
         super(BinaryFocalLoss, self).__init__(reduction=reduction, name=name)
         self.gamma = float(gamma)
         self.alpha = float(alpha)
@@ -993,11 +1000,11 @@ class BinaryFocalLoss(losses.Loss):
 
         epsilon = K.epsilon()
         # clip to prevent NaN's and Inf's
-        pt_1 = K.clip(pt_1, epsilon, 1. - epsilon)
-        pt_0 = K.clip(pt_0, epsilon, 1. - epsilon)
+        pt_1 = keras.ops.clip(pt_1, epsilon, 1. - epsilon)
+        pt_0 = keras.ops.clip(pt_0, epsilon, 1. - epsilon)
 
-        return -K.mean(self.alpha * K.pow(1. - pt_1, self.gamma) * K.log(pt_1)) \
-               - K.mean((1 - self.alpha) * K.pow(pt_0, self.gamma) * K.log(1. - pt_0))
+        return -keras.ops.mean(self.alpha * keras.ops.power(1. - pt_1, self.gamma) * keras.ops.log(pt_1)) \
+               - keras.ops.mean((1 - self.alpha) * keras.ops.power(pt_0, self.gamma) * keras.ops.log(1. - pt_0))
 
     def get_config(self):
         config = {'gamma': self.gamma, 'alpha': self.alpha}
@@ -1025,7 +1032,7 @@ class CategoricalFocalLoss(losses.Loss):
      model.compile(loss=[CategoricalFocalLoss(alpha=.25, gamma=2)], metrics=["accuracy"], optimizer=adam)
     """
 
-    def __init__(self, gamma=2., alpha=.25, reduction=losses.Reduction.AUTO, name='focal_loss'):
+    def __init__(self, gamma=2., alpha=.25, reduction=Reduction.AUTO, name='focal_loss'):
         """Focal loss for multi-classification
         FL(p_t)=-alpha(1-p_t)^{gamma}ln(p_t)
         Notice: y_pred is probability after softmax
@@ -1044,20 +1051,20 @@ class CategoricalFocalLoss(losses.Loss):
 
     def call(self, y_true, y_pred):
         # Scale predictions so that the class probas of each sample sum to 1
-        y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
+        y_pred /= keras.ops.sum(y_pred, axis=-1, keepdims=True)
 
         # Clip the prediction value to prevent NaN's and Inf's
         epsilon = K.epsilon()
-        y_pred = K.clip(y_pred, epsilon, 1. - epsilon)
+        y_pred = keras.ops.clip(y_pred, epsilon, 1. - epsilon)
 
         # Calculate Cross Entropy
-        cross_entropy = -y_true * K.log(y_pred)
+        cross_entropy = -y_true * keras.ops.log(y_pred)
 
         # Calculate Focal Loss
-        loss = self.alpha * K.pow(1. - y_pred, self.gamma) * cross_entropy
+        loss = self.alpha * keras.ops.power(1. - y_pred, self.gamma) * cross_entropy
 
         # Sum the losses in mini_batch
-        return K.sum(loss, axis=1)
+        return keras.ops.sum(loss, axis=1)
 
     def get_config(self):
         config = {'gamma': self.gamma, 'alpha': self.alpha}

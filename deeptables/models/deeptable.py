@@ -10,8 +10,8 @@ import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
-from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.layers import Concatenate, BatchNormalization
+from keras.api.callbacks import EarlyStopping
+from keras.api.layers import Concatenate, BatchNormalization
 
 from hypernets.tabular import get_tool_box, is_dask_installed
 from . import modelset, deepnets
