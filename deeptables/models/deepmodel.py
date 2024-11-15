@@ -7,6 +7,7 @@ import tempfile
 from collections import OrderedDict
 from typing import List, Union
 
+import keras
 import tensorflow as tf
 from keras import backend as K
 from keras.api.layers import Dense, Concatenate, Flatten, Input, Add, BatchNormalization, Dropout
@@ -317,22 +318,31 @@ class DeepModel:
         return model
 
     def __compile_model(self, model, task, num_classes, optimizer, loss, metrics):
-        import keras
+
         if optimizer == 'auto':
             optimizer = keras.optimizers.Adam(learning_rate=0.001)
 
+        loss_name = None
         if loss == 'auto':
             if task == consts.TASK_BINARY or task == consts.TASK_MULTILABEL:
-                loss = 'binary_crossentropy'
+                loss_name = 'binary_crossentropy'
+                loss = keras.losses.BinaryCrossentropy()
             elif task == consts.TASK_REGRESSION:
-                loss = 'mse'
+                loss_name = 'mse'
+                loss = keras.losses.MeanSquaredError()
             elif task == consts.TASK_MULTICLASS:
                 if num_classes == 2:
-                    loss = 'binary_crossentropy'
+                    loss_name = 'binary_crossentropy'
+                    loss = keras.losses.BinaryCrossentropy()
                 else:
-                    loss = 'categorical_crossentropy'
+                    loss_name = 'categorical_crossentropy'
+                    loss = keras.losses.CategoricalCrossentropy()
+            else:
+                raise RuntimeError(f'unseen task "{task}"')
+        assert loss_name
+        assert loss
         self.model_desc.optimizer = optimizer
-        self.model_desc.loss = loss
+        self.model_desc.loss = loss_name
         model.compile(optimizer, loss, metrics=metrics)
         return model
 

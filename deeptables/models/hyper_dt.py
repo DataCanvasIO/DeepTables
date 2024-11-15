@@ -213,11 +213,12 @@ class DTEstimator(Estimator):
 
         self.model.save(model_path)
 
-        stub = copy.copy(self)
-        stub.model = None
+        # Note: copy.copy(self) may cause self.model is None
+        # self.model = None  # already use __getstate__ to avoid persist model
         stub_path = model_path + 'dt_estimator.pkl'
         with fs.open(stub_path, 'wb') as f:
-            pickle.dump(stub, f, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self, f, protocol=pickle.HIGHEST_PROTOCOL)
+
 
     @staticmethod
     def load(model_path):
@@ -245,6 +246,7 @@ class DTEstimator(Estimator):
     def __getstate__(self):
         try:
             state = super().__getstate__()
+            state = copy.copy(state)  # if not make a copy, will delete model in self
         except AttributeError:
             state = self.__dict__.copy()
 
