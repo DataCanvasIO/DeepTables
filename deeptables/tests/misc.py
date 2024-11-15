@@ -6,7 +6,7 @@ from keras.src.ops import dtype
 """
 
 """
-#
+# https://github.com/tensorflow/tensorflow/issues/39554
 def cast(var, dtype):
     if isinstance(var, tf.Tensor):
         return tf.cast(var, dtype=dtype)
