@@ -7,7 +7,7 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from keras import backend as K
 from keras import layers
-
+import keras
 from deeptables.datasets import dsutils
 from deeptables.models import deepnets
 from deeptables.models import deeptable
@@ -195,7 +195,7 @@ class CustomFM(layers.Layer):
         super(CustomFM, self).__init__(**kwargs)
 
     def call(self, x, **kwargs):
-        if K.ndim(x) != 3:
+        if keras.ops.ndim(x) != 3:
             raise ValueError(f'Wrong dimensions of inputs, expected 3 but input {K.ndim(x)}.')
         square_of_sum = tf.square(tf.reduce_sum(
             x, axis=1, keepdims=True))

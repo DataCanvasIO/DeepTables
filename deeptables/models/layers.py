@@ -3,12 +3,16 @@
 import tensorflow as tf
 from keras.api.layers  import Layer, Dense, Dropout, BatchNormalization, Activation, Concatenate, Flatten, Input, \
     Embedding, Lambda, Add, Conv2D, MaxPooling2D, SpatialDropout1D
+
+# from tensorflow.python.keras.legacy_tf_layers.base import Layer
+
 from keras import backend as K
 import keras
 # from tensorflow.keras import backend as K
 from keras import initializers, regularizers, losses, constraints
 from tensorflow.python.eager import context
 from tensorflow.python.framework import ops
+
 from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
@@ -880,7 +884,7 @@ class MultiColumnEmbedding(Layer):
         if not self.mask_zero:
             return None
 
-        return math_ops.not_equal(inputs, 0)
+        return keras.ops.not_equal.not_equal(inputs, 0)
 
     def call(self, inputs):
         if inputs.shape[1] == 0:
@@ -888,13 +892,14 @@ class MultiColumnEmbedding(Layer):
 
         dtype = inputs.dtype
         if dtype != 'int32' and dtype != 'int64':
-            inputs = math_ops.cast(inputs, 'int32')
+            inputs = keras.ops.cast(inputs, 'int32')
         columns = tf.split(inputs, len(self.embeddings), axis=1)
         out = []
         for i, col in enumerate(columns):
             emb = embedding_ops.embedding_lookup(self.embeddings[i], col)
             if self.dropout_rate > 0:
                 emb = self.dropouts[i](emb)
+
             out.append(emb)
         return out
 

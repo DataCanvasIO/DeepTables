@@ -16,7 +16,10 @@ class TestModelInput:
     def _train_and_asset(self, X, y ,conf: deeptable.ModelConfig):
         dt = deeptable.DeepTable(config=conf)
         model, history = dt.fit(X, y, validation_split=0.2, epochs=2, batch_size=32)
-        assert len(model.model.input_names) == 1
+        if hasattr(model.model, 'input_names'):
+            assert len(model.model.input_names) == 1
+        else:
+            assert len(model.model.inputs) == 1
 
     def test_only_categorical_feature(self):
         df = self.df_bank.copy()

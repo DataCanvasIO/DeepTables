@@ -2,6 +2,8 @@
 import six
 from inspect import signature
 import tensorflow as tf
+import keras
+
 # from tensorflow.keras.layers import Dense, Concatenate, Flatten, BatchNormalization, Activation, Dropout
 from keras.api.layers  import Dense, Concatenate, Flatten, BatchNormalization, Activation, Dropout
 from tensorflow.python.keras.utils.generic_utils import deserialize_keras_object, serialize_keras_object
@@ -46,7 +48,8 @@ def linear(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config,
     x_emb = None
     concat_embeddings = _concat_embeddings(embeddings, 'concat_linear_embedding')
     if concat_embeddings is not None :
-        x_emb = tf.reduce_sum(concat_embeddings, axis=-1, name='linear_reduce_sum')
+        x_emb = keras.ops.sum(concat_embeddings, axis=-1)
+        # x_emb = tf.reduce_sum(concat_embeddings, axis=-1, name='linear_reduce_sum')
 
     if x_emb is not None and dense_layer is not None:
         x = Concatenate(name='concat_linear_emb_dense')([x_emb, dense_layer])
@@ -238,7 +241,8 @@ def fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config
         model_desc.add_net('fgcnn', (None), (None))
         return None
     # fgcnn_emb_concat = Concatenate(axis=1, name=f'concat_fgcnn_embedding_{fgcnn_emb_concat_index}')(embeddings)
-    fg_inputs = tf.expand_dims(fgcnn_emb_concat, axis=-1)
+    import keras
+    fg_inputs = keras.ops.expand_dims(fgcnn_emb_concat, axis=-1)
     fg_filters = config.fgcnn_params.get('fg_filters', (14, 16))
     fg_heights = config.fgcnn_params.get('fg_heights', (7, 7))
     fg_pool_heights = config.fgcnn_params.get('fg_pool_heights', (2, 2))
@@ -293,7 +297,7 @@ def fgcnn_afm_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense,
     if fg_output is None:
         return None
 
-    split_features = tf.split(fg_output, fg_output.shape[1], axis=1)
+    split_features = keras.ops.split(fg_output, fg_output.shape[1], axis=1)
     afm_output = layers.AFM(params=config.afm_params)(split_features)
     model_desc.add_net('fgcnn-afm', fg_output.shape, afm_output.shape)
     return afm_output
@@ -306,7 +310,8 @@ def fgcnn_ipnn_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense
     fg_output = fg_nets(embeddings, flatten_emb_layer, dense_layer, concat_emb_dense, config, model_desc)
     if fg_output is None:
         return None
-    split_features = tf.split(fg_output, fg_output.shape[1], axis=1)
+
+    split_features = keras.ops.split(fg_output, fg_output.shape[1], axis=1)
     inner_product = layers.InnerProduct()(split_features)
     # dnn_input = Flatten()(concat_all_features)
     dnn_input_layers = [Flatten()(fg_output), inner_product]
