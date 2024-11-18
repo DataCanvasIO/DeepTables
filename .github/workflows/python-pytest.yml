@@ -39,9 +39,9 @@ jobs:
       run: |
         python --version
         python -m pip install --upgrade pip
-        pip install tensorflow==${{ matrix.tf-version }} "numpy<1.24.0"
+        pip install tensorflow==${{ matrix.tf-version }} "numpy<2"
         pip install git+https://github.com/DataCanvasIO/Hypernets
-        pip install -r requirements.txt "protobuf<4.0" "numpy<1.24.0"
+        pip install -r requirements.txt "protobuf<4.0" "numpy<2"
         pip install pytest-cov==2.4.0  python-coveralls  codacy-coverage
         pip list
     - name: Test with pytest

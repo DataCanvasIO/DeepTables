@@ -271,8 +271,7 @@ class DeepModel:
             if len(embeddings) == 1:
                 flatten_emb_layer = Flatten(name='flatten_embeddings')(embeddings[0])
             else:
-                flatten_emb_layer = Flatten(name='flatten_embeddings')(
-                    Concatenate(name='concat_embeddings_axis_0')(embeddings))
+                flatten_emb_layer = Flatten(name='flatten_embeddings')(Concatenate(name='concat_embeddings_axis_0', axis=1)(embeddings))
 
         self.model_desc.nets = nets
         self.model_desc.stacking = config.stacking_op
