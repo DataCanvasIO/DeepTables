@@ -931,20 +931,11 @@ class VarLenColumnEmbedding(Embedding):
         super(VarLenColumnEmbedding, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        import keras
         super(VarLenColumnEmbedding, self).build(input_shape)
-
-        height = input_shape[1]
-        if self.pooling_strategy == "mean":
-            self._pooling_layer = keras.layers.AveragePooling2D(pool_size=(height, 1))
-        else:
-            self._pooling_layer = keras.layers.MaxPooling2D(pool_size=(height, 1))
-
         if self.dropout_rate > 0:
             self._dropout = SpatialDropout1D(self.dropout_rate)
         else:
             self._dropout = None
-
         self.built = True
 
     def call(self, inputs):
@@ -957,14 +948,8 @@ class VarLenColumnEmbedding(Embedding):
         else:
             dropout_output = embedding_output
 
-        # 3. expand dim for polling
-        inputs_4d = tf.expand_dims(dropout_output, 3)  # add channels dim
-
-        # 4. polling
-        tensor_pooling = self._pooling_layer(inputs_4d)
-
-        # 5. format output
-        return tf.squeeze(tensor_pooling, 3)
+        # 3. format output
+        return dropout_output
 
     def compute_mask(self, inputs, mask):
         return None
