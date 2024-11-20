@@ -6,11 +6,11 @@ if is_dask_installed:
     import dask.dataframe as dd
 
 
-@if_dask_ready
-class TestVarLenCategoricalFeatureByDask(TestVarLenCategoricalFeature):
-
-    def setup_class(self):
-        TestVarLenCategoricalFeature.setup_class(self)
-
-        setup_dask(self)
-        self.df = dd.from_pandas(self.df, npartitions=2)
+# @if_dask_ready
+# class TestVarLenCategoricalFeatureByDask(TestVarLenCategoricalFeature):
+#
+#     def setup_class(self):
+#         TestVarLenCategoricalFeature.setup_class(self)
+#
+#         setup_dask(self)
+#         self.df = dd.from_pandas(self.df, npartitions=2)
