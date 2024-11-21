@@ -279,10 +279,8 @@ class DefaultPreprocessor(AbstractPreprocessor):
                 else:
                     var_len_column_names.append(v[0])
             var_len_col_sep_dict = {v[0]: v[1] for v in var_len_categorical_columns}
-            var_len_col_pooling_strategy_dict = {v[0]: v[2] for v in var_len_categorical_columns}
         else:
             var_len_col_sep_dict = {}
-            var_len_col_pooling_strategy_dict = {}
 
         X_shape = self._get_shape(X)
         unique_upper_limit = round(X_shape[0] ** self.config.cat_exponent)
@@ -299,8 +297,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
 
             # handle var len feature
             if c in var_len_column_names:
-                self.__append_var_len_categorical_col(c, nunique, var_len_col_sep_dict[c],
-                                                      var_len_col_pooling_strategy_dict[c])
+                self.__append_var_len_categorical_col(c, nunique, var_len_col_sep_dict[c])
                 continue
 
             if self.config.categorical_columns is not None and isinstance(self.config.categorical_columns, list):
@@ -454,7 +451,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
         # return [name for name in gbmencoder.new_columns]
         return gbmencoder.new_columns
 
-    def __append_var_len_categorical_col(self, name, voc_size, sep, pooling_strategy):
+    def __append_var_len_categorical_col(self, name, voc_size, sep):
         logger.debug(f'Var len categorical variables {name} appended.')
 
         if self.config.fixed_embedding_dim:
@@ -470,8 +467,7 @@ class DefaultPreprocessor(AbstractPreprocessor):
                                     voc_size,
                                     embedding_output_dim if embedding_output_dim > 0 else min(
                                         4 * int(pow(voc_size, 0.25)), 20),
-                                    sep=sep,
-                                    pooling_strategy=pooling_strategy)
+                                    sep=sep)
 
         self.var_len_categorical_columns.append(vc)
 

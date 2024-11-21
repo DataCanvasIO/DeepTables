@@ -132,7 +132,7 @@ class ModelConfig(collections.namedtuple('ModelConfig',
                 gpu_usage_strategy=consts.GPU_USAGE_STRATEGY_GROWTH,
                 distribute_strategy=None,
                 var_len_categorical_columns=None,
-                # a tuple3, format is (column_name, separator, pool_strategy), pool_strategy is one of max,avg;  e.g. [('genres', '|', 'avg' )]
+                # a tuple2, format is (column_name, separator), pool_strategy is one of max,avg;  e.g. [('genres', '|' )]
                 ):
 
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:

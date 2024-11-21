@@ -52,7 +52,7 @@ class _TFDGForPandas(TFDatasetGenerator):
                 train_data.append(tf.constant(np.array(X[col.name].tolist()).astype(consts.DATATYPE_TENSOR_FLOAT).tolist()))
 
         if y is None:
-            ds = tf.data.Dataset.from_tensor_slices(train_data, name='train_x')
+            ds = tf.data.Dataset.from_tensor_slices((tuple(train_data), ), name='train_x')
         else:
             y = tf.constant(np.array(y).tolist())
             if self.task == consts.TASK_MULTICLASS:

@@ -55,21 +55,20 @@ class VarLenCategoricalColumn(collections.namedtuple('VarLenCategoricalColumn',
                                                 'embeddings_output_dim',
                                                 'dtype',
                                                 'input_name',
-                                                'sep',
-                                                'pooling_strategy',
+                                                'sep'
                                                 ])):
 
     def __hash__(self):
         return self.name.__hash__()
 
-    def __new__(cls, name, vocabulary_size, embeddings_output_dim=10, dtype='int32', input_name=None, sep="|", pooling_strategy='max'):
+    def __new__(cls, name, vocabulary_size, embeddings_output_dim=10, dtype='int32', input_name=None, sep="|"):
         if input_name is None:
             input_name = consts.INPUT_PREFIX_CAT + name
         if embeddings_output_dim == 0:
             embeddings_output_dim = int(round(vocabulary_size ** 0.25))
         # max_elements_length need a variable not const
         return super(VarLenCategoricalColumn, cls).__new__(cls, name, vocabulary_size, embeddings_output_dim, dtype,
-                                                     input_name, sep, pooling_strategy)
+                                                     input_name, sep)
 
 
 class ContinuousColumn(collections.namedtuple('ContinuousColumn',

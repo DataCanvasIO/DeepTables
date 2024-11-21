@@ -922,38 +922,43 @@ class MultiColumnEmbedding(Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class VarLenColumnEmbedding(Embedding):
-    def __init__(self, pooling_strategy='max', dropout_rate=0.,  **kwargs):
-        if pooling_strategy not in ['mean', 'max']:
-            raise ValueError("Param strategy should is one of mean, max")
-        self.pooling_strategy = pooling_strategy
-        self.dropout_rate = dropout_rate  # 支持dropout
+class VarLenColumnEmbedding(Layer):
+    def __init__(self, emb_vocab_size, emb_output_dim, dropout_rate=0. ,  **kwargs):
+        self.emb_vocab_size = emb_vocab_size
+        self.emb_output_dim = emb_output_dim
+        self.dropout_rate = dropout_rate
         super(VarLenColumnEmbedding, self).__init__(**kwargs)
-        self._dropout = None
+        self.dropout = None
+        self.emb_layer = None
+
+    def compute_output_shape(self, input_shape):
+        n_dim = input_shape[1]
+        return input_shape[0] , self.emb_output_dim * n_dim
 
     def build(self, input_shape=None):
         super(VarLenColumnEmbedding, self).build(input_shape)
+        self.emb_layer = Embedding(input_dim=self.emb_vocab_size, output_dim=self.emb_output_dim)
         if self.dropout_rate > 0:
-            self._dropout = SpatialDropout1D(self.dropout_rate, name='var_len_emb_dropout')
+            self.dropout = SpatialDropout1D(self.dropout_rate, name='var_len_emb_dropout')
         else:
-            self._dropout = None
+            self.dropout = None
         self.built = True
 
     def call(self, inputs):
-        embedding_output = super(VarLenColumnEmbedding, self).call(inputs)
-
-        if self._dropout is not None:
-            dropout_output = self._dropout(embedding_output)
+        embedding_output = self.emb_layer.call(inputs)
+        embedding_output = embedding_output.reshape((embedding_output[0], 1, -1))
+        if self.dropout is not None:
+            dropout_output = self.dropout(embedding_output)
         else:
             dropout_output = embedding_output
-
         return dropout_output
 
     def compute_mask(self, inputs, mask=None):
         return None
 
     def get_config(self, ):
-        config = {'pooling_strategy': self.pooling_strategy}
+        config = { 'dropout_rate': self.dropout_rate,
+                   'emb_layer': self.emb_layer.get_config()}
         base_config = super(VarLenColumnEmbedding, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 

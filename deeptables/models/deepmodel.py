@@ -271,7 +271,7 @@ class DeepModel:
             if len(embeddings) == 1:
                 flatten_emb_layer = Flatten(name='flatten_embeddings')(embeddings[0])
             else:
-                flatten_emb_layer = Flatten(name='flatten_embeddings')(Concatenate(name='concat_embeddings_axis_0', axis=1)(embeddings))
+                flatten_emb_layer = Flatten(name='flatten_embeddings')(Concatenate(name='concat_embeddings_axis_0', axis=-1)(embeddings))
 
         self.model_desc.nets = nets
         self.model_desc.stacking = config.stacking_op
@@ -407,9 +407,8 @@ class DeepModel:
             for column in var_len_categorical_columns:
                 # todo add var len embedding description
                 input_layer = var_len_inputs[column.name]
-                var_len_embeddings = VarLenColumnEmbedding(pooling_strategy=column.pooling_strategy,
-                                                           input_dim=column.vocabulary_size,
-                                                           output_dim=column.embeddings_output_dim,
+                var_len_embeddings = VarLenColumnEmbedding(emb_vocab_size=column.vocabulary_size,
+                                                           emb_output_dim=column.embeddings_output_dim,
                                                            dropout_rate=embedding_dropout,
                                                            name=consts.LAYER_PREFIX_EMBEDDING + column.name,
                                                            embeddings_initializer=self.config.embeddings_initializer,
