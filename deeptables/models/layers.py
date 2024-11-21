@@ -929,29 +929,27 @@ class VarLenColumnEmbedding(Embedding):
         self.pooling_strategy = pooling_strategy
         self.dropout_rate = dropout_rate  # 支持dropout
         super(VarLenColumnEmbedding, self).__init__(**kwargs)
+        self._dropout = None
 
-    def build(self, input_shape):
+    def build(self, input_shape=None):
         super(VarLenColumnEmbedding, self).build(input_shape)
         if self.dropout_rate > 0:
-            self._dropout = SpatialDropout1D(self.dropout_rate)
+            self._dropout = SpatialDropout1D(self.dropout_rate, name='var_len_emb_dropout')
         else:
             self._dropout = None
         self.built = True
 
     def call(self, inputs):
-        # 1. do embedding
         embedding_output = super(VarLenColumnEmbedding, self).call(inputs)
 
-        # 2. add dropout
         if self._dropout is not None:
             dropout_output = self._dropout(embedding_output)
         else:
             dropout_output = embedding_output
 
-        # 3. format output
         return dropout_output
 
-    def compute_mask(self, inputs, mask):
+    def compute_mask(self, inputs, mask=None):
         return None
 
     def get_config(self, ):

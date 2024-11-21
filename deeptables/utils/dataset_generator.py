@@ -35,29 +35,29 @@ class TFDatasetGenerator(object):
 
 class _TFDGForPandas(TFDatasetGenerator):
     def __call__(self, X, y=None, *, batch_size, shuffle, drop_remainder):
-        train_data = {}
+        train_data = []  # Note: tensorflow v2.17 will rank inputs into a wrong order, so use a list instead of dict
         # add categorical data
         if self.categorical_columns is not None and len(self.categorical_columns) > 0:
-            train_data['input_categorical_vars_all'] = \
-                X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+            train_data.append(tf.constant(
+                X[[c.name for c in self.categorical_columns]].values.astype(consts.DATATYPE_TENSOR_FLOAT).tolist()))
 
         # add continuous data
         if self.continuous_columns is not None and len(self.continuous_columns) > 0:
             for c in self.continuous_columns:
-                train_data[c.name] = X[c.column_names].values.astype(consts.DATATYPE_TENSOR_FLOAT)
+                train_data.append(tf.constant( X[c.column_names].values.astype(consts.DATATYPE_TENSOR_FLOAT).tolist()))
 
         # add var len categorical data
         if self.var_len_categorical_columns is not None and len(self.var_len_categorical_columns) > 0:
             for col in self.var_len_categorical_columns:
-                train_data[col.name] = np.array(X[col.name].tolist())
+                train_data.append(tf.constant(np.array(X[col.name].tolist()).astype(consts.DATATYPE_TENSOR_FLOAT).tolist()))
 
         if y is None:
-            ds = tf.data.Dataset.from_tensor_slices(train_data)
+            ds = tf.data.Dataset.from_tensor_slices(train_data, name='train_x')
         else:
-            y = np.array(y)
+            y = tf.constant(np.array(y).tolist())
             if self.task == consts.TASK_MULTICLASS:
                 y = tf_to_categorical(y, num_classes=self.num_classes)
-            ds = tf.data.Dataset.from_tensor_slices((train_data, y))
+            ds = tf.data.Dataset.from_tensor_slices((tuple(train_data), y), name='train_x_y')
 
         if shuffle:
             ds = ds.shuffle(buffer_size=X.shape[0])

@@ -384,18 +384,6 @@ class DeepModel:
 
         return categorical_inputs, continuous_inputs, var_len_categorical_inputs
 
-    def __construct_var_len_embedding(self, column: VarLenCategoricalColumn, var_len_inputs, embedding_dropout):
-        input_layer = var_len_inputs[column.name]
-        var_len_embeddings = VarLenColumnEmbedding(pooling_strategy=column.pooling_strategy,
-                                                   input_dim=column.vocabulary_size,
-                                                   output_dim=column.embeddings_output_dim,
-                                                   dropout_rate=embedding_dropout,
-                                                   name=consts.LAYER_PREFIX_EMBEDDING + column.name,
-                                                   embeddings_initializer=self.config.embeddings_initializer,
-                                                   embeddings_regularizer=self.config.embeddings_regularizer,
-                                                   activity_regularizer=self.config.embeddings_activity_regularizer
-                                                   )(input_layer)
-        return var_len_embeddings
 
     def __build_embeddings(self, categorical_columns, categorical_inputs,
                            var_len_categorical_columns: List[VarLenCategoricalColumn], var_len_inputs,
@@ -416,10 +404,19 @@ class DeepModel:
 
         # do embedding for var len feature
         if var_len_categorical_columns is not None and len(var_len_categorical_columns) > 0:
-            for c in var_len_categorical_columns:
+            for column in var_len_categorical_columns:
                 # todo add var len embedding description
-                var_len_embedding = self.__construct_var_len_embedding(c, var_len_inputs, embedding_dropout)
-                embeddings.append(var_len_embedding)
+                input_layer = var_len_inputs[column.name]
+                var_len_embeddings = VarLenColumnEmbedding(pooling_strategy=column.pooling_strategy,
+                                                           input_dim=column.vocabulary_size,
+                                                           output_dim=column.embeddings_output_dim,
+                                                           dropout_rate=embedding_dropout,
+                                                           name=consts.LAYER_PREFIX_EMBEDDING + column.name,
+                                                           embeddings_initializer=self.config.embeddings_initializer,
+                                                           embeddings_regularizer=self.config.embeddings_regularizer,
+                                                           activity_regularizer=self.config.embeddings_activity_regularizer
+                                                           )(input_layer)
+                embeddings.append(var_len_embeddings)
 
         return embeddings
 
